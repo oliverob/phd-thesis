@@ -5,7 +5,7 @@
 % Set {innerside margin / outerside margin / topmargin / bottom margin}  and
 % other page dimensions
 \ifsetCustomMargin
-  \RequirePackage[left=37mm,right=30mm,top=35mm,bottom=30mm]{geometry}
+  \RequirePackage[paper=a4paper,includehead,includefoot,inner=25mm,outer=25mm,top=25mm,bottom=25mm]{geometry}
   \setFancyHdr % To apply fancy header after geometry package is loaded
 \fi
 
@@ -271,3 +271,9 @@
 \global\let\breqn@comma,
 \protected\gdef,{\ifmmode\expandafter\breqn@comma\else\expandafter\active@comma\fi}
 \endgroup
+
+\usepackage[T3,T1]{fontenc}
+\DeclareSymbolFont{tipa}{T3}{cmr}{m}{n}
+\DeclareMathAccent{\invbreve}{\mathalpha}{tipa}{16}
+
+\usepackage[export]{adjustbox} % valign=c for inline IPE diagrams in PEPO section
