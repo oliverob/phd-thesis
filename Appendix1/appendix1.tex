@@ -1,132 +1,113 @@
 %!TEX root = ../thesis.tex
+
+
+\ifpdf
+    \graphicspath{{Appendix1/Figs/Raster/}{Appendix1/Figs/PDF/}{Appendix1/Figs/}{Appendix1/}}
+\else
+    \graphicspath{{Appendix1/Figs/Vector/}{Appendix1/Figs/}{Appendix1/}}
+\fi
 % ******************************* Thesis Appendix A ****************************
-\chapter{How to install \LaTeX} 
+\chapter{Fermion-to-Qubit Mappings} 
+\section{Hybrid Mappings}
+\subsection{Steiner Tree Solver}
+\label{section:SCIPJACK}
+In our analysis we evaluate the performance of different mappings on a square-lattice qubit architecture. Some mappings require 2-qubit gates to be performed on non-neighbouring qubits and so we need additional SWAP gates. Calculating the optimum choice of SWAP gates requires finding the minimum path length required to connect all the qubits involved in a given fermionic operation. This is an example of an NP-hard problem known as the Steiner Tree problem:
 
-\section*{Windows OS}
+\begin{algorithm}[h]
+\centering
+\caption*{\label{alg:steinerTree}\textsc{Steiner Tree Problem}}
+\begin{algorithmic}
+\State \textsc{Given an undirected connected graph $G = (V,E)$ and a set $T \in V$ of terminals, find a tree $S \in G$ of minimum length that spans $T$}
+\end{algorithmic}
+\end{algorithm}
 
-\subsection*{TeXLive package - full version}
-\begin{enumerate}
-\item	Download the TeXLive ISO (2.2GB) from\\
-\href{https://www.tug.org/texlive/}{https://www.tug.org/texlive/}
-\item	Download WinCDEmu (if you don't have a virtual drive) from \\
-\href{http://wincdemu.sysprogs.org/download/}
-{http://wincdemu.sysprogs.org/download/}
-\item	To install Windows CD Emulator follow the instructions at\\
-\href{http://wincdemu.sysprogs.org/tutorials/install/}
-{http://wincdemu.sysprogs.org/tutorials/install/}
-\item	Right click the iso and mount it using the WinCDEmu as shown in \\
-\href{http://wincdemu.sysprogs.org/tutorials/mount/}{
-http://wincdemu.sysprogs.org/tutorials/mount/}
-\item	Open your virtual drive and run setup.pl
-\end{enumerate}
+In our case the set of terminals corresponds to the set of qubits involved in the given fermionic operation which we want to find the minimum path of SWAP gates between. In our calculations we use a top-ranking Steiner Tree solver SCIP-JACK \cite{rehfeldt2021implications} to find this minimum path.  SCIP-JACK consists of three component parts: preprocessing, primal heuristics, and a branch-and-cut procedure.
 
-or
+The preprocessing uses reduction techniques to reduce the size of the graph whilst still allowing at least one solution to the reduced problem to be converted into an optimal solution to the original graph. Examples of these techniques include merging together connected vertices that share no other neighbours or discarding 1-degree non-terminal vertices.
 
-\subsection*{Basic MikTeX - \TeX~ distribution}
-\begin{enumerate}
-\item	Download Basic-MiK\TeX (32bit or 64bit) from\\
-\href{http://miktex.org/download}{http://miktex.org/download}
-\item	Run the installer 
-\item	To add a new package go to Start >> All Programs >> MikTex >> Maintenance (Admin) and choose Package Manager
-\item	Select or search for packages to install
-\end{enumerate}
+The primal heuristic finds good or optimal solutions to the problem. In SCIP-JACK the one-phase repetitive shortest path heuristic \cite{aragao2002implementation} is used. This starts from a vertex and uses Dijkstra’s algorithm \cite{dijkstra2022note} to find the shortest path to the nearest terminal. This procedure is then reiterated with the modification to Dijkstra’s algorithm that the tentative distance assigned to each vertex is carried over. Once this has built up a subgraph containing all the terminals, a minimum spanning tree is constructed covering the subgraph, and any 1-degree non-terminal vertices are pruned.
 
-\subsection*{TexStudio - \TeX~ editor}
-\begin{enumerate}
-\item	Download TexStudio from\\
-\href{http://texstudio.sourceforge.net/\#downloads}
-{http://texstudio.sourceforge.net/\#downloads} 
-\item	Run the installer
-\end{enumerate}
+The branch-and-cut procedure is the backbone of the program used to compute a lower bound and prove the optimality of the solution. First, the problem is expressed in terms of a integer programming problem by considering $x_e$ to be binary variables representing whether edge $e \in E$ is included in the Steiner tree:
 
-\section*{Mac OS X}
-\subsection*{MacTeX - \TeX~ distribution}
-\begin{enumerate}
-\item	Download the file from\\
-\href{https://www.tug.org/mactex/}{https://www.tug.org/mactex/}
-\item	Extract and double click to run the installer. It does the entire configuration, sit back and relax.
-\end{enumerate}
+\begin{algorithm}
+\centering
+\caption*{\label{alg:steinerTreeCut}\textsc{Steiner Tree Problem Undirected Cut Formulation}}
+\begin{minipage}{.4\linewidth}
+\begin{algorithmic}[1]
+\Statex Define $\delta (U) =\{\{u,v\} \in E: u \in U, v \in V/U \}$
+\Statex
+\Statex Find min $\sum_e x_e$ under the following constraints:
+\State $x(\delta (W)) \geq 1$ for all $W \in V$, $0 < |W \cap T| < |T|$
+\State $x_e \in \{0,1\} \forall e \in E$
+\end{algorithmic}
+\end{minipage}
+\end{algorithm}
 
-\subsection*{TexStudio - \TeX~ editor}
-\begin{enumerate}
-\item	Download TexStudio from\\
-\href{http://texstudio.sourceforge.net/\#downloads}
-{http://texstudio.sourceforge.net/\#downloads} 
-\item	Extract and Start
-\end{enumerate}
-
-
-\section*{Unix/Linux}
-\subsection*{TeXLive - \TeX~ distribution}
-\subsubsection*{Getting the distribution:}
-\begin{enumerate}
-\item	TexLive can be downloaded from\\
-\href{http://www.tug.org/texlive/acquire-netinstall.html}
-{http://www.tug.org/texlive/acquire-netinstall.html}.
-\item	TexLive is provided by most operating system you can use (rpm,apt-get or yum) to get TexLive distributions
-\end{enumerate}
-
-\subsubsection*{Installation}
-\begin{enumerate}
-\item	Mount the ISO file in the mnt directory
-\begin{verbatim}
-mount -t iso9660 -o ro,loop,noauto /your/texlive####.iso /mnt
-\end{verbatim}
-
-\item	Install wget on your OS (use rpm, apt-get or yum install)
-\item	Run the installer script install-tl.
-\begin{verbatim}
-	cd /your/download/directory
-	./install-tl
-\end{verbatim}
-\item	Enter command `i' for installation
-
-\item	Post-Installation configuration:\\
-\href{http://www.tug.org/texlive/doc/texlive-en/texlive-en.html\#x1-320003.4.1}
-{http://www.tug.org/texlive/doc/texlive-en/texlive-en.html\#x1-320003.4.1} 
-\item	Set the path for the directory of TexLive binaries in your .bashrc file
-\end{enumerate}
-
-\subsubsection*{For 32bit OS}
-For Bourne-compatible shells such as bash, and using Intel x86 GNU/Linux and a default directory setup as an example, the file to edit might be \begin{verbatim}
-edit $~/.bashrc file and add following lines
-PATH=/usr/local/texlive/2011/bin/i386-linux:$PATH; 
-export PATH 
-MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH;
-export MANPATH 
-INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH;
-export INFOPATH
-\end{verbatim}
-\subsubsection*{For 64bit OS}
-\begin{verbatim}
-edit $~/.bashrc file and add following lines
-PATH=/usr/local/texlive/2011/bin/x86_64-linux:$PATH;
-export PATH 
-MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH;
-export MANPATH 
-INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH;
-export INFOPATH
-
-\end{verbatim}
-
-
-
-%\subsection{Installing directly using Linux packages} 
-\subsubsection*{Fedora/RedHat/CentOS:}
-\begin{verbatim} 
-sudo yum install texlive 
-sudo yum install psutils 
-\end{verbatim}
-
-
-\subsubsection*{SUSE:}
-\begin{verbatim}
-sudo zypper install texlive
-\end{verbatim}
-
-
-\subsubsection*{Debian/Ubuntu:}
-\begin{verbatim} 
-sudo apt-get install texlive texlive-latex-extra 
-sudo apt-get install psutils
-\end{verbatim}
+Linear programming is used to initially optimise the solution when considering only a subset of these constraints providing a lower bound on an optimal solution. The primary heuristic is then run with edge costs given by $1-x_e$ to find a feasible solution (reasonably similar to the LP solution) providing an upper bound on the optimal solution. Then, the algorithm considers the restraints ("cuts") that the current solution violates and adds them to the subset of constraints in the linear programming model. This model is repeatedly solved and expanded until the subset of constraints has grown sufficiently. At this point, if the solution is integral then we have found an optimal solution, otherwise the algorithm "branches" by creating two new sub-problems (nodes) each with an additional constraint on one of the variables ($x_e$) that forces it to be either 0 or 1 in each problem respectively. The process is then repeated again on each of these nodes (potentially with more constraints added). If for any node the optimal solution exceeds any of the heuristic solutions found, the node is discarded (pruned).
+\newpage
+\subsection{Visual guide to Hybrid mappings}
+In this section we provide a series of diagrams to further elaborate and explain our hybrid mapping algorithms.\\\\
+Figures~\ref{ZPattern} and \ref{SPattern} respectively describe the Jordan-Wigner mapping over the roots of Bravyi-Kitaev cells in the Hybrid and Hybrid\+ mapping schemes.\\\\
+Figure~\ref{fig:stabilisers} illustrates the family of stabilisers utilised by the Hybrid\+ mapping scheme. This is identical to the stabilisers found in \cite{steudtner2019quantum}.\\\\
+Figures~\ref{fig:verticalInteractionYodd} and \ref{fig:horizontalInteractionXYYX} demonstrate how the Hybrid\+ mapping scheme shortens different Pauli-strings.\\\\
+In the figures below: the dashed boxes represent the cells, whilst the circles inside them represent the roots of each cell, and the circles without boxes represent the ancillas.
+\renewcommand\thefigure{\thesection.\arabic{figure}}
+\setcounter{figure}{0}    
+\label{appendix}
+    \begin{figure}[h]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+         \includegraphics[page=20, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \caption{ \label{ZPattern}Diagram illustrating how the \textit{cell number} is assigned in a Z pattern to each cell in the Hybrid mapping.}
+        \end{minipage}%
+        \begin{minipage}{0.5\textwidth}
+        \centering
+         \includegraphics[page=19, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \caption{\label{SPattern}Diagram illustrating how the \textit{cell number} is assigned in a S pattern to each cell in the Hybrid\+ mapping. The unnumbered circles represent the ancillas each connected to the cell directly below them.}
+        \end{minipage}
+    \end{figure}
+            \begin{figure*}[btp]
+        \centering
+        \begin{subfigure}{.5\textwidth}
+        \includegraphics[page=2, width=\textwidth  , height=6cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \end{subfigure}%
+        \begin{subfigure}{.5\textwidth}
+        \includegraphics[page=3, width=\textwidth  , height=6cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \end{subfigure}%
+        
+                \caption{\label{fig:stabilisers} Examples from the family of stabilisers created by applying the series of gates illustrated in \ref{fig:entangleEdge} and \ref{fig:entangleRow}. The family consists of a stabiliser for every ancilla which is a string of Z gates that follow the line of the S-pattern with either $XXY$ or $YXX$ gates surrounding the ancilla depending on whether the row is odd or even.}
+    \end{figure*}
+       \begin{figure*}
+       \begin{minipage}{\textwidth}
+           \begin{minipage}{0.5\textwidth}
+        \includegraphics[page=9, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \tikz[baseline=-\baselineskip]\draw[ultra thick,->] (0,0) -- ++ (0,-0.5);
+        \includegraphics[page=10, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \end{minipage}%
+    \begin{minipage}{0.5\textwidth}
+        \includegraphics[page=11, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \tikz[baseline=-\baselineskip]\draw[ultra thick,->] (0,0) -- ++ (0,-0.5);
+        \includegraphics[page=12, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \end{minipage}
+        \begin{minipage}{0.5\textwidth}
+        \includegraphics[page=13, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \tikz[baseline=-\baselineskip]\draw[ultra thick,->] (0,0) -- ++ (0,-0.5);
+        \includegraphics[page=14, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+\end{minipage}%
+        \begin{minipage}{0.5\textwidth}
+        \includegraphics[page=15, width=\textwidth  , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \tikz[baseline=-\baselineskip]\draw[ultra thick,->] (0,0) -- ++ (0,-0.5);
+        \includegraphics[page=16, width=\textwidth , height=5.75cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+\end{minipage}
+\end{minipage}
+        \caption{\label{fig:verticalInteractionYodd}Diagrams showing how the portion of Pauli-strings acting on the roots of cells are modified and simplified by the Hybrid\+ mapping algorithm}
+    \end{figure*}
+\begin{figure}
+\centering
+ \begin{minipage}{0.5\textwidth}
+        \includegraphics[page=17, width=\textwidth  , height=6cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \tikz[baseline=-\baselineskip]\draw[ultra thick,->] (0,0) -- ++ (0,-0.5);
+        \includegraphics[page=18, width=\textwidth  , height=6cm]{Hybrid_Fermion_Mapping_diagrams.pdf}
+        \end{minipage}
+        \caption{\label{fig:horizontalInteractionXYYX}Diagrams showing how the portion of a Pauli-string acting on the roots of the cells is modified and simplified by the Hybrid\+ mapping algorithm}
+    \end{figure}

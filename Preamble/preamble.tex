@@ -208,3 +208,66 @@
 % *****************************************************************************
 % ******************* Better enumeration my MB*************
 \usepackage{enumitem}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsthm}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{cleveref}
+\usepackage{tikz}
+\hypersetup{hidelinks} % hyperref is already loaded by the class
+\usepackage{braket}
+\usepackage{float}
+\usepackage{color, colortbl}
+\usepackage{breqn}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{cleveref}
+\usepackage{autonum}
+\usepackage{flexisym}
+\usepackage{array}
+\usepackage{ragged2e}
+\newtheorem{definition}{Definition}
+
+
+\newenvironment{mytabular}[1][1]{%
+  \renewcommand*{\arraystretch}{#1}%
+  \begin{tabular}%
+}{%
+  \end{tabular}
+}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+% \newtheorem{definition}[theorem]{Definition}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{observation}[theorem]{Observation}
+%
+\newtheoremstyle{note}{\topsep}{\topsep}{\slshape}{}{\scshape}{}{ }{}
+\theoremstyle{note}
+\newtheorem{note}[theorem]{Note}
+%
+\newtheorem{remark}[theorem]{Remark}
+%
+\newtheorem{example}[theorem]{Example}
+\captionsetup{%
+    justification=Justified,%
+}
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\renewcommand{\arraystretch}{1.5}
+\definecolor{Gray}{gray}{0.85}
+\setlength{\tabcolsep}{-0.1em}
+\newcolumntype{a}{>{\columncolor{Gray}\centering\arraybackslash}m}
+\newcolumntype{k}{>{\centering\arraybackslash}m}
+\newcommand\+{{\footnotesize \raisebox{0.3ex}{+}}}
+\begingroup\makeatletter
+\catcode`,=\active
+\global\let\breqn@comma,
+\protected\gdef,{\ifmmode\expandafter\breqn@comma\else\expandafter\active@comma\fi}
+\endgroup
