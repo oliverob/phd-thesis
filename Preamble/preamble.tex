@@ -211,6 +211,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amsthm}
+\usepackage{bm}
 \usepackage{float}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
@@ -229,6 +230,7 @@
 \usepackage{array}
 \usepackage{ragged2e}
 \newtheorem{definition}{Definition}
+\newtheorem*{duplicate}{Theorem} % unnumbered restatement of an earlier theorem
 
 
 \newenvironment{mytabular}[1][1]{%
@@ -277,3 +279,59 @@
 \DeclareMathAccent{\invbreve}{\mathalpha}{tipa}{16}
 
 \usepackage[export]{adjustbox} % valign=c for inline IPE diagrams in PEPO section
+
+% Quantum circuits (yquant). Must be loaded before the custom shapes below, which build on yquant-circle.
+\usetikzlibrary{fit,quotes}
+% breqn makes | loop forever inside TikZ pictures (e.g. \ket in yquant circuits); restore the normal | there
+\tikzset{every picture/.append style={execute at begin picture={\mathcode`\|="026A\relax}}}
+\usepackage[compat=0.6]{yquant}
+
+\pgfdeclareshape{yquant-multictrlshape}{
+   \inheritsavedanchors[from=yquant-circle]%
+   \foreach \anc in {center, north, north east, east, south east, south, south west, west, north west} {%
+      \inheritanchor[from=yquant-circle]{\anc}%
+   }%
+   \inheritanchorborder[from=yquant-circle]%
+   \backgroundpath{%
+      \pgfpathmoveto{\pgfqpoint{-0.707107\dimexpr\xradius\relax}{-0.707107\dimexpr\yradius\relax}}%
+      \pgfpathlineto{\pgfqpoint{0.707107\dimexpr\xradius\relax}{0.707107\dimexpr\yradius\relax}}%
+      \pgfpathellipse{\pgfpointorigin}%
+                     {\pgfqpoint{\xradius}{0pt}}%
+                     {\pgfqpoint{0pt}{\yradius}}%
+   }%
+   \inheritclippath[from=yquant-circle]%
+}
+
+
+\pgfdeclareshape{yquant-varmultictrlshape}{
+   \inheritsavedanchors[from=yquant-circle]%
+   \foreach \anc in {center, north, north east, east, south east, south, south west, west, north west} {%
+      \inheritanchor[from=yquant-circle]{\anc}%
+   }%
+   \inheritanchorborder[from=yquant-circle]%
+   \backgroundpath{%
+      \pgfpathmoveto{\pgfqpoint{-0.707107\dimexpr\xradius\relax}{-0.707107\dimexpr\yradius\relax}}%
+      \pgfpathlineto{\pgfqpoint{0.707107\dimexpr\xradius\relax}{0.707107\dimexpr\yradius\relax}}%
+      \pgfpathellipse{\pgfpointorigin}%
+                     {\pgfqpoint{\xradius}{0pt}}%
+                     {\pgfqpoint{0pt}{\yradius}}%
+   }%
+   \behindbackgroundpath{%
+      \begin{pgfscope}
+         % Shift to the center and move up by 1.2 times the yradius
+         \pgftransformshift{\pgfqpoint{0pt}{\dimexpr-1\yradius\relax}}
+         % Scale the tilde
+         \pgftext[center,base]{\scalebox{1.4}{$\tilde{}$}}
+      \end{pgfscope}
+   }%
+   \inheritclippath[from=yquant-circle]%
+}
+
+\yquantset{multictrl/.style={every negative control/.style={draw, /yquant/default fill,shape=yquant-multictrlshape,radius=1.05mm}}}
+
+\yquantset{multictrlpos/.style={every positive control/.style={draw, /yquant/default fill,shape=yquant-multictrlshape,radius=1.05mm}}}
+
+\yquantset{varmultictrl/.style={/yquant/every control/.style={shape=yquant-varmultictrlshape,radius=1.05mm}}}
+
+\yquantset{plusctrl/.style={/yquant/every negative control/.style={/yquant/operators/every not}}}
+
