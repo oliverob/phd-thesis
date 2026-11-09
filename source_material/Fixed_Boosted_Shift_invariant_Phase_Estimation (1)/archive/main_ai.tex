@@ -1,0 +1,1536 @@
+\documentclass[aps,floatfix,10pt,amssymb,amsmath,superscriptaddress,nofootinbib,longbibliography,nobalancelastpage,twocolumn]{revtex4-2}
+
+\usepackage{graphicx}
+\usepackage{braket}
+\usepackage{amsfonts,amssymb,amsmath,amsthm}
+\usepackage{bbm}
+\usepackage{bm}
+\usepackage[english]{babel}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+
+\newcommand{\id}{\mathbbm{1}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cQ}{\mathcal{Q}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\ketbra}[2]{\ket{#1}\!\bra{#2}}
+
+\date{August 2026}
+
+\begin{document}
+
+\title{New and Improved Quantum Metropolis Sampling}
+\author{Oliver O'Brien}
+\affiliation{Department of Applied Mathematics and Theoretical Physics, University of Cambridge,\\ Wilberforce Road, Cambridge, CB3 0WA, United Kingdom}
+\author{Rakesh Achutha}
+\affiliation{Department of Applied Mathematics and Theoretical Physics, University of Cambridge,\\ Wilberforce Road, Cambridge, CB3 0WA, United Kingdom}
+\author{Frank Verstraete}
+\affiliation{Department of Applied Mathematics and Theoretical Physics, University of Cambridge,\\ Wilberforce Road, Cambridge, CB3 0WA, United Kingdom}
+\affiliation{Department of Physics and Astronomy, Ghent University, Krijgslaan 281, 9000 Gent, Belgium}
+
+\begin{abstract}
+We introduce a resource-efficient protocol for boosted state-independent quantum phase estimation (BSI-QPE) and use it to formulate a coherent Quantum Metropolis sampler.  The phase-estimation circuit uses complementary window functions to suppress spectral tails while preserving the state independence required by the rejection procedure.  We prove approximate stationarity of the Gibbs state by truncating the BSI-QPE operator in its energy-estimate register and controlling the truncation in operator norm.  A stopped-instrument hybrid argument then bounds the accumulated rejection error by $O(n^*\delta_\mu)$, rather than by an entrywise path count with a factor exponential in $n^*\eta$.  The same operator method gives a dimension-independent acceptance bound.  Under an explicit strict-contraction assumption on the resulting channel, its unique fixed point is close to the Gibbs state.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+The Quantum Metropolis algorithm, first proposed by Temme \emph{et al.}~\cite{Temme_2011}, is a quantum analogue of the classical Metropolis--Hastings algorithm for preparing Gibbs states.  For a Hamiltonian $H$ and inverse temperature $\beta$, the target state is
+\begin{equation}
+    \sigma_G=\frac{\e^{-\beta H}}{Z},\qquad
+    Z=\Tr(\e^{-\beta H}).
+    \label{eq:gibbs}
+\end{equation}
+The original construction combines coherent energy estimation, a reversible proposal, a Metropolis filter, and a rewinding procedure.  Its principal technical difficulty is that finite-register phase estimation has tails and the same ancillary registers must be reused coherently during rewinding.
+
+We construct a boosted state-independent phase-estimation protocol using complementary window functions.  The construction is state independent on the phase register, is unitary, and has a Fourier-space profile that can be made sharply concentrated.  The no-go result of Ref.~\cite{chen2023quantumthermalstatepreparation} forbids an exactly compactly supported shift-invariant estimator; it does not forbid the exponentially small tails used here.
+
+The proof strategy is as important as the circuit.  An entrywise expansion of a length-$n$ rejection history produces an artificial number-of-paths prefactor.  It also permits invalid collapses of intermediate sums because the factors being collapsed are not complete matrix products after the measurement labels have been fixed.  We instead truncate the BSI-QPE \emph{operator}, use a Schur bound to control the truncation in operator norm, and compare complete stopped instruments in diamond norm.  The additive error is consequently proportional to the number of instrument uses, not to the number of index paths.
+
+Section~\ref{sec:bsi} presents BSI-QPE and the tail quantity used throughout.  Section~\ref{sec:algorithm} gives the corrected Metropolis filter and rejection procedure.  Section~\ref{sec:proof} proves dimension-independent acceptance and rejection bounds.  Section~\ref{sec:convergence} states the convergence guarantee and its assumptions.  Appendix~\ref{app:windows} records the window estimates used by the proof, while Appendix~\ref{app:rewind} supplies the two-projector analysis of rejection failure.
+
+\section{Boosted state-independent quantum phase estimation}
+\label{sec:bsi}
+
+Let $H\ket{\psi_j}=E_j\ket{\psi_j}$ on a finite-dimensional system and let
+\begin{equation}
+    N=2^\eta,\qquad
+    \delta_j=\frac{NtE_j}{2\pi},\qquad
+    \varkappa=\frac{2\pi}{Nt}.
+    \label{eq:scaled-energy}
+\end{equation}
+Thus $E_j=\varkappa\delta_j$.  The phase register has basis $\ket{p}$, $p\in\mathbb Z_N$, and an additional flag qubit has basis $\ket{e}$, $e\in\{0,1\}$.  We write $s_e=(-1)^e$ and
+\begin{equation}
+ |x|_N=\min_{z\in\mathbb Z}|x-zN|
+ \label{eq:mod-distance}
+\end{equation}
+for the modular distance.
+
+\subsection{Circuit operator}
+
+Choose real functions $\alpha(x)$ and $\beta(x)$ on $\mathbb Z_N$ satisfying
+\begin{equation}
+ \alpha(x)^2+\beta(x)^2=1.
+ \label{eq:complementary}
+\end{equation}
+They are introduced by the multiplexed rotation
+\begin{equation}
+ R_Y^{(\alpha,\beta)}
+ =\sum_{x\in\mathbb Z_N}\ketbra{x}{x}\otimes
+ \begin{pmatrix}
+ \alpha(x)&\beta(x)\\[-1mm]
+ -\beta(x)&\alpha(x)
+ \end{pmatrix}.
+ \label{eq:cry}
+\end{equation}
+Controlled forward and backward time evolutions, together with Fourier transforms on the phase register, implement the $R_ZR_YR_Z$ decomposition
+\begin{multline}
+R_Z[E_jt(x+x'-N)]R_Y[2\arccos\alpha(x)]R_Z[E_jt(x-x')]\\
+=\begin{pmatrix}
+\alpha(x)\e^{iE_jtx-iE_jtN/2}&
+\beta(x)\e^{iE_jtx'-iE_jtN/2}\\
+-\beta(x)\e^{-iE_jtx'+iE_jtN/2}&
+\alpha(x)\e^{-iE_jtx+iE_jtN/2}
+\end{pmatrix},
+\label{eq:euler}
+\end{multline}
+where $x'=x+N/2\pmod N$.  This is the circuit-level origin of the half-period shift in the transform of $\alpha$.
+
+Define
+\begin{align}
+ \widehat\alpha(y)&=\frac{1}{\sqrt N}
+ \sum_{x=-N/2}^{N/2-1}\alpha(x+N/2)\e^{2\pi ixy/N},\label{eq:alphahat}\\
+ \widehat\beta(y)&=\frac{1}{\sqrt N}
+ \sum_{x=-N/2}^{N/2-1}\beta(x)\e^{2\pi ixy/N}.
+ \label{eq:betahat}
+\end{align}
+The BSI-QPE unitary is
+\begin{equation}
+ V=\frac{1}{\sqrt N}\sum_{j,p,q}G_j^{pq}\otimes\ketbra{p}{q}\otimes\ketbra{\psi_j}{\psi_j},
+ \label{eq:V}
+\end{equation}
+with
+\begin{equation}
+G_j^{pq}=\begin{pmatrix}
+(-1)^{q-p}\widehat\alpha(q-p+\delta_j)&
+\widehat\beta(q-p+\delta_j)\\
+-\widehat\beta(q-p-\delta_j)&
+(-1)^{q-p}\widehat\alpha(q-p-\delta_j)
+\end{pmatrix}.
+\label{eq:G}
+\end{equation}
+The localized quantities used below are $\widehat\alpha$ and $\widehat\beta$, rather than the time-domain functions $\alpha$ and $\beta$.  Since Eq.~\eqref{eq:V} is obtained as a product of unitary gates and Eq.~\eqref{eq:complementary} makes the multiplexed rotation unitary, $V^\dagger V=VV^\dagger=\id$.
+
+The output flag carries the sign of the estimate.  More precisely, a matrix element in output flag sector $e$ is concentrated near
+\begin{equation}
+ p-q=s_e\delta_j\pmod N.
+ \label{eq:signed-peak}
+\end{equation}
+Consequently the energy estimate is the pair $(a,e)$, rather than $a$ alone.
+
+\subsection{Tail profile and operator localization}
+
+Appendix~\ref{app:windows} gives the Fourier estimates for the chosen windows.  To avoid silently strengthening the off-grid result, we use them through the normalized envelope
+\begin{equation}
+ \frac{|(G_j^{pq})_{ef}|}{\sqrt N}
+ \leq \tau\!\left(|p-q-s_e\delta_j|_N\right),
+ \label{eq:tail-envelope}
+\end{equation}
+where one may take
+\begin{equation}
+ \tau(x)=C_A\e^{-\nu x}
+ +\frac{C_b\epsilon_b}{1+x}+C_q\e^{-cN}.
+ \label{eq:tau}
+\end{equation}
+Here $C_A,C_b,C_q,c>0$ depend on the selected window parameters but not on the system dimension.  The second term is the endpoint residual for off-grid sampling; it is absent for exactly periodic on-grid sampling.  No proof below discards it.
+
+Let $V_\mu$ be obtained from $V$ by retaining only entries satisfying
+\begin{equation}
+ |p-q-s_e\delta_j|_N\leq\mu.
+ \label{eq:band}
+\end{equation}
+The row and column tail associated with Eq.~\eqref{eq:tail-envelope} is bounded by
+\begin{equation}
+ T_\mu=4\sum_{r>\mu}\tau(r).
+ \label{eq:Tmu-def}
+\end{equation}
+For the explicit profile~\eqref{eq:tau},
+\begin{multline}
+T_\mu\leq
+\frac{4C_A}{1-\e^{-\nu}}\e^{-\nu\mu}
++4C_b\epsilon_b\log\!\frac{N}{\mu+1}\\
++4C_qN\e^{-cN}.
+\label{eq:Tmu}
+\end{multline}
+The harmless adjustment of integer endpoints is absorbed into the constants.  In the purely exponential regime we write
+\begin{equation}
+ \delta_\mu:=\frac{4C_A}{1-\e^{-\nu}}\e^{-\nu\mu};
+ \label{eq:delta-mu-exp}
+\end{equation}
+in general $\delta_\mu:=T_\mu$.  The distinction is retained in every asymptotic statement.
+
+The chosen transforms are not exactly real off grid.  Appendix~\ref{app:reality} gives
+\begin{equation}
+ |\operatorname{Im}\widehat\alpha(y)|\leq\frac{2\e^{-r}}{\sqrt N},
+ \qquad \operatorname{Im}\widehat\beta(y)=0.
+ \label{eq:reality}
+\end{equation}
+After the additional $N^{-1/2}$ in Eq.~\eqref{eq:V}, a row/column sum gives the dimension-independent operator error
+\begin{equation}
+ \delta_r:=\|V-\operatorname{Re}V\|\leq4\e^{-r}.
+ \label{eq:delta-r}
+\end{equation}
+
+\section{Quantum Metropolis algorithm}
+\label{sec:algorithm}
+
+The algorithm applies a proposal $C$ drawn from a probability measure $\dd\mu(C)$ satisfying
+\begin{equation}
+ \dd\mu(C)=\dd\mu(C^\dagger).
+ \label{eq:proposal-symmetry}
+\end{equation}
+Each update consists of an initial energy measurement, the proposal, an accept/reject measurement, and, upon rejection, a coherent rewinding sequence.
+
+\subsection{Energy measurement}
+
+Let
+\begin{equation}
+ D_{ae}=\ketbra{a,e}{a,e}\otimes\id_S,
+ \qquad P_{ae}=V^\dagger D_{ae}V.
+ \label{eq:energy-projector}
+\end{equation}
+The operators $\{P_{ae}\}_{a,e}$ are mutually orthogonal projectors and sum to the identity.  Applying $V$, measuring $(a,e)$, and applying $V^\dagger$ implements the projective instrument
+\begin{equation}
+ \cE_{ae}(\rho)=P_{ae}\rho P_{ae}.
+ \label{eq:energy-instrument}
+\end{equation}
+The associated signed estimate is $s_ea$ modulo $N$.  The phase and flag registers used by this initial measurement are persistent registers during a rejection attempt; they are initialized only at the beginning of the full Metropolis update.
+
+\subsection{Corrected Metropolis filter}
+
+For $x\in\mathbb Z$, define an odd wrapped representative
+\begin{equation}
+ \langle x\rangle_N=\begin{cases}
+ r,&-N/2<r<N/2,\quad r=x\pmod N,\\
+ 0,&x=N/2\pmod N.
+ \end{cases}
+ \label{eq:odd-wrap}
+\end{equation}
+The Nyquist value is assigned zero so that $\langle-x\rangle_N=-\langle x\rangle_N$ exactly.  It lies outside the localized energy band under the scale choice below and therefore only affects the already bounded tail map.
+
+Given the initial result $(a,e)$ and the proposed result $(b,d)$, set
+\begin{equation}
+ \widehat\Delta_{abde}=\varkappa\langle s_db-s_ea\rangle_N,
+ \qquad
+ f_{abde}=\min\{1,\e^{-\beta\widehat\Delta_{abde}}\}.
+ \label{eq:acceptance}
+\end{equation}
+This single definition is used throughout.  It obeys the exact reversal identity
+\begin{equation}
+ f_{abde}=\e^{-\beta\widehat\Delta_{abde}}f_{baed}.
+ \label{eq:metropolis-identity}
+\end{equation}
+The accept qubit is rotated by the Hermitian unitary
+\begin{equation}
+ W_{abde}=\begin{pmatrix}
+ \sqrt{1-f_{abde}}&\sqrt{f_{abde}}\\
+ \sqrt{f_{abde}}&-\sqrt{1-f_{abde}}
+ \end{pmatrix}.
+ \label{eq:W}
+\end{equation}
+Measuring that qubit gives acceptance probability $f_{abde}$.  The map obtained by accepting, uncomputing the work registers, and averaging over $C$ is denoted $\cA$.
+
+We choose the simulation scale so that true energy differences do not approach the wrap discontinuity.  A convenient sufficient choice is
+\begin{equation}
+ t=\frac{1}{16\|H\|},\qquad \mu<\frac{N}{16}.
+ \label{eq:time-choice}
+\end{equation}
+Larger constant safety margins are equally valid.  Throughout this paper controlled time evolution is treated as exact.  An implementation error must be added to the operator perturbation budget and is not analyzed here.
+
+\subsection{Rejection and rewinding}
+
+After the first reject outcome, the algorithm alternates two binary projective measurements.  The first,
+\begin{equation}
+ P_1^{ae}=P_{ae},\qquad P_0^{ae}=\id-P_{ae},
+ \label{eq:P-measurement}
+\end{equation}
+tests whether the persistent initial-energy register has returned to the recorded outcome.  The second measurement $\{Q_0^{ae},Q_1^{ae}\}$ is obtained by coherently repeating the proposal, final BSI-QPE, Metropolis rotation, and their inverses, with the same work registers as in the first accept/reject measurement.  It is projective because the rotation in Eq.~\eqref{eq:W} is applied on both sides of the flag measurement.
+
+The rejection procedure is:
+\begin{enumerate}
+ \item measure $P^{ae}$ and terminate successfully if the outcome is $1$;
+ \item otherwise measure $Q^{ae}$;
+ \item repeat for at most $n^*$ iterations.
+\end{enumerate}
+The CP map for successful rejection after exactly $n$ repetitions is $\cB(n)$, and the stopped successful-rejection map is
+\begin{equation}
+ \cR_{\leq n^*}=\sum_{n=0}^{n^*}\cB(n).
+ \label{eq:stopped-map}
+\end{equation}
+The two-projector decomposition in Appendix~\ref{app:rewind} shows that the probability of attempting rejection and not completing it by the cutoff satisfies
+\begin{equation}
+ p_{\rm fail}\leq
+ \frac{1}{2(n^*+1)}\left(\frac{n^*}{n^*+1}\right)^{n^*}
+ \leq\frac{1}{2n^*}.
+ \label{eq:failure-probability}
+\end{equation}
+Failure is not a reversible event.  To obtain a trace-preserving Markov channel we specify an operational reset: on failure the device reprepares a fixed state $\rho_0$.  If an experiment instead aborts and postselects on success, the trace-preserving fixed-point theorem below does not apply to that conditioned process without an additional bias analysis.
+
+\section{Operator-norm detailed-balance proof}
+\label{sec:proof}
+
+For a CP map $\cM$ and a full-rank state $\sigma$, define its Gibbs-stationarity defect by
+\begin{equation}
+ \mathfrak D_\sigma(\cM)=
+ \left\|\sigma^{1/2}\cM^\dagger(\id)\sigma^{1/2}-\cM(\sigma)\right\|_1.
+ \label{eq:defect}
+\end{equation}
+The unnormed operator inside Eq.~\eqref{eq:defect} is additive under sums of CP maps, so its trace norm is subadditive.  If $\cM$ is trace preserving, $\cM^\dagger(\id)=\id$ and Eq.~\eqref{eq:defect} is exactly $\|\sigma-\cM(\sigma)\|_1$.
+
+\subsection{Three norm lemmas}
+
+\begin{lemma}[Schur localization]
+\label{lem:schur}
+With $V_\mu$ defined by Eq.~\eqref{eq:band},
+\begin{equation}
+ \|V-V_\mu\|\leq\delta_\mu.
+ \label{eq:schur}
+\end{equation}
+The bound is independent of $N$ and of the dimension of the system.
+\end{lemma}
+\begin{proof}
+In every Hamiltonian eigenspace, Eq.~\eqref{eq:tail-envelope} bounds both the maximum row sum and the maximum column sum of $V-V_\mu$ by $T_\mu$.  The Schur test gives
+\begin{equation}
+ \|V-V_\mu\|\leq
+ \sqrt{\|V-V_\mu\|_1\|V-V_\mu\|_\infty}\leq T_\mu.
+\end{equation}
+The direct sum over $j$ does not change the operator norm.
+\end{proof}
+
+\begin{lemma}[Instrument perturbation]
+\label{lem:instrument}
+Let $\{D_x\}_{x\in\mathsf X}$ be mutually orthogonal outcome projectors satisfying $\sum_xD_x=\id$, let $V$ be unitary, and define
+\begin{align}
+ K_x(V)&=V^\dagger D_xV,\label{eq:KxV}\\
+ \mathsf P_V(X)&=\sum_{x\in\mathsf X}\ketbra{x}{x}_{C}
+ \otimes K_x(V)XK_x(V)^\dagger.
+ \label{eq:PV-instrument}
+\end{align}
+Thus $\mathsf P_V$ is the BSI-QPE measurement/unmeasurement instrument with its outcome retained in a classical register $C$.  For an arbitrary operator $B$, define $K_x(B)$ and $\mathsf P_B$ by the same equations with $V$ replaced by $B$.  If
+$\|V-B\|\leq\delta\leq1/4$, then
+\begin{equation}
+ \|\mathsf P_V-\mathsf P_B\|_\diamond\leq6\delta=:\epsilon.
+ \label{eq:instrument-perturbation}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write
+\begin{equation}
+ E=V-B,
+ \qquad \|E\|\leq\delta.
+ \label{eq:E-def}
+\end{equation}
+The triangle inequality and unitarity of $V$ immediately imply
+\begin{equation}
+ \|B\|=\|V-E\|\leq\|V\|+\|E\|
+ \leq1+\delta.
+ \label{eq:B-norm}
+\end{equation}
+
+We first put the two instruments into a common Stinespring form.  Introduce a second register $R$ with the same orthonormal basis as the classical register $C$, and set
+\begin{align}
+ S_V&=\sum_x\ket{x}_C\ket{x}_R\otimes K_x(V),\label{eq:SV}\\
+ S_B&=\sum_x\ket{x}_C\ket{x}_R\otimes K_x(B).
+ \label{eq:SB}
+\end{align}
+The register $R$ is an environment that dephases the retained outcome register.  Indeed, orthogonality of the states $\ket{x}_R$ gives
+\begin{align}
+ \Tr_R(S_VXS_V^\dagger)&=\mathsf P_V(X),\label{eq:PV-stinespring}\\
+ \Tr_R(S_BXS_B^\dagger)&=\mathsf P_B(X).
+ \label{eq:PB-stinespring}
+\end{align}
+Duplicating the label in $C$ and $R$ is important: tracing out $R$ removes the off-diagonal terms $\ket{x}\!\bra{y}_C$ for $x\neq y$, so Eqs.~\eqref{eq:PV-stinespring}--\eqref{eq:PB-stinespring} represent the classical instruments in Eq.~\eqref{eq:PV-instrument}, not coherent superpositions of their outcomes.
+
+We next bound the norms of the two Stinespring operators.  Since the projectors $D_x$ are orthogonal and $V$ is unitary, $K_x(V)=V^\dagger D_xV$ are also orthogonal projectors.  Therefore
+\begin{align}
+ S_V^\dagger S_V
+ &=\sum_xK_x(V)^\dagger K_x(V)\nonumber\\
+ &=\sum_x(V^\dagger D_xV)^2\nonumber\\
+ &=\sum_xV^\dagger D_xV
+ =V^\dagger\left(\sum_xD_x\right)V=\id.
+ \label{eq:SV-isometry}
+\end{align}
+Every equality has a direct origin: the first uses orthogonality of the two label registers, the second substitutes Eq.~\eqref{eq:KxV}, the third uses $D_x^2=D_x$ and $VV^\dagger=\id$, and the last uses $\sum_xD_x=\id$.  Hence
+\begin{equation}
+ \|S_V\|=1.
+ \label{eq:SV-norm}
+\end{equation}
+
+The operator $B$ need not be unitary, so $S_B$ need not be an isometry.  Nevertheless,
+\begin{align}
+ S_B^\dagger S_B
+ &=\sum_xB^\dagger D_xBB^\dagger D_xB\nonumber\\
+ &\leq\|B\|^2\sum_xB^\dagger D_xB\nonumber\\
+ &=\|B\|^2B^\dagger B
+ \leq\|B\|^4\id.
+ \label{eq:SB-bound}
+\end{align}
+For the first inequality we used the positive-operator bound
+$D_xBB^\dagger D_x\leq\|BB^\dagger\|D_x=\|B\|^2D_x$ separately in each orthogonal outcome block.  Taking square roots of Eq.~\eqref{eq:SB-bound} and using Eq.~\eqref{eq:B-norm} yields
+\begin{equation}
+ \|S_B\|\leq\|B\|^2\leq(1+\delta)^2.
+ \label{eq:SB-norm}
+\end{equation}
+
+It remains to bound $S_V-S_B$ without summing the norms of all outcomes.  For each $x$, Eq.~\eqref{eq:E-def} gives the exact expansion
+\begin{align}
+ K_x(V)-K_x(B)
+ &=V^\dagger D_xV-B^\dagger D_xB\nonumber\\
+ &=E^\dagger D_xV+B^\dagger D_xE.
+ \label{eq:K-difference}
+\end{align}
+Define the corresponding direct-sum operators
+\begin{align}
+ T_1&=\sum_x\ket{x}_C\ket{x}_R\otimes E^\dagger D_xV,\\
+ T_2&=\sum_x\ket{x}_C\ket{x}_R\otimes B^\dagger D_xE.
+\end{align}
+Then $S_V-S_B=T_1+T_2$.  The first term obeys
+\begin{align}
+ T_1^\dagger T_1
+ &=\sum_xV^\dagger D_xEE^\dagger D_xV\nonumber\\
+ &\leq\delta^2\sum_xV^\dagger D_xV
+ =\delta^2\id,
+ \label{eq:T1-bound}
+\end{align}
+because $EE^\dagger\leq\|E\|^2\id\leq\delta^2\id$.  Similarly,
+\begin{align}
+ T_2^\dagger T_2
+ &=\sum_xE^\dagger D_xBB^\dagger D_xE\nonumber\\
+ &\leq\|B\|^2\sum_xE^\dagger D_xE
+ =\|B\|^2E^\dagger E
+ \leq\|B\|^2\delta^2\id.
+ \label{eq:T2-bound}
+\end{align}
+Equations~\eqref{eq:T1-bound}--\eqref{eq:T2-bound} imply
+\begin{equation}
+ \|S_V-S_B\|\leq\|T_1\|+\|T_2\|
+ \leq\delta(1+\|B\|)
+ \leq\delta(2+\delta).
+ \label{eq:S-difference}
+\end{equation}
+This is the step that prevents a factor $|\mathsf X|$: the orthogonal direct sum is bounded before any scalar summation over outcomes.
+
+For completeness, we now derive the Stinespring continuity inequality used in the last step.  If $R_1,R_2$ map an input space to an output space tensored with an environment, define
+\begin{equation}
+ \Phi_{R_1,R_2}(X)=\Tr_R(R_1XR_2^\dagger).
+\end{equation}
+Then
+\begin{equation}
+ \|\Phi_{R_1,R_2}\|_\diamond\leq\|R_1\|\,\|R_2\|.
+ \label{eq:cross-map}
+\end{equation}
+To see this, tensor all operators with an arbitrary reference identity and use trace-norm duality.  For every trace-class $X$ and every test operator $Y$ with $\|Y\|\leq1$,
+\begin{align}
+ \left|\Tr\!\left[Y\Tr_R(R_1XR_2^\dagger)\right]\right|
+ &=\left|\Tr\!\left[R_2^\dagger(Y\otimes\id_R)R_1X\right]\right|\nonumber\\
+ &\leq\|R_2^\dagger(Y\otimes\id_R)R_1\|\,\|X\|_1\nonumber\\
+ &\leq\|R_2\|\,\|R_1\|\,\|X\|_1.
+\end{align}
+Taking the supremum over $Y$, then over $X$ and the reference system, proves Eq.~\eqref{eq:cross-map}.
+
+Let $\Delta S=S_V-S_B$.  Equations~\eqref{eq:PV-stinespring}--\eqref{eq:PB-stinespring} give the exact telescoping identity
+\begin{equation}
+ (\mathsf P_V-\mathsf P_B)(X)
+ =\Tr_R\!\left(\Delta SXS_V^\dagger
+ +S_BX\Delta S^\dagger\right).
+ \label{eq:instrument-telescope}
+\end{equation}
+Applying Eq.~\eqref{eq:cross-map} to the two terms, followed by Eqs.~\eqref{eq:SV-norm}, \eqref{eq:SB-norm}, and \eqref{eq:S-difference}, gives
+\begin{align}
+ \|\mathsf P_V-\mathsf P_B\|_\diamond
+ &\leq\|\Delta S\|(\|S_V\|+\|S_B\|)\nonumber\\
+ &\leq\delta(2+\delta)\left[1+(1+\delta)^2\right].
+ \label{eq:instrument-exact-constant}
+\end{align}
+The scalar factor $(2+\delta)[1+(1+\delta)^2]$ is increasing for $\delta\geq0$.  At $\delta=1/4$ it equals
+\begin{equation}
+ \frac94\left(1+\frac{25}{16}\right)
+ =\frac{369}{64}<6.
+\end{equation}
+Thus Eq.~\eqref{eq:instrument-exact-constant} implies
+$\|\mathsf P_V-\mathsf P_B\|_\diamond\leq6\delta$ for every $0\leq\delta\leq1/4$.  Notice that $\mathsf P_B$ is completely positive even though it need not be trace preserving; trace preservation is not required for this perturbation bound.  Finally, discarding or classically coarse-graining the outcome register is a quantum channel applied after the instrument and therefore cannot increase the diamond distance.
+\end{proof}
+
+\begin{lemma}[Stopped hybrid]
+\label{lem:hybrid}
+Represent a stopped CP instrument on an enlarged space containing its classical history and a live/absorbed flag.  Suppose the resulting physical and auxiliary round maps $\Phi_k$ and $\widetilde\Phi_k$, $k=1,\ldots,L$, satisfy
+\begin{equation}
+ \|\Phi_k\|_\diamond\leq1,
+ \qquad
+ \|\Phi_k-\widetilde\Phi_k\|_\diamond\leq\epsilon.
+ \label{eq:round-assumptions}
+\end{equation}
+Let $\mathcal J$ be the CP input embedding and $\mathcal O$ the CP output operation that selects the desired terminal sectors and discards the history registers, with
+$\|\mathcal J\|_\diamond,\|\mathcal O\|_\diamond\leq1$.  Define
+\begin{align}
+ \cM&=\mathcal O\circ\Phi_L\circ\cdots\circ\Phi_1\circ\mathcal J,
+ \label{eq:M-layered}\\
+ \widetilde\cM&=\mathcal O\circ\widetilde\Phi_L\circ\cdots
+ \circ\widetilde\Phi_1\circ\mathcal J.
+ \label{eq:Mtilde-layered}
+\end{align}
+Then
+\begin{equation}
+ \|\cM-\widetilde\cM\|_\diamond
+ \leq(1+\epsilon)^L-1=:r_L.
+ \label{eq:hybrid}
+\end{equation}
+If $L\epsilon\leq1$, then $r_L\leq \e L\epsilon$.
+\end{lemma}
+\begin{proof}
+We first explain why an adaptively stopped instrument has the fixed-depth form in Eqs.~\eqref{eq:M-layered}--\eqref{eq:Mtilde-layered}.  Add a finite-dimensional classical flag register with mutually orthogonal sectors
+\begin{equation}
+ \ket{\mathrm{live}},\qquad
+ \ket{\mathrm{success}},\qquad
+ \ket{\mathrm{failure}},
+ \label{eq:stopping-flags}
+\end{equation}
+and a history register in which every measurement result is recorded.  During round $k$, the controlled map $\Phi_k$ applies the physical primitive only in the live sector.  It writes the new outcome into the history register and changes the flag if a stopping condition has been reached.  In the success and failure sectors, $\Phi_k$ acts as the identity.  Therefore a history that stops after $s<L$ physical uses is simply padded by identity actions in rounds $s+1,\ldots,L$.  Every possible history is consequently contained in one composition of exactly $L$ round maps; it is not necessary to write a separate CP map for every path and then sum their error bounds.
+
+The physical round maps are completely positive and trace preserving when all their classical outcomes are retained.  If some terminal outcomes are selected, they are completely positive and trace nonincreasing.  In either case
+\begin{equation}
+ \|\Phi_k\|_\diamond\leq1.
+ \label{eq:physical-round-contraction}
+\end{equation}
+For a CP map this follows from
+$\|\Phi_k\|_\diamond=\|\Phi_k^\dagger(\id)\|$ and the trace-nonincreasing condition
+$\Phi_k^\dagger(\id)\leq\id$.  The input embedding $\mathcal J$ merely appends fixed flag and history states, so its diamond norm is $1$.  The output map $\mathcal O$ consists of a terminal-sector projection, classical coarse graining, and partial traces, and hence is CP and trace nonincreasing with diamond norm at most $1$.  This establishes the contractions asserted in the lemma.
+
+Replacing the primitive instrument in the live sector changes the full controlled round map by the same diamond error: the two round maps agree identically on the absorbed sectors, while tensoring with flags, applying exact classical control, and recording an outcome are complete contractions.  Thus the per-use estimate gives the second inequality in Eq.~\eqref{eq:round-assumptions}.  The triangle inequality then also gives, without a separate hypothesis,
+\begin{align}
+ \|\widetilde\Phi_k\|_\diamond
+ &\leq\|\Phi_k\|_\diamond
+ +\|\widetilde\Phi_k-\Phi_k\|_\diamond\nonumber\\
+ &\leq1+\epsilon.
+ \label{eq:aux-round-norm}
+\end{align}
+
+We now compare the two fixed-depth compositions.  The following telescoping identity is exact:
+\begin{multline}
+ \Phi_L\circ\cdots\circ\Phi_1
+ -\widetilde\Phi_L\circ\cdots\circ\widetilde\Phi_1\\
+ =\sum_{k=1}^L
+ \Phi_L\circ\cdots\circ\Phi_{k+1}
+ \circ(\Phi_k-\widetilde\Phi_k)
+ \circ\widetilde\Phi_{k-1}\circ\cdots
+ \circ\widetilde\Phi_1.
+ \label{eq:hybrid-telescope}
+\end{multline}
+At the endpoints, the product to the left of the difference is absent for $k=L$, and the product to its right is absent for $k=1$; an absent product means the identity map.  To verify Eq.~\eqref{eq:hybrid-telescope}, begin with the all-physical composition and replace the maps in the order $\Phi_1,\Phi_2,\ldots,\Phi_L$.  The $k$th summand is exactly the change made when $\Phi_k$ is replaced: the later maps $\Phi_{k+1},\ldots,\Phi_L$ are still physical, whereas the earlier maps $\Phi_1,\ldots,\Phi_{k-1}$ have already been replaced.  Adding these successive differences cancels every intermediate composition and leaves only the all-physical composition minus the all-auxiliary composition.
+
+The diamond norm is submultiplicative under composition:
+\begin{equation}
+ \|\mathcal X\circ\mathcal Y\|_\diamond
+ \leq\|\mathcal X\|_\diamond\|\mathcal Y\|_\diamond.
+ \label{eq:diamond-submultiplicative}
+\end{equation}
+This follows directly from the definition, since for every reference system and operator $X$,
+\begin{align}
+ \|[(\mathcal X\circ\mathcal Y)\otimes\id](X)\|_1
+ &\leq\|\mathcal X\|_\diamond
+ \|[(\mathcal Y\otimes\id)(X)]\|_1\nonumber\\
+ &\leq\|\mathcal X\|_\diamond\|\mathcal Y\|_\diamond
+ \|X\|_1.
+\end{align}
+
+Apply $\mathcal O$ and $\mathcal J$ to Eq.~\eqref{eq:hybrid-telescope}, then use the triangle inequality and Eq.~\eqref{eq:diamond-submultiplicative}.  Denote the diamond norm of the $k$th resulting summand by $h_k$.  It is bounded by
+\begin{align}
+ h_k
+ &\leq\|\mathcal O\|_\diamond
+ \left(\prod_{s=k+1}^{L}\|\Phi_s\|_\diamond\right)
+ \nonumber\\
+ &\quad\times\|\Phi_k-\widetilde\Phi_k\|_\diamond
+ \left(\prod_{s=1}^{k-1}\|\widetilde\Phi_s\|_\diamond\right)
+ \|\mathcal J\|_\diamond\nonumber\\
+ &\leq
+ 1\cdot1^{L-k}\cdot\epsilon\cdot
+ (1+\epsilon)^{k-1}\cdot1
+ =\epsilon(1+\epsilon)^{k-1}.
+ \label{eq:kth-hybrid-term}
+\end{align}
+Summing Eq.~\eqref{eq:kth-hybrid-term} over $k=1,\ldots,L$ gives
+\begin{align}
+ \|\cM-\widetilde\cM\|_\diamond
+ &\leq\epsilon\sum_{k=1}^L(1+\epsilon)^{k-1}\nonumber\\
+ &=(1+\epsilon)^L-1.
+ \label{eq:hybrid-geometric}
+\end{align}
+For $\epsilon>0$, the last equality is the finite geometric-series identity; for $\epsilon=0$, both sides vanish directly.  This proves Eq.~\eqref{eq:hybrid}.  Crucially, the sum in Eq.~\eqref{eq:hybrid-geometric} has one term per \emph{instrument use}, not one term per classical history.
+
+Finally, if $L\epsilon\leq1$, then
+\begin{align}
+ r_L=(1+\epsilon)^L-1
+ &\leq\e^{L\epsilon}-1\nonumber\\
+ &=\int_0^{L\epsilon}\e^s\,\dd s
+ \leq\e L\epsilon.
+\end{align}
+The first inequality uses $\log(1+\epsilon)\leq\epsilon$; the last uses $0\leq s\leq L\epsilon\leq1$, so $\e^s\leq\e$.  This proves the stated small-error bound.
+\end{proof}
+
+For comparison, a term of the entrywise form $N^{4n}\e^{-n\nu\mu}$ decays in $n$ only if
+\begin{equation}
+ \nu\mu>4\log N=4\eta\log2,
+ \label{eq:old-geometric-condition}
+\end{equation}
+so a condition independent of $N$ would be insufficient.  We do not use that estimate.  Equation~\eqref{eq:hybrid} instead requires the directly controllable condition $L\epsilon\lesssim1$.
+
+\subsection{Energy sandwich}
+
+Let $\pi_j=\e^{-\beta E_j}/Z$ and let
+\begin{equation}
+ \Pi_j(\Omega)=\sum_{\ell:|E_\ell-E_j|\leq\Omega}
+ \ketbra{\psi_\ell}{\psi_\ell}.
+\end{equation}
+
+\begin{lemma}[Energy sandwich]
+\label{lem:sandwich}
+If $A_j\geq0$ and $A_j=\Pi_j(\Omega)A_j\Pi_j(\Omega)$, then
+\begin{equation}
+ \left\|\sigma_G^{1/2}A_j\sigma_G^{1/2}-\pi_jA_j\right\|_1
+ \leq(\e^{\beta\Omega}-1)\pi_j\Tr A_j.
+ \label{eq:sandwich}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write $\Pi=\Pi_j(\Omega)$ for brevity.  Because $\Pi$ is a sum of spectral projectors of $H$, it commutes with every function of $H$, in particular with $\sigma_G^{1/2}$.  The support assumption $A_j=\Pi A_j\Pi$ therefore gives
+\begin{align}
+ \sigma_G^{1/2}A_j\sigma_G^{1/2}
+ &=(\Pi\sigma_G^{1/2}\Pi)A_j
+   (\Pi\sigma_G^{1/2}\Pi).
+ \label{eq:sandwich-restriction}
+\end{align}
+This equality is the precise meaning of restricting $\sigma_G^{1/2}$ to the support window; no claim is made that $\sigma_G^{1/2}$ is close to $\sqrt{\pi_j}\id$ outside $\operatorname{ran}\Pi$.
+
+On the subspace $\operatorname{ran}\Pi$, define
+\begin{align}
+ R_j
+ &:=\pi_j^{-1/2}\Pi\sigma_G^{1/2}\Pi\nonumber\\
+ &=\sum_{\ell:\,|E_\ell-E_j|\leq\Omega}
+ \sqrt{\frac{\pi_\ell}{\pi_j}}\ketbra{\psi_\ell}{\psi_\ell}\nonumber\\
+ &=\sum_{\ell:\,|E_\ell-E_j|\leq\Omega}
+ \e^{-\frac\beta2(E_\ell-E_j)}
+ \ketbra{\psi_\ell}{\psi_\ell}.
+ \label{eq:Rj}
+\end{align}
+The normalization $Z$ cancels in the ratio $\pi_\ell/\pi_j$, which explains the last equality.  Equation~\eqref{eq:sandwich-restriction} now becomes the exact identity
+\begin{equation}
+ \sigma_G^{1/2}A_j\sigma_G^{1/2}
+ =\pi_jR_jA_jR_j.
+ \label{eq:sandwich-R}
+\end{equation}
+
+Let $\id_\Pi$ denote the identity on $\operatorname{ran}\Pi$ and define
+\begin{equation}
+ K_j=R_j-\id_\Pi.
+ \label{eq:Kj}
+\end{equation}
+For every energy label included in $\Pi$, the localization condition gives
+\begin{equation}
+ -\Omega\leq E_\ell-E_j\leq\Omega.
+\end{equation}
+Since $\beta\geq0$, the corresponding eigenvalue of $R_j$ lies in the interval
+\begin{equation}
+ \e^{-\beta\Omega/2}
+ \leq\e^{-\frac\beta2(E_\ell-E_j)}
+ \leq\e^{\beta\Omega/2}.
+ \label{eq:R-spectrum}
+\end{equation}
+The operator $K_j$ is diagonal and Hermitian in this energy basis.  Its norm is therefore the largest absolute deviation of these eigenvalues from $1$:
+\begin{align}
+ \|K_j\|
+ &\leq\max\left\{
+ \e^{\beta\Omega/2}-1,
+ 1-\e^{-\beta\Omega/2}\right\}\nonumber\\
+ &=\e^{\beta\Omega/2}-1=:k_\Omega.
+ \label{eq:Kj-bound}
+\end{align}
+The second line follows from
+$\e^x-1\geq1-\e^{-x}$ for $x\geq0$, which is equivalent to $\e^x+\e^{-x}\geq2$.
+
+Using $R_j=\id_\Pi+K_j$ and $\id_\Pi A_j=A_j\id_\Pi=A_j$, we may expand without approximation:
+\begin{align}
+ R_jA_jR_j-A_j
+ &=(\id_\Pi+K_j)A_j(\id_\Pi+K_j)-A_j\nonumber\\
+ &=K_jA_j+A_jK_j+K_jA_jK_j.
+ \label{eq:sandwich-expansion}
+\end{align}
+For the trace norm we use the Schatten ideal inequalities
+\begin{equation}
+ \|XY\|_1\leq\|X\|\,\|Y\|_1,
+ \qquad
+ \|YX\|_1\leq\|Y\|_1\,\|X\|,
+ \label{eq:ideal-property}
+\end{equation}
+which follow, for example, from trace-norm duality.  Since $A_j\geq0$, its trace norm is exactly its trace:
+\begin{equation}
+ \|A_j\|_1=\Tr A_j.
+ \label{eq:positive-trace}
+\end{equation}
+Applying the triangle inequality and Eqs.~\eqref{eq:ideal-property}--\eqref{eq:positive-trace} term by term in Eq.~\eqref{eq:sandwich-expansion} gives
+\begin{align}
+ \|R_jA_jR_j-A_j\|_1
+ &\leq\|K_jA_j\|_1+\|A_jK_j\|_1
+       +\|K_jA_jK_j\|_1\nonumber\\
+ &\leq\left(2\|K_j\|+\|K_j\|^2\right)\Tr A_j\nonumber\\
+ &\leq(2k_\Omega+k_\Omega^2)\Tr A_j.
+ \label{eq:sandwich-trace-bound}
+\end{align}
+Finally, the definition $k_\Omega=\e^{\beta\Omega/2}-1$ gives the exact scalar simplification
+\begin{align}
+ 2k_\Omega+k_\Omega^2
+ &=(1+k_\Omega)^2-1\nonumber\\
+ &=\e^{\beta\Omega}-1.
+ \label{eq:k-simplification}
+\end{align}
+Combining Eqs.~\eqref{eq:sandwich-R}, \eqref{eq:sandwich-trace-bound}, and \eqref{eq:k-simplification}, and using homogeneity of the trace norm, yields
+\begin{align}
+ \left\|\sigma_G^{1/2}A_j\sigma_G^{1/2}-\pi_jA_j\right\|_1
+ &=\pi_j\|R_jA_jR_j-A_j\|_1\nonumber\\
+ &\leq(\e^{\beta\Omega}-1)\pi_j\Tr A_j,
+\end{align}
+which is Eq.~\eqref{eq:sandwich}.
+\end{proof}
+
+\subsection{Acceptance map}
+
+Set
+\begin{equation}
+ B_{\mu,r}=\operatorname{Re}V_\mu,\qquad
+ \delta_A=\delta_\mu+\delta_r,\qquad
+ \epsilon_A=6\delta_A.
+ \label{eq:accept-aux}
+\end{equation}
+The auxiliary acceptance map $\widetilde\cA$ is obtained by using $B_{\mu,r}$ in the initial and final energy instruments.  The circuit contains at most four occurrences of the corresponding primitive instruments, so
+\begin{equation}
+ r_A=(1+\epsilon_A)^4-1,\qquad
+ \|\cA-\widetilde\cA\|_\diamond\leq r_A.
+ \label{eq:rA}
+\end{equation}
+
+\begin{theorem}[Acceptance defect]
+\label{thm:acceptance}
+Assume Eqs.~\eqref{eq:proposal-symmetry} and \eqref{eq:time-choice}, and $\delta_A\leq1/4$.  With
+\begin{equation}
+ \Omega_A=2\varkappa\mu,
+ \label{eq:OmegaA}
+\end{equation}
+the acceptance map satisfies
+\begin{equation}
+ \mathfrak D_{\sigma_G}(\cA)
+ \leq(\e^{\beta\Omega_A}-1)(1+r_A)+2r_A.
+ \label{eq:acceptance-bound}
+\end{equation}
+\end{theorem}
+\begin{proof}
+We resolve every discarded work register in a fixed orthonormal
+basis.  Together with $C$, the two signed outcomes
+$x=(a,e)$ and $y=(b,d)$, these basis labels form a complete Kraus
+label $\lambda$.  Write
+\begin{equation}
+ \widehat\Delta_\lambda
+ =\varkappa\langle s_db-s_ea\rangle_N,
+ \qquad
+ q_\lambda=\e^{-\beta\widehat\Delta_\lambda}>0.
+ \label{eq:accept-q}
+\end{equation}
+The accepted auxiliary Kraus operator can be written
+\begin{equation}
+ L_\lambda=\sqrt{f_\lambda}\,X_\lambda,
+ \qquad f_\lambda=f_{abde},
+ \label{eq:accept-kraus}
+\end{equation}
+where $X_\lambda$ is the complete operator product containing the two
+localized energy instruments, the proposal, and the exact work-register
+operations, but not the scalar accept amplitude; the set of all such
+labels is denoted by $\Lambda$, with the discrete sums included in
+$\dd\nu(\lambda)$.
+
+We next verify the reversal relation used below.  Let $\bar\lambda$
+denote the label obtained by reversing all resolved work labels and making
+the substitutions
+\begin{equation}
+ C\longleftrightarrow C^\dagger,\qquad
+ x\longleftrightarrow y.
+ \label{eq:accept-reversal}
+\end{equation}
+Every energy-instrument factor is of the form
+$K_x(B_{\mu,r})=B_{\mu,r}^\dagger D_xB_{\mu,r}$ and is therefore
+self-adjoint.  Reversing the order of the factors consequently gives
+\begin{equation}
+ X_{\bar\lambda}=X_\lambda^\dagger,\qquad
+ \dd\nu(\bar\lambda)=\dd\nu(\lambda),\qquad
+ \widehat\Delta_{\bar\lambda}=-\widehat\Delta_\lambda.
+ \label{eq:accept-X-reversal}
+\end{equation}
+The equality of measures uses Eq.~\eqref{eq:proposal-symmetry}; the
+discrete resolved labels are related by a bijection.  Equations
+\eqref{eq:metropolis-identity}, \eqref{eq:accept-q}, and
+\eqref{eq:accept-kraus} now imply the exact identities
+\begin{align}
+ f_\lambda&=q_\lambda f_{\bar\lambda},
+ &q_{\bar\lambda}&=q_\lambda^{-1},
+ \label{eq:accept-f-reversal}\\
+ L_\lambda^\dagger
+ &=\sqrt{q_\lambda}\,L_{\bar\lambda}.
+ \label{eq:accept-L-reversal}
+\end{align}
+No approximation has been made in Eqs.~\eqref{eq:accept-X-reversal}--
+\eqref{eq:accept-L-reversal}.
+
+Let $P_j=\ketbra{\psi_j}{\psi_j}$.  For every pair $(\lambda,j)$
+define the positive operator and its reference weight by
+\begin{align}
+ A_{\lambda j}
+ &:=q_\lambda^{-1}L_\lambda P_jL_\lambda^\dagger\geq0,
+ \label{eq:accept-positive-block}\\
+ E_{\lambda j}^*&:=E_j+\widehat\Delta_\lambda,\qquad
+ w_{\lambda j}:=\frac{\e^{-\beta E_{\lambda j}^*}}{Z}
+ =\pi_jq_\lambda.
+ \label{eq:accept-reference-weight}
+\end{align}
+The Kraus expansion of the forward image is therefore
+\begin{align}
+ \widetilde\cA(\sigma_G)
+ &=\int_\Lambda\sum_j\pi_j
+ L_\lambda P_jL_\lambda^\dagger\,\dd\nu(\lambda)
+ \nonumber\\
+ &=\int_\Lambda\sum_jw_{\lambda j}A_{\lambda j}
+ \,\dd\nu(\lambda).
+ \label{eq:accept-forward-blocks}
+\end{align}
+For the adjoint effect, Eq.~\eqref{eq:accept-L-reversal} and the
+measure-preserving change of variable $\lambda\mapsto\bar\lambda$ give
+\begin{align}
+ \widetilde\cA^\dagger(\id)
+ &=\int_\Lambda L_\lambda^\dagger L_\lambda
+ \,\dd\nu(\lambda)\nonumber\\
+ &=\int_\Lambda q_\lambda
+ L_{\bar\lambda}L_{\bar\lambda}^\dagger
+ \,\dd\nu(\lambda)\nonumber\\
+ &=\int_\Lambda q_\lambda^{-1}
+ L_\lambda L_\lambda^\dagger
+ \,\dd\nu(\lambda)\nonumber\\
+ &=\int_\Lambda\sum_jA_{\lambda j}
+ \,\dd\nu(\lambda).
+ \label{eq:accept-adjoint-blocks}
+\end{align}
+The third line uses $q_{\bar\lambda}=q_\lambda^{-1}$, and the last
+uses $\sum_jP_j=\id$.  This displays explicitly the same positive
+blocks on the two sides of the stationarity defect.
+
+We now establish their support.  A nonzero matrix element of
+$L_\lambda P_j$ with output energy label $\ell$ obeys the two band
+conditions
+\begin{equation}
+ |s_ea-\delta_j|_N\leq\mu,\qquad
+ |s_db-\delta_\ell|_N\leq\mu.
+ \label{eq:accept-two-bands}
+\end{equation}
+The triangle inequality for the modular distance gives
+\begin{align}
+ |E_\ell-E_{\lambda j}^*|
+ &=\left|E_\ell-E_j
+ -\varkappa\langle s_db-s_ea\rangle_N\right|
+ \nonumber\\
+ &\leq2\varkappa\mu=\Omega_A.
+ \label{eq:accept-mismatch}
+\end{align}
+Equation~\eqref{eq:time-choice} ensures that the localized differences
+do not cross the Nyquist convention in Eq.~\eqref{eq:odd-wrap}.  Thus,
+with
+\begin{equation}
+ \Pi_{\lambda j}
+ :=\sum_{\ell:\,|E_\ell-E_{\lambda j}^*|\leq\Omega_A}P_\ell,
+ \label{eq:accept-support-projector}
+\end{equation}
+we have
+$A_{\lambda j}=\Pi_{\lambda j}A_{\lambda j}\Pi_{\lambda j}$.
+
+For clarity, we spell out the slightly more general form of
+Lemma~\ref{lem:sandwich} needed here, because the reference energy
+$E_{\lambda j}^*$ need not itself be an eigenvalue.  For any real
+$E^*$, set $w^*=\e^{-\beta E^*}/Z$.  If $A\geq0$ is supported on
+$|E_\ell-E^*|\leq\Omega$, then on that support
+\begin{equation}
+ R^*:=(w^*)^{-1/2}\Pi\sigma_G^{1/2}\Pi
+ =\sum_{\ell:\,|E_\ell-E^*|\leq\Omega}
+ \e^{-\frac\beta2(E_\ell-E^*)}P_\ell.
+ \label{eq:continuous-reference-R}
+\end{equation}
+Consequently, with $k_\Omega=\e^{\beta\Omega/2}-1$,
+\begin{align}
+ \|R^*-\id_\Pi\|&\leq k_\Omega,
+ \label{eq:continuous-reference-norm}\\
+ \|\sigma_G^{1/2}A\sigma_G^{1/2}-w^*A\|_1
+ &=w^*\|R^*AR^*-A\|_1\nonumber\\
+ &\leq w^*(2k_\Omega+k_\Omega^2)\Tr A\nonumber\\
+ &=(\e^{\beta\Omega}-1)w^*\Tr A.
+ \label{eq:continuous-reference-sandwich}
+\end{align}
+The middle inequality follows by writing
+$R^*=\id_\Pi+(R^*-\id_\Pi)$ and applying the Schatten ideal
+inequalities~\eqref{eq:ideal-property} to the resulting three terms,
+exactly as in Eqs.~\eqref{eq:sandwich-expansion}--
+\eqref{eq:k-simplification}.
+
+Subtracting Eq.~\eqref{eq:accept-forward-blocks} from
+$\sigma_G^{1/2}$ times Eq.~\eqref{eq:accept-adjoint-blocks} on both
+sides, then using the triangle inequality for the Bochner integral and
+Eq.~\eqref{eq:continuous-reference-sandwich}, yields
+\begin{align}
+ \mathfrak D_{\sigma_G}(\widetilde\cA)
+ &\leq\int_\Lambda\sum_j
+ \|\sigma_G^{1/2}A_{\lambda j}\sigma_G^{1/2}
+ -w_{\lambda j}A_{\lambda j}\|_1\,\dd\nu(\lambda)
+ \nonumber\\
+ &\leq(\e^{\beta\Omega_A}-1)
+ \int_\Lambda\sum_jw_{\lambda j}
+ \Tr A_{\lambda j}\,\dd\nu(\lambda)\nonumber\\
+ &=(\e^{\beta\Omega_A}-1)
+ \Tr\widetilde\cA(\sigma_G).
+ \label{eq:accept-aux-defect}
+\end{align}
+The last equality is the trace of Eq.~\eqref{eq:accept-forward-blocks}.
+Since the physical acceptance map is trace nonincreasing,
+Eq.~\eqref{eq:rA} gives
+\begin{align}
+ \Tr\widetilde\cA(\sigma_G)
+ &\leq\Tr\cA(\sigma_G)
+ +\|[\widetilde\cA-\cA](\sigma_G)\|_1\nonumber\\
+ &\leq1+r_A.
+ \label{eq:accept-trace-bound}
+\end{align}
+
+It remains only to transfer the estimate back to the physical map.  Put
+$\Delta_A=\cA-\widetilde\cA$.  The output term satisfies
+\begin{equation}
+ \|\Delta_A(\sigma_G)\|_1
+ \leq\|\Delta_A\|_\diamond\|\sigma_G\|_1\leq r_A.
+ \label{eq:accept-output-perturbation}
+\end{equation}
+The adjoint term obeys the same bound.  Indeed, trace-norm duality and
+the definition of the diamond norm give
+\begin{align}
+ &\|\sigma_G^{1/2}\Delta_A^\dagger(\id)
+ \sigma_G^{1/2}\|_1\nonumber\\
+ &\quad=\sup_{\substack{Y=Y^\dagger\\\|Y\|\leq1}}
+ \left|\Tr\!\left[\Delta_A
+ (\sigma_G^{1/2}Y\sigma_G^{1/2})\right]\right|\nonumber\\
+ &\quad\leq\|\Delta_A\|_\diamond
+ \sup_{\|Y\|\leq1}
+ \|\sigma_G^{1/2}Y\sigma_G^{1/2}\|_1
+ \leq r_A.
+ \label{eq:accept-adjoint-perturbation}
+\end{align}
+Here
+$\|\sigma_G^{1/2}Y\sigma_G^{1/2}\|_1
+\leq\|Y\|\Tr\sigma_G\leq1$ by Schatten H\"older.  Finally, insert
+$\widetilde\cA$ between the two terms in Eq.~\eqref{eq:defect} and use
+Eqs.~\eqref{eq:accept-aux-defect}--
+\eqref{eq:accept-adjoint-perturbation}:
+\begin{align}
+ \mathfrak D_{\sigma_G}(\cA)
+ &\leq\mathfrak D_{\sigma_G}(\widetilde\cA)
+ +2r_A\nonumber\\
+ &\leq(\e^{\beta\Omega_A}-1)(1+r_A)+2r_A.
+\end{align}
+This is Eq.~\eqref{eq:acceptance-bound}.
+\end{proof}
+
+This proof also shows why the flag signs cannot be omitted: without them Eq.~\eqref{eq:accept-mismatch} is false even for a perfectly localized phase estimate.
+
+\subsection{Stopped rejection map}
+
+For rejection we truncate only the BSI-QPE instruments acting on the persistent initial-energy register.  The $Q$ measurements act on a separate persistent register, remain contractions, and need not be expanded entrywise.  Let $\widetilde\cR_{\leq n^*}$ denote the resulting auxiliary stopped map.  At most
+\begin{equation}
+ L_R=n^*+2
+ \label{eq:LR}
+\end{equation}
+$P$-type energy instruments occur in any stopped history, including the initial preparation and final successful test.  Set
+\begin{equation}
+ \epsilon_R=6\delta_\mu,\qquad
+ r_R=(1+\epsilon_R)^{L_R}-1.
+ \label{eq:rR}
+\end{equation}
+Lemmas~\ref{lem:instrument} and \ref{lem:hybrid} give
+\begin{equation}
+ \|\cR_{\leq n^*}-\widetilde\cR_{\leq n^*}\|_\diamond\leq r_R.
+ \label{eq:reject-hybrid}
+\end{equation}
+
+\begin{lemma}[Linear bandwidth growth]
+\label{lem:band-growth}
+In a length-$n$ term of $\widetilde\cR_{\leq n^*}$, nonzero matrix elements obey
+\begin{equation}
+ |\delta_\ell-\delta_j|_N\leq(2n+4)\mu.
+ \label{eq:band-growth}
+\end{equation}
+\end{lemma}
+\begin{proof}
+The initial localized energy instrument places the persistent phase-register index within $2\mu$ of its recorded sector: one bandwidth arises from $B_\mu$ and one from $B_\mu^\dagger$.  Every intervening $P_0$ Kraus operator changes that index by at most another $2\mu$.  The final $P_1$ test contributes the last $2\mu$.  The triangle inequality on the circle gives $2\mu+2n\mu+2\mu=(2n+4)\mu$.  The $Q$ maps do not act on this register and therefore cannot enlarge the bound.  In particular the growth is linear, not quadratic, in $n$.
+\end{proof}
+
+\begin{theorem}[Rejection defect]
+\label{thm:rejection}
+Assume Eqs.~\eqref{eq:proposal-symmetry} and \eqref{eq:time-choice},
+$\delta_\mu\leq1/4$, and $(2n^*+4)\mu<N/2$.  Define
+\begin{equation}
+ \Omega_R=\varkappa(2n^*+4)\mu.
+ \label{eq:OmegaR}
+\end{equation}
+Then
+\begin{equation}
+ \mathfrak D_{\sigma_G}(\cR_{\leq n^*})
+ \leq(\e^{\beta\Omega_R}-1)(1+r_R)+2r_R.
+ \label{eq:rejection-bound}
+\end{equation}
+\end{theorem}
+\begin{proof}
+The proof has four parts.  First we prove exact reversal symmetry for the
+\emph{physical} two-projector histories.  Second we construct a
+self-adjoint localized auxiliary map without assuming that truncation
+preserves projectivity.  Third we apply the energy-sandwich lemma to that
+map.  Finally we transfer the estimate to the physical stopped map.
+
+\emph{1. Physical complete histories.}
+Resolve every measured outcome and every discarded work register.  For a
+fixed initial outcome $(a,e)$, proposal $C$, length $n$, and binary
+outcome string $\bm{s}=(s_1,\ldots,s_n)$, the physical history Kraus
+operator, restricted to the persistent registers, has the form
+\begin{equation}
+ K_{n,\bm{s}}
+ =P_1Q_{s_n}P_0\cdots Q_{s_1}P_0Q_0P_1,
+ \qquad 0\leq n\leq n^*,
+ \label{eq:physical-rejection-history}
+\end{equation}
+where the superscript $(a,e)$ has been suppressed.  For $n=0$ the
+middle product is absent and $K_{0}=P_1Q_0P_1$.  The rightmost $P_1$
+represents the initial energy outcome; Eq.~\eqref{eq:P-measurement}
+identifies it with the first projector used by the rewind test.
+
+Jordan's lemma decomposes the two projectors $P_1$ and $Q_1$ into
+mutually orthogonal invariant subspaces of dimension at most two.  In a
+two-dimensional block $\mathcal H_\alpha$, choose phases so that
+\begin{align}
+ P_1|_{\mathcal H_\alpha}
+ &=\ketbra{\gamma_1^\alpha}{\gamma_1^\alpha},
+ \nonumber\\
+ P_0|_{\mathcal H_\alpha}
+ &=\ketbra{\gamma_0^\alpha}{\gamma_0^\alpha},
+ \nonumber\\
+ Q_s|_{\mathcal H_\alpha}
+ &=\ketbra{\delta_s^\alpha}{\delta_s^\alpha},
+ \label{eq:jordan-real-projectors}
+\end{align}
+and every overlap between a $\gamma$ vector and a $\delta$ vector is
+real.  Restricting Eq.~\eqref{eq:physical-rejection-history} to this
+block gives, for $n\geq1$,
+\begin{align}
+ K_{n,\bm{s}}|_{\mathcal H_\alpha}
+ &=c_{\alpha,\bm{s}}\,
+ \ketbra{\gamma_1^\alpha}{\gamma_1^\alpha},
+ \label{eq:history-jordan-form}\\
+ c_{\alpha,\bm{s}}
+ &=\bra{\gamma_1^\alpha}Q_{s_n}
+ \ket{\gamma_0^\alpha}\nonumber\\
+ &\quad\times
+ \left[
+ \prod_{r=1}^{n-1}
+ \bra{\gamma_0^\alpha}Q_{s_r}\ket{\gamma_0^\alpha}
+ \right]\nonumber\\
+ &\quad\times
+ \bra{\gamma_0^\alpha}Q_0\ket{\gamma_1^\alpha}
+ \in\mathbb R.
+ \label{eq:history-real-coefficient}
+\end{align}
+For $n=0$ the coefficient is
+$\bra{\gamma_1^\alpha}Q_0\ket{\gamma_1^\alpha}\in\mathbb R$.
+One-dimensional Jordan sectors are immediate.  Hence every complete
+physical history is self-adjoint:
+\begin{equation}
+ K_{n,\bm{s}}^\dagger=K_{n,\bm{s}}.
+ \label{eq:physical-history-selfadjoint}
+\end{equation}
+This statement concerns the whole product in
+Eq.~\eqref{eq:physical-rejection-history}; it does not result from
+collapsing any intermediate outcome sum.
+
+Let $\mathsf H$ collect $(C,a,e,n,\bm{s})$ and all resolved work labels,
+and include the discrete sums in $\dd\nu(h)$.  Then
+\begin{align}
+ \cR_{\leq n^*}(\rho)
+ &=\int_{\mathsf H}K_h\rho K_h^\dagger\,\dd\nu(h),
+ \label{eq:physical-R-kraus}\\
+ \cR_{\leq n^*}^{\rm rev}(\rho)
+ &:=\int_{\mathsf H}K_h^\dagger\rho K_h\,\dd\nu(h)
+ =\cR_{\leq n^*}(\rho).
+ \label{eq:physical-R-reversal}
+\end{align}
+The final equality follows term by term from
+Eq.~\eqref{eq:physical-history-selfadjoint}.  Averaging over $C$
+preserves it; Eq.~\eqref{eq:proposal-symmetry} also identifies this
+reverse ensemble with the operational histories using $C^\dagger$.
+
+\emph{2. A self-adjoint localized auxiliary map.}
+Write the localized auxiliary history Kraus operators as
+$\widetilde K_h$.  They need not obey
+$\widetilde K_h^\dagger=\widetilde K_h$: replacing the BSI--QPE
+unitary by a band-truncated operator preserves complete positivity but
+not projectivity.  We therefore define the reversed auxiliary map
+explicitly,
+\begin{equation}
+ \widetilde\cR_{\leq n^*}^{\rm rev}(\rho)
+ :=\int_{\mathsf H}\widetilde K_h^\dagger\rho\widetilde K_h
+ \,\dd\nu(h)
+ =\widetilde\cR_{\leq n^*}^{\dagger}(\rho),
+ \label{eq:aux-reverse-map}
+\end{equation}
+where the last dagger denotes the Hilbert--Schmidt adjoint, regarded as
+a CP map on matrices.
+
+The reverse product contains the same $P$-type primitive instruments,
+only in the opposite order.  Each physical reverse round is CP and
+trace nonincreasing, each exact $Q$ round is a contraction, and
+Lemma~\ref{lem:instrument} supplies the same per-use error
+$\epsilon_R$.  Applying Lemma~\ref{lem:hybrid} to the reversed
+fixed-depth instrument therefore gives
+\begin{equation}
+ \|\cR_{\leq n^*}^{\rm rev}
+ -\widetilde\cR_{\leq n^*}^{\rm rev}\|_\diamond
+ \leq r_R.
+ \label{eq:reverse-reject-hybrid}
+\end{equation}
+Together with Eqs.~\eqref{eq:reject-hybrid} and
+\eqref{eq:physical-R-reversal}, this allows us to introduce
+\begin{equation}
+ \mathcal S_R
+ :=\frac12\left(
+ \widetilde\cR_{\leq n^*}
+ +\widetilde\cR_{\leq n^*}^{\rm rev}\right).
+ \label{eq:symmetrized-rejection}
+\end{equation}
+The map $\mathcal S_R$ is CP and is exactly self-adjoint:
+\begin{equation}
+ \mathcal S_R^\dagger=\mathcal S_R.
+ \label{eq:SR-selfadjoint}
+\end{equation}
+Moreover,
+\begin{align}
+ \|\cR_{\leq n^*}-\mathcal S_R\|_\diamond
+ &\leq\frac12
+ \|\cR_{\leq n^*}-\widetilde\cR_{\leq n^*}\|_\diamond
+ \nonumber\\
+ &\quad+\frac12\|\cR_{\leq n^*}
+ -\widetilde\cR_{\leq n^*}^{\rm rev}\|_\diamond
+ \nonumber\\
+ &\leq r_R.
+ \label{eq:physical-to-SR}
+\end{align}
+Thus symmetrization introduces no factor beyond the existing hybrid
+error.
+
+Both Kraus families
+$\{\widetilde K_h/\sqrt2\}_h$ and
+$\{\widetilde K_h^\dagger/\sqrt2\}_h$ constitute a Kraus
+representation of $\mathcal S_R$.  Lemma~\ref{lem:band-growth} applies
+to the first family.  It applies to the second after interchanging its
+input and output labels, because the modular distance is symmetric.
+To convert the phase bound to an ordinary energy bound, note that
+Eq.~\eqref{eq:time-choice} gives
+\begin{equation}
+ |\delta_\ell-\delta_j|
+ =\frac{Nt}{2\pi}|E_\ell-E_j|
+ \leq\frac{N}{16\pi}<\frac N2.
+ \label{eq:no-energy-wrap}
+\end{equation}
+Therefore the modular and ordinary differences coincide, and for every
+$n\leq n^*$,
+\begin{align}
+ |E_\ell-E_j|
+ &=\varkappa|\delta_\ell-\delta_j|_N\nonumber\\
+ &\leq\varkappa(2n+4)\mu
+ \leq\Omega_R.
+ \label{eq:reject-energy-support}
+\end{align}
+The additional hypothesis $(2n^*+4)\mu<N/2$ ensures that the
+localized auxiliary support also remains in a unique modular branch.
+
+\emph{3. Gibbs sandwich for the symmetrized map.}
+Define
+\begin{equation}
+ A_j:=\mathcal S_R(P_j)\geq0.
+ \label{eq:reject-Aj-definition}
+\end{equation}
+Equation~\eqref{eq:reject-energy-support} implies the exact support
+identity
+\begin{equation}
+ A_j=\Pi_j(\Omega_R)A_j\Pi_j(\Omega_R).
+ \label{eq:reject-Aj-support}
+\end{equation}
+Linearity, $\sigma_G=\sum_j\pi_jP_j$, self-adjointness
+\eqref{eq:SR-selfadjoint}, and $\sum_jP_j=\id$ give, respectively,
+\begin{align}
+ \mathcal S_R(\sigma_G)
+ &=\sum_j\pi_jA_j,
+ \label{eq:R-forward}\\
+ \sigma_G^{1/2}\mathcal S_R^\dagger(\id)\sigma_G^{1/2}
+ &=\sum_j\sigma_G^{1/2}A_j\sigma_G^{1/2}.
+ \label{eq:R-reverse}
+\end{align}
+These are exact operator identities.  Applying
+Lemma~\ref{lem:sandwich} to each $A_j$, then using the triangle
+inequality, gives
+\begin{align}
+ \mathfrak D_{\sigma_G}(\mathcal S_R)
+ &\leq\sum_j
+ \|\sigma_G^{1/2}A_j\sigma_G^{1/2}-\pi_jA_j\|_1
+ \nonumber\\
+ &\leq(\e^{\beta\Omega_R}-1)
+ \sum_j\pi_j\Tr A_j\nonumber\\
+ &=(\e^{\beta\Omega_R}-1)
+ \Tr\mathcal S_R(\sigma_G).
+ \label{eq:SR-defect}
+\end{align}
+The physical stopped map is trace nonincreasing.  Hence
+Eq.~\eqref{eq:physical-to-SR} implies
+\begin{align}
+ \Tr\mathcal S_R(\sigma_G)
+ &\leq\Tr\cR_{\leq n^*}(\sigma_G)
+ +\|[\mathcal S_R-\cR_{\leq n^*}](\sigma_G)\|_1
+ \nonumber\\
+ &\leq1+r_R.
+ \label{eq:SR-trace}
+\end{align}
+
+\emph{4. Transfer to the physical stopped map.}
+Set $\Delta_R=\cR_{\leq n^*}-\mathcal S_R$.  From
+Eq.~\eqref{eq:physical-to-SR},
+\begin{equation}
+ \|\Delta_R(\sigma_G)\|_1\leq r_R.
+ \label{eq:reject-output-perturbation}
+\end{equation}
+For the adjoint term, the same trace-duality calculation used in
+Eq.~\eqref{eq:accept-adjoint-perturbation} gives explicitly
+\begin{align}
+ &\|\sigma_G^{1/2}\Delta_R^\dagger(\id)
+ \sigma_G^{1/2}\|_1\nonumber\\
+ &\quad=\sup_{\substack{Y=Y^\dagger\\\|Y\|\leq1}}
+ \left|\Tr\!\left[
+ \Delta_R(\sigma_G^{1/2}Y\sigma_G^{1/2})\right]\right|
+ \nonumber\\
+ &\quad\leq\|\Delta_R\|_\diamond
+ \sup_{\|Y\|\leq1}
+ \|\sigma_G^{1/2}Y\sigma_G^{1/2}\|_1
+ \leq r_R.
+ \label{eq:reject-adjoint-perturbation}
+\end{align}
+Inserting $\mathcal S_R$ in the defect and applying
+Eqs.~\eqref{eq:SR-defect}--\eqref{eq:reject-adjoint-perturbation}
+therefore yields
+\begin{align}
+ \mathfrak D_{\sigma_G}(\cR_{\leq n^*})
+ &\leq\mathfrak D_{\sigma_G}(\mathcal S_R)+2r_R\nonumber\\
+ &\leq(\e^{\beta\Omega_R}-1)(1+r_R)+2r_R,
+\end{align}
+which is Eq.~\eqref{eq:rejection-bound}.
+\end{proof}
+
+Completeness cannot be applied to a restricted product of fixed-outcome
+matrix elements; it applies only after summing a full outcome set in the
+correct adjacent matrix product.  Equations~\eqref{eq:R-forward}--
+\eqref{eq:R-reverse} are obtained only after constructing the complete
+symmetrized CP map~\eqref{eq:symmetrized-rejection}; no intermediate
+history sum is collapsed.
+
+\section{Stationarity and convergence}
+\label{sec:convergence}
+
+Let $\cF$ be the failure-reset map
+\begin{equation}
+ \cF(\rho)=\Tr(F\rho)\rho_0,
+ \label{eq:reset-map}
+\end{equation}
+where $0\leq F\leq\id$ is the failure effect.  Equation~\eqref{eq:failure-probability} gives $\Tr(F\rho)\leq1/(2n^*)$ for every state.  Both positive terms in the defect of $\cF$ have this trace, and therefore
+\begin{equation}
+ \mathfrak D_{\sigma_G}(\cF)\leq\frac{1}{n^*}.
+ \label{eq:failure-defect}
+\end{equation}
+The full one-step channel is
+\begin{equation}
+ \cM=\cA+\cR_{\leq n^*}+\cF.
+ \label{eq:full-channel}
+\end{equation}
+It is completely positive and trace preserving by construction.
+
+\begin{theorem}[One-step Gibbs error]
+\label{thm:one-step}
+Under the assumptions of Theorems~\ref{thm:acceptance} and \ref{thm:rejection},
+\begin{multline}
+ \|\cM(\sigma_G)-\sigma_G\|_1\leq
+ (\e^{\beta\Omega_A}-1)(1+r_A)+2r_A\\
+ +(\e^{\beta\Omega_R}-1)(1+r_R)+2r_R+\frac1{n^*}.
+ \label{eq:total-error}
+\end{multline}
+\end{theorem}
+\begin{proof}
+Because $\cM$ is trace preserving, its defect is
+$\|\sigma_G-\cM(\sigma_G)\|_1$.  Apply the triangle inequality to Eq.~\eqref{eq:full-channel} and use Theorems~\ref{thm:acceptance} and \ref{thm:rejection} together with Eq.~\eqref{eq:failure-defect}.
+\end{proof}
+
+When $\beta\Omega_R\leq1$, $4\epsilon_A\leq1$, and $L_R\epsilon_R\leq1$, Eq.~\eqref{eq:total-error} becomes
+\begin{equation}
+ \|\cM(\sigma_G)-\sigma_G\|_1
+ =O\!\left(\beta\varkappa\mu n^*
+ +n^*\delta_\mu+\delta_r+\frac1{n^*}\right).
+ \label{eq:small-error}
+\end{equation}
+With Eq.~\eqref{eq:time-choice}, $\varkappa=32\pi\|H\|/N$, so
+\begin{equation}
+ \|\cM(\sigma_G)-\sigma_G\|_1
+ =O\!\left(2^{-\eta}\beta\|H\|\mu n^*
+ +n^*\delta_\mu+\delta_r+\frac1{n^*}\right).
+ \label{eq:main-scaling}
+\end{equation}
+There is no factor $\exp(n^*\eta)$ in the additive tail error.
+
+In the purely exponential regime~\eqref{eq:delta-mu-exp}, ensuring $n^*\delta_\mu\leq\varepsilon$ requires
+\begin{equation}
+ \nu\mu\geq
+ \log\!\left(\frac{4C_An^*}{(1-\e^{-\nu})\varepsilon}\right).
+ \label{eq:mu-choice}
+\end{equation}
+For the full Appendix~\ref{app:windows} profile, one must additionally impose
+$n^*\epsilon_b\log[N/(\mu+1)]=O(\varepsilon)$ and
+$n^*N\e^{-cN}=O(\varepsilon)$.  These are precisely the existing endpoint and quadrature terms; the operator proof neither amplifies them exponentially nor removes them.
+
+Approximate stationarity does not by itself establish mixing.  A universal proposal gate set is useful for irreducibility, but it does not automatically prove strict trace-norm contraction of the implemented channel.  We therefore state the needed mixing hypothesis explicitly.
+
+\begin{theorem}[Fixed-point stability]
+\label{thm:fixed-point}
+Suppose that, for traceless Hermitian $X$,
+\begin{equation}
+ \|\cM(X)\|_1\leq k\|X\|_1,
+ \qquad 0\leq k<1.
+ \label{eq:contraction}
+\end{equation}
+Then $\cM$ has a unique fixed state $\sigma_*$ and
+\begin{equation}
+ \|\sigma_*-\sigma_G\|_1
+ \leq\frac{\|\cM(\sigma_G)-\sigma_G\|_1}{1-k}.
+ \label{eq:fixed-point}
+\end{equation}
+Moreover $\|\cM^m(\rho)-\sigma_*\|_1\leq k^m\|\rho-\sigma_*\|_1$.
+\end{theorem}
+\begin{proof}
+Strict contraction gives existence and uniqueness by the Banach fixed-point theorem.  Since $\cM(\sigma_*)=\sigma_*$,
+\begin{align}
+ \|\sigma_*-\sigma_G\|_1
+ &\leq\|\cM(\sigma_*)-\cM(\sigma_G)\|_1
+ +\|\cM(\sigma_G)-\sigma_G\|_1\\
+ &\leq k\|\sigma_*-\sigma_G\|_1
+ +\|\cM(\sigma_G)-\sigma_G\|_1.
+\end{align}
+Rearranging proves Eq.~\eqref{eq:fixed-point}; iteration proves the final statement.
+\end{proof}
+
+\section{Resources, assumptions, and scope}
+
+The BSI-QPE circuit uses $\eta+1$ ancillary qubits for each persistent energy-estimation register, Fourier transforms, multiplexed single-qubit rotations, and controlled simulation for times up to $O(Nt)$.  A rejection attempt uses two distinct persistent register sets: one for $P$ and one for $Q$.  Reinitializing either register inside a single rewinding attempt invalidates the two-projector argument.
+
+Equation~\eqref{eq:main-scaling} separates four design choices: phase resolution $N$, bandwidth $\mu$, endpoint/reality parameters, and rejection cutoff $n^*$.  The analytic error can be reduced by increasing $r$ and by choosing $b$ and $r$ so that $\epsilon_b$ is small, but those parameters are not free at the circuit level.  The cost of evaluating or synthesizing the multiplexed window rotation depends on the chosen arithmetic or QROM implementation and is not derived here.  Likewise, Hamiltonian-simulation error, gate-synthesis error, and hardware noise are excluded from the theorem and must be added as further operator perturbations.
+
+No lower bound on an absolute energy $E_j$ is required.  Only energy differences enter the Metropolis ratio, and the scale condition~\eqref{eq:time-choice} prevents modular ambiguity in the localized sector.  Adding a scalar multiple of the identity to $H$ changes $Z$ but not the algorithmic acceptance probabilities.
+
+\section{Discussion}
+
+The boosted state-independent construction provides the coherence and tail suppression required by Quantum Metropolis rewinding.  The main analytical improvement is the move from individual Fourier coefficients to a localized BSI-QPE operator.  The Schur test turns the Appendix~\ref{app:windows} tails into a dimension-independent operator error, and the stopped hybrid lemma accumulates that error linearly with the maximum rejection length.  This removes the artificial $\exp(n^*\eta)$ prefactor and establishes detailed balance without demanding stronger tail estimates.
+
+The result is deliberately conditional in two places.  First, the full off-grid tail profile, including its endpoint residual, must satisfy the parameter conditions following Eq.~\eqref{eq:mu-choice}.  Second, closeness of the stationary state requires a quantified mixing property such as Eq.~\eqref{eq:contraction}.  Neither condition follows merely from a universal proposal set.  Determining useful contraction or spectral-gap bounds for physically motivated Hamiltonians and proposal families remains a central open problem; analogous mixing questions are also difficult for classical cluster and loop algorithms~\cite{todo2019parallel,luijten2006introduction}.
+
+The algorithm may nevertheless be attractive in regimes where nonlocal proposals substantially accelerate equilibration.  It can be compared with thermalization by Lindbladian evolution, weak coupling to a bath, and rounding-based preparation methods~\cite{chen2023quantumthermalstatepreparation,rall2023thermal,chen2021fast,shtanko2021preparing}.  A fair resource comparison will require incorporating window synthesis, Hamiltonian simulation, the empirically relevant distribution of rejection lengths, and the contraction rate of the complete noisy channel.
+
+\appendix
+\onecolumngrid
+
+\section{Window estimates used by the operator proof}
+\label{app:windows}
+
+We record the existing tail estimates in the form needed by Eq.~\eqref{eq:tail-envelope}.  The operator proof does not require a new pointwise estimate.  Let
+\begin{equation}
+ \alpha(x)=\operatorname{sech}\!\left(r\cos^{2b}\frac{\pi x}{N}\right),
+ \qquad
+ \beta(x)=\tanh\!\left(r\cos^{2b}\frac{\pi x}{N}\right),
+ \label{eq:windows}
+\end{equation}
+where $b\in\mathbb N$ and $r>0$.  These functions are real and $N$-periodic, satisfy the required reflection symmetries, and obey $\alpha^2+\beta^2=1$.
+
+The poles arise from
+\begin{equation}
+ r\cos^{2b}\frac{\pi z}{N}=i\pi\left(k+\frac12\right),
+ \qquad k\in\mathbb Z.
+ \label{eq:poles}
+\end{equation}
+Under the parameter condition used in the original window analysis, the nearest poles are outside a strip of half-width
+\begin{equation}
+ a=\frac{N}{6\pi}\sin^2\frac{\pi}{4b}.
+ \label{eq:strip}
+\end{equation}
+On a closed substrip, let $M$ bound the relevant analytic continuation.  Its periodic Fourier coefficients satisfy
+\begin{equation}
+ |c_m|\leq M\e^{-\nu|m|},
+ \qquad \nu=\frac13\sin^2\frac{\pi}{4b}.
+ \label{eq:fourier-coeff}
+\end{equation}
+For an integer Fourier mode $k$, the discrete transform is an aliased Fourier series,
+\begin{equation}
+ \widehat f(k)=\sqrt N\sum_{\ell\in\mathbb Z}c_{\ell N-k}.
+ \label{eq:alias}
+\end{equation}
+Consequently
+\begin{equation}
+ |\widehat f(k)|\leq\sqrt N M\left[
+ \e^{-\nu|k|_N}+
+ \frac{2\e^{-\nu(N-|k|_N)}}{1-\e^{-\nu N}}
+ \right].
+ \label{eq:on-grid-tail}
+\end{equation}
+Equation~\eqref{eq:on-grid-tail}, rather than equality with the continuous transform, is the on-grid estimate used in the main text.
+
+For a noninteger mode the modulated function is not periodic at the endpoints.  The existing trapezoidal/contour estimate has the form
+\begin{equation}
+ \frac{|\widehat f(x)|}{\sqrt N}\leq
+ C_A\e^{-\nu|x|_N}
+ +\frac{C_b\epsilon_b}{1+|x|_N}
+ +C_q\e^{-cN},
+ \label{eq:off-grid-tail}
+\end{equation}
+uniformly away from the identified poles.  The constants incorporate the bound on the horizontal contour and the quadrature remainder.  The endpoint parameter may be chosen according to
+\begin{equation}
+ \epsilon_b\lesssim
+ \max\left\{2\e^{-r},
+ r\left(\frac{\pi}{2N}\right)^{2b}\right\}.
+ \label{eq:endpoint}
+\end{equation}
+The $1/(1+|x|_N)$ term is visible as the eventual geometric tail in the off-grid numerical data.  Summing Eq.~\eqref{eq:off-grid-tail} over rows and columns gives Eq.~\eqref{eq:Tmu}; thus the operator proof uses this term rather than dropping it.
+
+\subsection{Approximate reality}
+\label{app:reality}
+
+The reflection symmetries give, for every real $x$,
+\begin{align}
+ |\widehat\beta(x)^*-\widehat\beta(x)|
+ &=\frac{2}{\sqrt N}|\beta(N/2)\sin(\pi x)|=0,
+ \label{eq:beta-real}\\
+ |\widehat\alpha(x)^*-\widehat\alpha(x)|
+ &=\frac{2}{\sqrt N}|\alpha(0)\sin(\pi x)|.
+ \label{eq:alpha-real}
+\end{align}
+Since $\alpha(0)=\operatorname{sech}r\leq2\e^{-r}$,
+\begin{equation}
+ |\operatorname{Im}\widehat\alpha(x)|\leq\frac{2\e^{-r}}{\sqrt N},
+ \qquad
+ \operatorname{Im}\widehat\beta(x)=0,
+ \label{eq:imag-final}
+\end{equation}
+which proves Eq.~\eqref{eq:reality}.  The absolute values around $\sin(\pi x)$ are essential for a valid magnitude identity.
+
+\subsection{Numerical behavior}
+
+Figure~\ref{fig:plotwindows} plots the transforms on and off the Fourier grid.  The exponential near field and the later endpoint-controlled geometric regime agree with Eq.~\eqref{eq:off-grid-tail}.  Figures~\ref{fig:scaling}--\ref{fig:imag} show the dependence on $b,r,\eta$ and the imaginary-part bound.
+
+\begin{figure}[htbp]
+ \centering
+ (a)\includegraphics[width=0.30\linewidth]{b6r30eta10.png}\hfill
+ (b)\includegraphics[width=0.30\linewidth]{b6r8eta10.png}\hfill
+ (c)\includegraphics[width=0.30\linewidth]{b1r30eta10.png}
+ \caption{Fourier magnitude spectra of $\widehat\alpha(x)$ and $\widehat\beta(x)$ sampled on grid and with a half-grid shift: (a) $b=6$, $r=30$, $\eta=10$; (b) $b=6$, $r=8$, $\eta=10$; and (c) $b=1$, $r=30$, $\eta=10$.  The off-grid spectra eventually cross from exponential to endpoint-controlled geometric decay.}
+ \label{fig:plotwindows}
+\end{figure}
+
+\begin{figure}[htbp]
+ \centering
+ (a)\includegraphics[width=0.30\linewidth]{scalingwithrb6eta10.png}\hfill
+ (b)\includegraphics[width=0.30\linewidth]{scalingwithbr1000eta10.png}\hfill
+ (c)\includegraphics[width=0.30\linewidth]{scalingwithetab6r30.png}
+ \caption{Maximum Fourier magnitude beyond a fixed bandwidth: (a) scaling with $r$ at $b=6$, $\eta=10$; (b) scaling with $b$ at $r=1000$, $\eta=10$; and (c) scaling with $\eta$ at $b=6$, $r=30$.}
+ \label{fig:scaling}
+\end{figure}
+
+\begin{figure}[htbp]
+ \centering
+ (a)\includegraphics[width=0.31\linewidth]{nur30eta10.png}\hfill
+ (b)\includegraphics[width=0.31\linewidth]{scalingmuwithetab6r30.png}\hfill
+ (c)\includegraphics[width=0.31\linewidth]{imscalingwithrb6eta10.png}
+ \caption{(a) Fitted exponential decay rate versus $b$ for $r=30$, $\eta=10$. (b) Bandwidth required for a fixed tail threshold versus $\eta$ for $b=6$, $r=30$. (c) Maximum imaginary component versus $r$ for $b=6$, $\eta=10$.}
+ \label{fig:imag}
+\end{figure}
+
+\clearpage
+\section{Two-projector rejection analysis}
+\label{app:rewind}
+
+This appendix derives Eq.~\eqref{eq:failure-probability}.  Fix $(a,e)$ and a Hamiltonian eigenstate.  The state immediately after the initial energy measurement lies in $\operatorname{ran}P_1^{ae}$.  Jordan's lemma decomposes the Hilbert space into mutually orthogonal subspaces of dimension at most two that are invariant under both $P_1^{ae}$ and $Q_0^{ae}$.  One-dimensional sectors complete trivially.  In a two-dimensional sector choose normalized vectors $\ket{\gamma_0},\ket{\gamma_1}$ diagonalizing $P$ and $\ket{\delta_0},\ket{\delta_1}$ diagonalizing $Q$, with
+\begin{align}
+ \ket{\gamma_1}&=\sqrt{1-p}\ket{\delta_0}+\sqrt p\ket{\delta_1},\label{eq:jordan1}\\
+ \ket{\delta_0}&=\sqrt p\ket{\gamma_0}+\sqrt{1-p}\ket{\gamma_1},\label{eq:jordan2}\\
+ \ket{\delta_1}&=-\sqrt{1-p}\ket{\gamma_0}+\sqrt p\ket{\gamma_1},
+ \label{eq:jordan3}
+\end{align}
+for some $p\in[0,1]$.  The measurement sequence never mixes different Jordan sectors.
+
+The probability, within this sector, of first attempting rejection and then not returning to $\ket{\gamma_1}$ within $n^*$ repetitions is
+\begin{equation}
+ p(1-p)\bigl[p^2+(1-p)^2\bigr]^{n^*}.
+ \label{eq:sector-failure}
+\end{equation}
+Let $x=2p(1-p)\in[0,1/2]$.  Then Eq.~\eqref{eq:sector-failure} is $x(1-x)^{n^*}/2$, whose unconstrained maximum for $n^*\geq1$ is attained at $x=1/(n^*+1)$.  Hence
+\begin{equation}
+ p(1-p)\bigl[p^2+(1-p)^2\bigr]^{n^*}
+ \leq\frac{1}{2(n^*+1)}
+ \left(\frac{n^*}{n^*+1}\right)^{n^*}.
+\end{equation}
+A convex combination over the mutually orthogonal sectors obeys the same bound, proving Eq.~\eqref{eq:failure-probability}.
+
+\section{Conventions and proof dependencies}
+
+For clarity, we collect the conventions on which the proof depends:
+\begin{enumerate}
+ \item the localized transforms are $\widetilde{\widehat\alpha}(x)=\widehat\alpha(x)\id(|x|_N\leq\mu)$ and $\widetilde{\widehat\beta}(x)=\widehat\beta(x)\id(|x|_N\leq\mu)$;
+ \item $(a,e)$ and $(b,d)$ are signed estimates and the unique acceptance rule used throughout is Eq.~\eqref{eq:acceptance};
+ \item every Gibbs weight is normalized by $Z$ as in Eq.~\eqref{eq:gibbs};
+ \item discarded work systems are removed by a partial trace, never by a full trace over the retained system;
+ \item physical rejection histories are made self-adjoint by the
+ Jordan-block decomposition, while the localized auxiliary map is paired
+ with its reversed-Kraus map; no auxiliary entrywise $J$ bound is used;
+ \item an entrywise path estimate would require Eq.~\eqref{eq:old-geometric-condition}, while the operator proof uses Eq.~\eqref{eq:mu-choice};
+ \item strict contraction is an assumption to be checked for a chosen Hamiltonian and proposal distribution, not a consequence of universality alone.
+\end{enumerate}
+
+\bibliography{references}
+
+\end{document}

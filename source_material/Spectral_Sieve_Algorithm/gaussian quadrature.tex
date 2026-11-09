@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Gaussian Quadrature for Periodic Functions}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+Given a complex-valued function \(f\) satisfying \(f(-L) = f(L)\), we wish to compute,
+\begin{equation}
+    I = \int_{-L}^{L} f(t)  dt
+\end{equation}
+
+using Gaussian quadrature with \(M+1\) points:
+\begin{equation}
+I(M) = \sum_{j=0}^{M} f(\tau_j) w_j
+\end{equation}
+
+where \(\tau_j\) are nodes and \(w_j\) are weights.
+
+We can do a coordinate transformation, by appling the substitution \(t = Lx\):
+\begin{equation}
+    I = \int_{-1}^{1} f(Lx) \cdot L  dx = L \int_{-1}^{1} g(x)  dx, \quad g(x) \equiv f(Lx)
+\end{equation}
+
+The periodic condition becomes \(g(-1) = g(1)\).
+
+For integrals over \([-1, 1]\), use the \textbf{Gauss-Legendre quadrature} with \(n = M+1\) points. 
+
+The nodes \(\tau_j\) are roots of the Legendre polynomial \(P_n(x)\) of degree \(n\), i.e.,
+\begin{equation}
+    P_n(\tau_j) = 0, \quad \forall j\in[0,..,M]
+\end{equation}
+
+and weights \(w_j\) are given by,
+\begin{equation}
+    w_j = \frac{2}{(1 - \tau_j^2) [P'_n(\tau_j)]^2} = \frac{2(1 - \tau_j^2)}{n^2 [P_{n-1}(\tau_j)]^2}
+\end{equation}
+
+The integral is then approximated by:
+\[
+I(M) = L \sum_{j=0}^{M} f(L \tau_j) w_j
+\]
+where \(\{\tau_j, w_j\}_{j=0}^{M}\) are the Gauss-Legendre nodes and weights for \([-1, 1]\) with \(n = M+1\) points.
+
+
+\subsection*{Properties}
+\begin{itemize}
+  \item Symmetry: \(\tau_j = -\tau_{M-j}\),  \(w_j = w_{M-j}\)
+  \item Exact for polynomials up to degree \(2n-1 = 2M+1\)
+  \item Weights satisfy \(\sum_{j=0}^{M} w_j = 2\)
+\end{itemize}
+
+
+\end{document}

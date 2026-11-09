@@ -1,0 +1,87 @@
+\documentclass[aps]{revtex4-2}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}{Corollary}[theorem]
+\begin{document}
+
+\begin{theorem}
+    Given a function $f$ that is analytic for $x + iy$ where $x \in (\epsilon, 1]$ and $y \in [-1,1]$. There exists an $n$-piecewise $d$-degree polynomial approximation $p$ with approximation error bounded by $O(\frac{2}{3}^{d})$ on the real interval $(2^{-n}, 1]$ for $\epsilon < 2^{-n-2}$.
+\end{theorem}
+\begin{proof}
+    Consider the interval $[a,b]$ with $a,b \in (\epsilon, 1]$. We can rescale this interval to $[-1,1]$ by taking $\bar x = \frac{x-\frac{a+b}{2}}{\frac{b-a}{2}}$. Then we know that the $d$-degree Chebyshev polynomial approximation is bounded in approximation error by
+    \begin{equation}
+        \frac{2M\rho^{-d}}{\rho -1}
+    \end{equation}
+    where $\rho$ parameterises a Bernstein ellipse around $[-1,1]$ which $f(\bar x)$ is analytic in, and $|f(\bar x)|<M$ inside this Bernstein ellipse. The semi-major and semi-major axis of this bernstein ellipse are given by $\frac{\rho + \rho^{-1}}{2}$ and $\frac{\rho - \rho^{-1}}{2}$. We pick $\rho = 1 + \delta$ with $\delta \in (0,1]$, which gives semi-major/semi-minor axis $1+\frac{\delta^2}{2(1+\delta)}$ and $\frac{\delta(\delta + 2)}{2(1+\delta)}$. This can be transformed back to the original scale to find the Bernstein ellipse on the original domain. It is centred at $\frac{b+a}{2}$, has semi-major axis $\frac{b-a}{2}+\frac{b-a}{4}\frac{\delta^2}{1+\delta}$ and semi-minor axis $\frac{b-a}{4}\frac{\delta(\delta + 2)}{1+\delta}$. Therefore this ellipse is entirely within $\frac{b-a}{4}\frac{\delta(\delta + 2)}{1+\delta}$ of the real interval $[a,b]$.
+
+    As $f$ is analytic in Bernstein ellipse, it must be Lipschitz continuous, and hence:
+    \begin{equation}
+        |f(x_1) - f(x_2)| < K|x_1-x_2|
+    \end{equation}
+    where $K_i$ is a positive real constant. 
+    
+    Therefore, the whole of the Bernstein ellipse can be bounded by the values on the real line:
+    \begin{equation}
+        |f(x) - f(x + \frac{b-a}{4}\frac{\delta(\delta + 2)}{1+\delta})| < K \frac{b-a}{4}\frac{\delta(\delta + 2)}{1+\delta}
+    \end{equation}
+    Therefore, we can bound $M$ as:
+    \begin{equation}
+        M < \max_{x \in [a,b]} |f(x)| + K\frac{b-a}{4}\frac{\delta(\delta + 2)}{1+\delta}
+    \end{equation}
+    Therefore, total approximation error is bounded by:
+    \begin{equation}
+        E < \left(\max_{x \in [a,b]} |f(x)| + K\frac{b-a}{4}\frac{\delta(\delta + 2)}{1+\delta}\right) \frac{2(1+\delta)^{-d}}{\delta}
+    \end{equation}
+    Consider $[a,b] = [2^{-i}, 2^{-i+1}]$ then this becomes:
+    \begin{equation}
+        E_i < \left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + K_i2^{-i-2}\frac{\delta(\delta + 2)}{1+\delta}\right) \frac{2(1+\delta)^{-d}}{\delta}
+    \end{equation}
+    $\delta$ is restricted by:
+    \begin{equation}
+        2^{-i-1} - 2^{-i-2}\frac{\delta(\delta + 2)}{1+\delta} > \epsilon
+    \end{equation}
+    Therefore,
+    \begin{equation}
+         \frac{\delta(\delta + 2)}{2(1+\delta)} < 1 - 2^{i+1}\epsilon
+    \end{equation}
+    Hence, we can pick:
+    \begin{equation}
+        \delta = 1 - 2^{i+1}\epsilon
+    \end{equation}
+    Under this choice we get:
+    \begin{equation}
+        E_i < \left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + K_i2^{-i-2}\frac{(1 - 2^{i+1}\epsilon)(3 - 2^{i+1}\epsilon)}{2 - 2^{i+1}\epsilon}\right) \frac{2^{-d+1}(1 - 2^{i}\epsilon)^{-d}}{1 - 2^{i+1}\epsilon}
+    \end{equation}
+    \begin{equation}
+        E_i < \left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + 3K_i2^{-i-2}\right) 2(2 - 2^{i+1}\epsilon)^{-d}
+    \end{equation}
+    As $\epsilon < 2^{-n-2}$
+    \begin{equation}
+        E_i < \left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + 3K_i2^{-i-2}\right) 2(2 - 2^{i-n-1})^{-d}
+    \end{equation}
+    As $i \leq n$
+    \begin{equation}
+        E_i < \left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + 3K_i2^{-i-2}\right) 2(2 - \frac{1}{2})^{-d}
+    \end{equation}
+    \begin{equation}
+        E_i < 2\left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + 3K_i2^{-i-2}\right) \frac{2}{3}^{d}
+    \end{equation}
+    Unsure this step is valid!
+        \begin{equation}
+        E_i < 2\left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + 3\max_{x \in [2^{-i}, 2^{-i+1}]} |f'(x)|2^{-i-2}\right) \frac{2}{3}^{d}
+    \end{equation}
+    If $|f'(x)| < x^{\alpha}$ then $\max_{x \in [2^{-i}, 2^{-i+1}]} |f'(x)| < \max(2^{-\alpha(i+1)},2^{-\alpha i})$:
+    \begin{equation}
+        E_i < 2\left(\max_{x \in [2^{-i}, 2^{-i+1}]} |f(x)| + \frac{3}{2}\max(2^{-(\alpha+1)(i+1)},2^{-(\alpha+1)i})\right) \frac{2}{3}^{d}
+    \end{equation}
+    For $\alpha \geq -1$:
+    \begin{equation}
+        E = O(\frac{2}{3}^{d})
+    \end{equation}
+    For $\alpha < -1$:
+    \begin{equation}
+        E = O(2^{-\alpha i}\frac{2}{3}^{d})
+    \end{equation}
+    Need to think about the fact that f gets rescaled which suppresses these derivatives.
+\end{proof}
+\end{document}

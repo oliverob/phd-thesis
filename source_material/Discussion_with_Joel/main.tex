@@ -1,0 +1,147 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{biblatex}
+\usepackage{amssymb}
+\bibliography{references.bib}
+
+\begin{document}
+
+It appears that what we do in \cite{PhysRevB.111.115126} happily fits within the framework of \cite{chien2022optimizingfermionicencodingshamiltonian}. In this language the question we were trying to answer is for translationally invariant fermionic Hamiltonians with periodic or aperiodic boundary conditions which superselection sectors $G$ are mapped to which stabiliser subspaces $S$ under a given mapping (given by $\tau$ and $\sigma$) and how does this mapping modify the boundary conditions of the Hamiltonian. Below I will demonstrate how to rederive some of the results (Table I) from \cite{PhysRevB.111.115126} using the formulism of \cite{chien2022optimizingfermionicencodingshamiltonian}. 
+
+In this example we make the following parameterised choices of $\tau$ and $\sigma$, which is the same as the 1D MPO from \cite{PhysRevB.111.115126} with some boundary condition:
+\begin{align}
+    \sigma(V_i) &= Z_{i-\frac{1}{2}}Z_{i+\frac{1}{2}}&\sigma(V_N) &= \delta_0 Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}\\
+    \sigma(E_{i,i+1}) &= -Z_{i-\frac{1}{2}}Y_{i+\frac{1}{2}} &\sigma(E_{i,i+1}) &= -\delta_1 Z_{N-\frac{1}{2}}Y_{\frac{1}{2}}
+\end{align}
+\begin{align}
+    \tau(V_i) &= -i\gamma_i\bar{\gamma}_i&\tau(V_N) &= -i\delta_2 \gamma_N\bar{\gamma}_N\\
+    \tau(E_{i,i+1}) &= -i\gamma_i\gamma_{i+1} &\tau(E_{i,i+1}) &= -i\delta_3 \gamma_N\gamma_{1}
+\end{align}
+Here $\tau$ and $\sigma$ are characterised by how they transform boundary conditions as specified by $\delta_0, \delta_1, \delta_2$ and $\delta_3$. We would like to make a change of basis of this characterisation to instead describe $\tau$ and $\sigma$ by the image of the others kernel ($G$, $S$) and their translational symmetries.
+
+The natural place to begin is by calculating the image of the kernels of $\sigma$ and $\tau$. To do this first let us define a parity and loop operator in $\Gamma$:
+\begin{equation}
+    \Pi = \prod_{i=1}^N V_i \>\>\>\>\>\> L = i^N \left( \prod_{i=1}^{N-1}E_{i,i+1}\right) E_{N,1}
+\end{equation}
+Let us consider the mapping of these under $\sigma$ and $\tau$:
+\begin{align}
+    \sigma(\Pi) &= \delta_0 \mathbb{I}\\
+    \tau(L) &=  \delta_3 i^N \left( \prod_{i=1}^{N-1}-i\gamma_i\gamma_{i+1}\right)(-i\gamma_N\gamma_{1}) \\
+    &= \delta_3 \gamma_1  \left( \prod_{i=1}^{N-2}\gamma_{i+1}\gamma_{i+1}\right)\gamma_N\gamma_N\gamma_{1}\\
+    &= \delta_3 \mathbb{I}
+\end{align}
+Therefore, $\delta_0 \Pi \in \ker(\sigma)$ and $\delta_3 L \in \ker(\tau)$. Hence, the image of the others kernel is given by:
+\begin{align}
+    \tau( \delta_0\Pi) &= \delta_0 \delta_2 \prod_{i=1}^N -i \gamma_i \bar{\gamma}_i \\&= \delta_0 \delta_2 \tilde{\Pi}\\
+    \sigma(\delta_3 L) &= -\delta_3\delta_1 i^N \left( \prod_{i=1}^{N-1}-Z_{i-\frac{1}{2}}Y_{i+\frac{1}{2}}\right) Z_{N-\frac{1}{2}}Y_{\frac{1}{2}}\\
+    &= \delta_3\delta_1 i^N Z_{\frac{1}{2}}\left( -\prod_{i=1}^{N-2}Y_{i+\frac{1}{2}}Z_{i+\frac{1}{2}}\right) Y_{N-\frac{1}{2}}Z_{N-\frac{1}{2}}Y_{\frac{1}{2}}\\
+    &= -\delta_3\delta_1 i^N \prod_{i=1}^{N-1}(-iX_{i+\frac{1}{2}}) (-i X_{\frac{1}{2}})\\
+    &= -\delta_3\delta_1 \prod_{i=1}^N X_{i-\frac{1}{2}}\\
+    &= -\delta_3\delta_1 \tilde{L}
+\end{align}
+where $\tilde \Pi = \prod_{i=1}^N -i \gamma_i \bar{\gamma}_i$ and $\tilde{L} = \prod_{i=1}^N X_{i-\frac{1}{2}}$. Therefore, $G = \{\delta_0\delta_2 \tilde{\Pi}\}$ and $S = \{ -\delta_3\delta_1 \tilde L\}$. So our map takes the $\delta_0 \delta_2$ eigenspace of $\tilde \Pi$ to the $-\delta_3 \delta_1$ eigenspace of $\tilde L$. This is half of the answer, but not enough to perform a change of basis for that we need to consider the impact of translation upon $\tau$ and $\sigma$.
+
+We define the translation operators as follows:
+\begin{equation}
+\label{eq:1}
+    T_{\sigma} \sigma(V_i)T^{\dagger}_{\sigma} = \sigma(V_{i+1 \text{ mod }N})
+\end{equation}
+\begin{equation}\label{eq:2}
+    T_{\sigma} \sigma(E_{i,i+1})T^{\dagger}_{\sigma} = \sigma(E_{i+1,i+2 \text{ mod }N})
+\end{equation}
+\begin{equation}
+\label{eq:3}
+    T_{\tau} \tau(V_i)T^{\dagger}_{\tau} = \tau(V_{i+1 \text{ mod }N})
+\end{equation}
+\begin{equation}
+\label{eq:4}
+    T_{\tau} \tau(E_{i,i+1})T^{\dagger}_{\tau} = \tau(E_{i+1,i+2 \text{ mod }N})
+\end{equation}
+Given this definition for each choice of $\delta$s there is are unique $T_{\sigma}$ and $T_{\tau}$ satsifying the above relations, as shown in the below tables:
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|}\hline
+        $\delta_0$ & $\delta_1$ & $T_{\sigma}$\\ \hline
+         +1& +1& $\mathbb{I}$\\ 
+         +1& -1& $Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$\\ 
+         -1& +1& $Y_{N-\frac{1}{2}}Z_{\frac{1}{2}}$\\ 
+         -1& -1& $X_{N-\frac{1}{2}}$\\ \hline
+    \end{tabular}
+    \begin{tabular}{|c|c|c|}\hline
+        $\delta_2$ & $\delta_3$ & $T_{\tau}$\\ \hline
+         +1& +1& $\mathbb{I}$\\ 
+         +1& -1& $-i\gamma_1\bar{\gamma}_1$\\ 
+         -1& +1& $-i \bar{\gamma}_N \bar{\gamma}_1$\\ 
+         -1& -1& $-i \bar{\gamma}_N \gamma_1$\\ \hline
+    \end{tabular}
+\end{table}
+
+You may notice at this point that these translation operators are both mapped from the same operators $T_{\Gamma}$ in $\Gamma$:
+
+{
+    \centering
+    \begin{tabular}{|c|c|c|}\hline
+        $T_{\sigma}$ & $T_{\tau}$ & $T_{\Gamma}$\\ \hline
+         $\mathbb{I}$& $\mathbb{I}$& $\mathbb{I}$\\ 
+         $Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$& $-i\gamma_1\bar{\gamma}_1$& $V_1$\\ 
+         $Y_{N-\frac{1}{2}}Z_{\frac{1}{2}}$& $-i \bar{\gamma}_N \bar{\gamma}_1$& $V_NV_1E_{N,1}$\\ 
+         $X_{N-\frac{1}{2}}$& $-i \bar{\gamma}_N \gamma_1$& $V_NE_{N,1}$ \\ \hline
+    \end{tabular}
+}
+
+Therefore as $\sigma$ and $\tau$ are homomorphisms, we can always pull these translation operators through $\sigma$ and $\tau$ to act directly on $\Gamma$. Hence, Equations~\eqref{eq:1}-\eqref{eq:4} can be transformed to:
+\begin{equation}
+    \sigma(T^{\sigma}_{\Gamma}V_iT^{\sigma\dagger}_{\Gamma}) = \sigma(V_{i+1 \text{ mod }N})
+\end{equation}
+\begin{equation}
+\sigma(T^{\sigma}_{\Gamma}E_{i,i+1}T^{\sigma\dagger}_{\Gamma}) = \sigma(E_{i+1,i+2 \text{ mod }N})
+\end{equation}
+\begin{equation}
+\tau(T^{\tau}_{\Gamma}V_iT'^{\tau\dagger}_{\Gamma}) = \tau(V_{i+1 \text{ mod }N})
+\end{equation}
+\begin{equation}
+\tau(T^{\tau}_{\Gamma}E_{i,i+1}T^{\tau\dagger}_{\Gamma})  = \tau(E_{i+1,i+2 \text{ mod }N})
+\end{equation}
+where $\sigma(T^{\sigma}_{\Gamma}) = T_{\sigma}$ and $\tau(T^{\tau}_{\Gamma}) = T_{\tau}$. This points to a redundancy in the parameterisation of $\sigma$ and $\tau$ in terms of translation operators. We are always able to take a basis transformation of $\Gamma$ given by $UV_i U^{\dagger} = V'_i$, $UE_{i,i+1} U^{\dagger} = E'_{i,i+1}$, $\tau(U^{\dagger}\cdot U) = \tau'$ and $\sigma (U^{\dagger} \cdot U) = \sigma'$ for unitary $U$ as $\Gamma$ has no physical relevance and so is effectively this choice of basis is a gauge freedom. This allows us to simplify $T_{\sigma}$ and $T_{\tau}$, for example, consider $\sigma$ and $\tau$ parameterised by $T_{\sigma} = Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$ and $T_{\tau} = -i\gamma_1 \bar{\gamma}_1$, we can see that applying both $T_{\sigma}$ and $T_{\tau}$ is equivalent to a gauge transformation of $\Gamma$ and hence has no physical meaning, thus we could equally take  $T_{\sigma} = \mathbb{I}$ and $T_{\tau} = \mathbb{I}$.
+
+We now have all the ingredients to transform our basis for describing $\sigma$ and $\tau$:
+
+{
+    \centering
+    \begin{tabular}{|c|c|c|c||c|c|c|c|} \hline
+         $\delta_0$&$\delta_1$&$\delta_2$&$\delta_3$&$G$&$T_{\sigma}$&$S$&$T_{\tau}$  \\ \hline
+         +1&+1&+1&+1&$+\tilde\Pi$&$\mathbb{I}$&$-\tilde L$&$\mathbb{I}$  \\
+         +1&+1&+1&-1&$+\tilde\Pi$&$\mathbb{I}$&$+\tilde L$&$-i \gamma_1\bar{\gamma}_1$  \\ 
+         +1&+1&-1&+1&$-\tilde\Pi$&$\mathbb{I}$&$-\tilde L$&$-i \bar{\gamma}_N\bar{\gamma}_1$  \\ 
+         +1&-1&+1&+1&$+\tilde\Pi$&$Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$+\tilde L$&$\mathbb{I}$  \\ 
+         -1&+1&+1&+1&$+\tilde\Pi$&$Y_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$-\tilde L$&$\mathbb{I}$  \\
+         +1&+1&-1&-1&$-\tilde\Pi$&$\mathbb{I}$&$+\tilde L$&$-i \bar{\gamma}_N\gamma_1$  \\
+         +1&-1&+1&-1&$+\tilde\Pi$&$Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$-\tilde L$&$-i \gamma_1\bar{\gamma}_1$ \\ 
+         -1&+1&+1&-1&$-\tilde\Pi$&$Y_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$+\tilde L$&$-i \gamma_1\bar{\gamma}_1$  \\ 
+         +1&-1&-1&+1&$-\tilde\Pi$&$Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$+\tilde L$&$-i \bar{\gamma}_N\bar{\gamma}_1$  \\ 
+         -1&+1&-1&+1&$+\tilde\Pi$&$Y_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$-\tilde L$&$-i \bar{\gamma}_N\bar{\gamma}_1$  \\
+         -1&-1&+1&+1&$-\tilde\Pi$&$X_{N-\frac{1}{2}}$&$+\tilde L$&$\mathbb{I}$  \\ 
+         +1&-1&-1&-1&$-\tilde\Pi$&$Z_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$-\tilde L$&$-i \bar{\gamma}_N\gamma_1$  \\ 
+         -1&+1&-1&-1&$+\tilde\Pi$&$Y_{N-\frac{1}{2}}Z_{\frac{1}{2}}$&$+\tilde L$&$-i \bar{\gamma}_N\gamma_1$  \\ 
+         -1&-1&+1&-1&$-\tilde\Pi$&$X_{N-\frac{1}{2}}$&$-\tilde L$&$-i \gamma_1\bar{\gamma}_1$ \\ 
+         -1&-1&-1&+1&$+\tilde\Pi$&$X_{N-\frac{1}{2}}$&$+\tilde L$&$-i \bar{\gamma}_N\bar{\gamma}_1$  \\ 
+         -1&-1&-1&-1&$+\tilde\Pi$&$X_{N-\frac{1}{2}}$&$-\tilde L$&$-i \bar{\gamma}_N\gamma_1$  \\ \hline
+    \end{tabular}
+} 
+
+This description has redundancies which we know how to remove by simplifying the translation operators through basis transformations of $\Gamma$, and if we do this we find we only have four independent characterisations of $\tau$ and $\sigma$ given by the below table:
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|c|} \hline
+        $G$ & $T_{\tau}$ &$S$ &$T_{\sigma}$  \\ \hline
+         $+\tilde\Pi$&$\mathbb{I}$&$-\tilde L$&$\mathbb{I}$\\
+         $+\tilde\Pi$&$-i \gamma_1\bar{\gamma}_1$&$+\tilde L$&$\mathbb{I}$\\
+         $-\tilde\Pi$&$\mathbb{I}$&$+\tilde L$&$X_{N-\frac{1}{2}}$\\
+         $-\tilde\Pi$&$-i \gamma_1\bar{\gamma}_1$&$-\tilde L$&$X_{N-\frac{1}{2}}$\\\hline
+    \end{tabular}
+\end{table}
+This is the same as Table I produced in \cite{PhysRevB.111.115126}. I would argue that the techniques in \cite{PhysRevB.111.115126} are easier to generalise to 2D to produce Table II, than it would be to extend the approach I have used here to 2D (though it should be possible in theory). 
+\printbibliography
+\end{document}

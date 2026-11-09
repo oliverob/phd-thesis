@@ -1,0 +1,51 @@
+\documentclass{article}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{bm}
+\newtheorem{lemma}{Lemma}
+
+\begin{document}
+
+\title{Simplification}
+\maketitle
+\begin{lemma}
+Let \(M\in\mathbb{C}^{N\times N}\). When
+\(H = \begin{pmatrix} 0 & M^\dagger \\ M & 0 \end{pmatrix}\), \[
+e^{itH}\Bigl(|0\rangle\otimes|\psi\rangle\Bigr) = |0\rangle\otimes \cos\Bigl(t\sqrt{M^\dagger M}\Bigr)|\psi\rangle + i\,|1\rangle\otimes \left(M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}\right)|\psi\rangle,
+\]
+for any ray \( |\psi\rangle\in \mathbb{C}^{N}\).
+\end{lemma}
+
+
+\begin{proof}
+    By Taylor series, we have
+\begin{align*}
+    e^{itH} = & \sum_{j=0}^{\infty}\frac{(it)^j}{j!}H^j \nonumber \\ = & \sum_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}H^{2k} + \sum_{k=0}^{\infty} \frac{(it)^{2k+1}}{(2k+1)!}H^{2k+1} \nonumber \\
+    = & \begin{pmatrix}
+\sum\limits_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}(M^\dagger M)^k & \sum\limits_{k=0}^{\infty} \frac{(it)^{2k+1}}{(2k+1)!}\, M^\dagger (MM^\dagger)^k \\[1mm]
+\sum\limits_{k=0}^{\infty} \frac{(it)^{2k+1}}{(2k+1)!}\, M (M^\dagger M)^k & \sum\limits_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}(MM^\dagger)^k
+\end{pmatrix}
+\end{align*}
+
+using linearity and observing,
+\[
+H^{2k} = \begin{pmatrix} (M^\dagger M)^k & 0 \\ 0 & (MM^\dagger)^k \end{pmatrix}, \quad 
+H^{2k+1} = \begin{pmatrix} 0 & M^\dagger (MM^\dagger)^k \\ M (M^\dagger M)^k & 0 \end{pmatrix}.
+\]
+
+Observe \(M^\dagger M\) is a Hermitian matrix, and that, 
+\begin{align*}
+\sum_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}(M^\dagger M)^k & 
+ = \sum_{k=0}^{\infty} \frac{(-1)^k t^{2k}}{(2k)!} \left(\sqrt{M^\dagger M}\right)^{2k} = \cos\Bigl(t\sqrt{M^\dagger M}\Bigr),   \\
+\sum_{k=0}^{\infty}\frac{(it)^{2k+1}}{(2k+1)!}\,M (M^\dagger M)^k 
+& = M \left( \sum_{k=0}^{\infty}\frac{(it)^{2k+1}}{(2k+1)!}(M^\dagger M)^k \right)
+= i M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}
+\end{align*}
+
+It then follows that \(e^{itH} \begin{pmatrix} |\psi\rangle \\ 0 \end{pmatrix} = \begin{pmatrix}
+\cos\Bigl(t\sqrt{M^\dagger M}\Bigr)|\psi\rangle \\[1mm]
+i\,M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}|\psi\rangle
+\end{pmatrix}\).
+
+
+\end{proof}
+\end{document}

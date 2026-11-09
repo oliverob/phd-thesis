@@ -1,0 +1,38 @@
+\begin{lemma}
+For any $n \in \mathbb{Z}^+$, there exists a $2n$-piecewise polynomial $p(x)$ of maximum degree $d$ such that 
+$$|p(x) - \log x| \leq \frac{2^{-d-1}}{d+1} \>\>\forall\>\> x\in [2^{-n}, 1)$$
+The $2n$ polynomial segments are defined over ranges $[2^{-i-1}, 3*2^{-i-2})$ and $[3*2^{-i-2}, 2^{-i})$ $\forall$ $i \in \mathbb{Z}_n$
+\label{lemma:log}
+\end{lemma}
+\begin{proof}
+Consider $f(x) = x^{-t}$. The Taylor series expansion around $x=a$ is given by:
+\begin{equation}
+    f(x) = \sum_{k=0}^d \frac{f^{(k)}(a)}{k!}(x-a)^k + \frac{f^{(d+1)}(x^*)}{(d+1)!}(x-a)^{d+1}
+\end{equation}
+where $x^* \in (a,x)$.
+\begin{equation}
+    f^{(k)}(x) = (-1)^{k-1} (k-1)! x^{-k}
+\end{equation}
+Hence we can evaluate the Lagrange Remainder for a $d$-degree Taylor series expansion:
+\begin{equation}
+    \frac{f^{(d+1)}(x^*)}{(d+1)!}(x-a)^{d+1} = \frac{(-1)^{d}}{d+1}  {x^*}^{-d-1}(x-a)^{d+1}
+\end{equation}
+In each region $[2^{-i-1}, 3*2^{-i-2})$ $\forall$ $i \in \mathbb{Z}_n$ we take the Taylor series expansion about $a=2^{-i-1}$. The largest absolute value the error can take is when $x = 3*2^{-i-2}$ and $x^* = 2^{-i-1}$:
+\begin{equation}
+    |E_{i}| \leq \frac{1}{d+1}2^{(i+1)(d+1) - (i+2)(d+1)} = \frac{2^{-d-1}}{d+1}
+\end{equation}
+Whereas in each region $[3*2^{-i-2}, 2^{-i})$   $\forall$ $i \in \mathbb{Z}_n$ we take the Taylor series expansion about $a=3*2^{-i-2}$. The largest absolute value the error can take is when $x = 2^{-i}$ and $x^* = 3*2^{-i-2}$:
+\begin{equation}
+    |E_{i}| \leq \frac{3^{-d-1}}{d+1}
+\end{equation}
+Therefore, the absolute error across all the regions is upper bounded by:
+\begin{equation}
+    |E| \leq \frac{2^{-d-1}}{d+1}
+\end{equation}
+\end{proof}
+\begin{duplicate}
+For any $n \in \mathbb{Z}^+$, there exists a $(2n-1)$-piecewise polynomial $p(x)$ of maximum degree $d$ such that $\|p(x_i)- \log x\| \leq \frac{2^{-d-1}}{d+1}$ for all $2^{n}$ equally spaced evaluation points between $2^{-n}$ and $1$ ($x_i = (i+1)2^{-n}$ $\forall$ $i \in \mathbb{Z}_{2^{n}}$).
+\end{duplicate}
+\begin{proof}
+    All the evaluation points ($x_i = (i+1)2^{-n}$ $\forall$ $i \in \mathbb{Z}_{2^{n}}$) lie in the $2(n-1)$ regions considered by Lemma~\ref{lemma:log} with the exception of $i = 0$ which lies in the region $[0, 2^{-(n-1)})$. In this region we take the 0-degree polynomial $p(x) = \log 2^{-n} $ giving an absolute error of 0.
+\end{proof}

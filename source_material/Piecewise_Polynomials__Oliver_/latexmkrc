@@ -1,0 +1,3 @@
+# Comment or uncomment for latex diff
+
+%$pdflatex = "latexdiff oldv1_main.tex main.tex > main-d.tex; pdflatex %O  main-d"

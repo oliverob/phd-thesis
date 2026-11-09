@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage{amsmath, amsthm, amssymb,braket}
+\usepackage{bm}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+
+\begin{document}
+
+\title{Fixed Point}
+\maketitle
+\begin{lemma}
+Let $M$ be an upper triangular matrix with elements being zero on and under the diagonal, i.e. $M_{j,k}=0, \forall j<k$. When \(H = \begin{pmatrix} 0 & M^\dagger \\ M & 0 \end{pmatrix}\), $\Ket{0}$ is the fixed point of the map, 
+\(
+Tr_A(e^{itH}\Bigl(|0\rangle_A \otimes|\psi\rangle_B \Bigr)\)
+\end{lemma}
+
+
+\begin{proof}
+    Observe that $\ket{0} \in Ker(M)$, i.e., $M\ket{0}=0$. This implies $\ket{0} \in Ker(M^{\dagger}M)$. 
+    Since $\sqrt{M^{\dagger}M}$ acts in the eigenbasis of the Hermitian matrix $M^{\dagger}M$, then 
+    \[ \cos\Bigl(t\sqrt{M^\dagger M}\Bigr)\ket{0} = \ket{0}, \quad \text{and} \quad \left(M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}\right)\ket{0} = 0. \]
+    Using Lemma \ref{simplification}, 
+    \(e^{iHt}\ket{0}\ket{0} =\ket{0}\otimes \cos\Bigl(t\sqrt{M^\dagger M}\Bigr) \ket{0} + i\,\ket{1}\otimes \left(M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}\right)\ket{0}\), we then have \(Tr_A[e^{iHt}\bigl(\ket{0}_A\ket{0}_B\bigr)] = \ket{0}_B\), as the fixed point of the map.
+\end{proof}
+
+
+% TO DO: FINITE CONVERGENCE, IDEAL CASE
+
+\newpage
+\begin{lemma}
+\label{simplification}
+Let \(M\in\mathbb{C}^{N\times N}\). When
+\(H = \begin{pmatrix} 0 & M^\dagger \\ M & 0 \end{pmatrix}\), \[
+e^{itH}\Bigl(|0\rangle\otimes|\psi\rangle\Bigr) = |0\rangle\otimes \cos\Bigl(t\sqrt{M^\dagger M}\Bigr)|\psi\rangle + i\,|1\rangle\otimes \left(M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}\right)|\psi\rangle,
+\]
+for any ray \( |\psi\rangle\in \mathbb{C}^{N}\).
+\end{lemma}
+
+
+\begin{proof}
+    By Taylor series, we have
+\begin{align*}
+    e^{itH} = & \sum_{j=0}^{\infty}\frac{(it)^j}{j!}H^j \nonumber \\ = & \sum_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}H^{2k} + \sum_{k=0}^{\infty} \frac{(it)^{2k+1}}{(2k+1)!}H^{2k+1} \nonumber \\
+    = & \begin{pmatrix}
+\sum\limits_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}(M^\dagger M)^k & \sum\limits_{k=0}^{\infty} \frac{(it)^{2k+1}}{(2k+1)!}\, M^\dagger (MM^\dagger)^k \\[1mm]
+\sum\limits_{k=0}^{\infty} \frac{(it)^{2k+1}}{(2k+1)!}\, M (M^\dagger M)^k & \sum\limits_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}(MM^\dagger)^k
+\end{pmatrix}
+\end{align*}
+
+using linearity and observing,
+\[
+H^{2k} = \begin{pmatrix} (M^\dagger M)^k & 0 \\ 0 & (MM^\dagger)^k \end{pmatrix}, \quad 
+H^{2k+1} = \begin{pmatrix} 0 & M^\dagger (MM^\dagger)^k \\ M (M^\dagger M)^k & 0 \end{pmatrix}.
+\]
+
+Observe \(M^\dagger M\) is a Hermitian matrix, and that, 
+\begin{align*}
+\sum_{k=0}^{\infty} \frac{(it)^{2k}}{(2k)!}(M^\dagger M)^k & 
+ = \sum_{k=0}^{\infty} \frac{(-1)^k t^{2k}}{(2k)!} \left(\sqrt{M^\dagger M}\right)^{2k} = \cos\Bigl(t\sqrt{M^\dagger M}\Bigr),   \\
+\sum_{k=0}^{\infty}\frac{(it)^{2k+1}}{(2k+1)!}\,M (M^\dagger M)^k 
+& = M \left( \sum_{k=0}^{\infty}\frac{(it)^{2k+1}}{(2k+1)!}(M^\dagger M)^k \right)
+= i M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}
+\end{align*}
+
+It then follows that \(e^{itH} \begin{pmatrix} |\psi\rangle \\ 0 \end{pmatrix} = \begin{pmatrix}
+\cos\Bigl(t\sqrt{M^\dagger M}\Bigr)|\psi\rangle \\[1mm]
+i\,M\,\frac{\sin\Bigl(t\sqrt{M^\dagger M}\Bigr)}{\sqrt{M^\dagger M}}|\psi\rangle
+\end{pmatrix}\).
+
+%[Harder] Extend to the case of more than one ancilla controlled M? [not immidately urgent, but nice to do]. Potentially easier, consider all the M are the same, just having more ancilla with tensor product structure.
+
+\end{proof}
+\end{document}

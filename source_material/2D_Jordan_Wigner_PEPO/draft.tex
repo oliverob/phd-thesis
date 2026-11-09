@@ -1,0 +1,58 @@
+\documentclass[aps,prx,twocolumn,floatfix,10pt,amssymb,amsfont,amsmath,superscriptaddress,float,nofootinbib,longbibliography,nobalancelastpage]{revtex4-2}
+%\documentclass[aps,prl,twocolumn,floatfix,10pt,amssymb,amsfont,amsmath,superscriptaddress,float,nofootinbib,longbibliography]{revtex4-2}
+
+\usepackage{graphicx} % Required for 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{braket}
+\usepackage[export]{adjustbox}
+\usepackage[T3,T1]{fontenc}
+\DeclareSymbolFont{tipa}{T3}{cmr}{m}{n}
+\DeclareMathAccent{\invbreve}{\mathalpha}{tipa}{16}
+
+\begin{document}
+% We can use the stabiliser formalism to show that the mapping can be made unitary by treating boundary conditions as additional degrees of freedom. 
+
+% In order to prove unitary we must prove that one orthogonal basis is transformed to another. Let us start with the fermionic computational basis and consider the action of the mapping upon product states.
+
+% The product state $\ket{0\ldots 010 \ldots0}$ can be represented in stabiliser formalism as stabilised by $\{I,Z_0, \ldots, Z_{m-1}, -Z_m, Z_{m+1}, \ldots, Z_n\}$. These stabilisers are mapped by our 1D PEPO without defect to $\{I, -\prod_i X_i, Z_0Z_1, \ldots, Z_{m-1}Z_{m}, -Z_{m}Z_{m+1}, Z_{m+1}Z_{m+2}, \ldots,Z_{n}Z_0\}$, where the additional $-\prod_i X_i$ stabiliser comes from the degenerate mapping of the identity due to the symmetries of the PEPO. As the product of all the $Z_{i}Z_{i+1}$ stabilisers gives $-I$, it is clear that these stabilisers do not jointly stabilise any state. However, if we had instead used the 1D PEPO with the defect on the boundary then the stabilisers would instead be mapped to $\{I, \prod_i X_i, Z_0Z_1, \ldots, Z_{m-1}Z_{m}, -Z_{m}Z_{m+1}, Z_{m+1}Z_{m+2},\ldots, -Z_{n}Z_0\}$ which does stabilise a single state. On the other hand if we were mapping a product state of an even number of fermions the PEPO with defect would produce stabilisers of the empty set whereas the PEPO without defect would produce stabilisers of a unique state. It is clear from this stabiliser description how the defect is introducing a boundary condition on the spin side (in the form of the boundary stabiliser being flipped), and mapping into a different charge sector of $\prod_i X_i$. 
+
+
+% \begin{equation}
+%     \{I, (-1)^{f_0} Z_0, \ldots, (-1)^{f_{n-1}}Z_{n-1}, (-1)^{f_n}Z_{n}\}
+% \end{equation}
+% \begin{multline}
+%     \{I, -(-1)^{\sum_{i}^{n}f_i}\prod_i X_i, (-1)^{f_0} Z_0Z_1, \ldots\\, (-1)^{f_{n-1}}Z_{n-1}Z_{n}, (-1)^{\sum_{i}^{n-1}f_i}Z_{n}Z_0\}
+% \end{multline}
+
+% Therefore, each element in the fermionic computational basis is mapped to a unique spin state and boundary condition. Whereas, if we fixed the boundary condition we would only ever map either the odd or even half of the fermionic computational basis.
+
+% We can easily extend these ideas to 2D. Here each $Z_i$ stabiliser is mapped to $ZZZZ$ around a vertex, and the identity is mapped to itself, local gauge conditions around each plaquette and 2 non-local stabilisers around the non-contractible loops. It is again immediately obvious that if only one $ZZZZ$ stabiliser has its sign flipped then they all multiply to give $-I$ and hence stabilise nothing. Again the defect has the effect of flipping the sign of a $ZZZZ$ stabiliser on the boundary and hence fixing this problem. Therefore, each element of the fermionic computational basis is mapped one-to-some
+
+% \newpage
+We can show the 1D PEPO is unitary by demonstrating the Fock basis is mapped one-to-one onto a spin basis. In the stabiliser formalism the fermionic state $  |f_0f_1\ldots f_n)$ is represented as:
+\begin{equation}
+    \{I, (-1)^{f_0} \invbreve{Z}_0, \ldots, (-1)^{f_{n-1}}\invbreve{Z}_{n-1}, (-1)^{f_n}\invbreve{Z}_{n}\}
+\end{equation}
+When we apply the 1D PEPO to this state it is mapped to the following (where $d=1$ iff there is a defect and else $d=0$):
+\begin{multline}
+    \{I, (-1)^{d+1}\prod_i X_i, (-1)^{f_0} Z_0Z_1, \ldots\\, (-1)^{f_{n-1}}Z_{n-1}Z_{n}, (-1)^{f_n+d}Z_{n}Z_0\}
+    \label{eq:stabiliser_1d_pepo_spin_d}
+\end{multline}
+where the additional $(-1)^{d+1}\prod_i X_i$ stabiliser comes from the degenerate mapping of the identity due to the symmetries of the PEPO. It is clear that if we multiply all the $Z_{i}Z_{i+1}$ stabilisers together we get $(-1)^{\sum_i^n f_n + d}I$. If this is $-I$ then \eqref{eq:stabiliser_1d_pepo_spin_d} only stabilises the empty set. Therefore, if we pick the boundary condition $d$ such that we get a non-empty result, we can simplify \eqref{eq:stabiliser_1d_pepo_spin_d} to:
+
+\begin{equation}
+    \{I, (-1)^{\sum_{i}^{n}f_i+1}\prod_i X_i, (-1)^{f_0} Z_0Z_1, \ldots, (-1)^{f_{n-1}}Z_{n-1}Z_{n}\}.
+    \label{eq:stabiliser_1d_pepo_spin}
+\end{equation}
+These $n$ independent generators uniquely specify an $n$ spin state parameterised by $(\sum_{i}^{n}f_i+1, f_0,\ldots, f_{n-1})$. Therefore, each element in $n$-mode Fock space is mapped to a unique $n$ spin state, and vise versa.
+
+We can easily extend these ideas to 2D. For a square lattice on a torus each $\invbreve{Z}_i$ generator is mapped to $ZZZZ_i$ (a $Z$ on each edge adjacent to the vertex), and the identity is mapped to itself, local gauge conditions around each plaquette $G_i$, and 2 non-local generators around the non-contractible loops ($X_V$, $X_H$):
+\begin{multline}
+    \{I, (-1)^{d+1}X_V, (-1)^{d+1}X_H,G_0,\ldots G_{p-1}, (-1)^{f_0} ZZZZ_0,\\ \ldots, (-1)^{f_{n-1}} ZZZZ_{n-1}, (-1)^{f_n+d} ZZZZ_{n}\}
+    \label{eq:stabiliser_1d_pepo_spin_d}
+\end{multline}
+where there are $p$ plaquettes and $n$ fermionic modes (vertices). The $(-1)^{\sum_{i}^{n-1}f_i}ZZZZ_n$ generator can be constructed from a product of the first $n-1$ vertices so it is necessary to take $d = \sum_{i}^{n}f_i$ to stabilise a non-empty set. As there are the same number of plaquettes as vertices, there are $2n$ independent generators, and hence a unique $2n$ spin state is specified. This unique state is again parameterised by $(\sum_{i}^{n}f_i+1, f_0,\ldots, f_{n-1})$, and hence each element in $n$-mode Fock space is mapped to a unique $2n$ spin state. Therefore, this is a unitary mapping between the $n$-mode Fock space and a gauge constrained subspace of $2n$ spins.
+
+In the above discussion it is crucial that we were able to chose our boundary condition $d$ dependant on the state we were mapping, or else half of the Fock space would have been mapped to nothing. Therefore, it is essential to include this boundary condition as a degree of freedom on the spin side of the mapping in order to achieve unitarity. 
+\end{document}

@@ -1,0 +1,11 @@
+Need to investigate the adaptive moves. THink we should be able to implement them by adding a zero Hamiltonian tensored ith the original then you can do anything you want to the system qubits of this and use them as a scratch pad to implement adaptive C. If you use as many qubits as you would then to use a different set of qubits for every C, then the only time they will be touched is during that C, so if you measure them at the end it is equvialent to you might as well have messured them immediately at the end of the step so you could infact have just reused the same qubits in every step.
+
+Look into what sort of algorithms can be run in this way. maybe only reversible ones, maybe only classical ones, probably everything
+
+Verify that adaptive moves are indeed critically important to classical metropolis success
+
+
+I think we should call them state dependent moves rather than adaptive moves - as adaptive means changing the rules as you go which can break the monte carloness but the rules for state dependent moves can be defined in advance
+
+
+We have checked everything IN appendix A and B. We have checked all of IV A, in IV B we only checked Thereom 3 and its proof. We have not checked any of appendix C. We have checked all of appendix D and all of appendix E.

@@ -1,0 +1,55 @@
+\begin{lemma}
+The approximately normalised state given by performing QPE with $l$-ancilla qubits initialised into the $m$-th B-Spline window state is:
+\begin{equation}
+    \sum_i c_i \sum_{x=-2^{l-1}+1}^{2^{l-1}} \sqrt{\frac{\pi}{6m}}\left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m \ket{x}\ket{\psi_i}
+\end{equation}
+where $E_i$ is the energy of the $i$-th eigenstate $\ket{\psi_i}$.
+\label{lemma:bspline_def}
+\end{lemma}
+\begin{proof}
+    The fourier transform of the $m$-th B-spline is given by \cite{bspline}: \begin{equation}
+        \left(\frac{\sin \frac{x\pi}{m}}{ \frac{x\pi}{m}}\right)^m
+    \end{equation} 
+    Performing QPE with the ancillas initially in the $m$-th B-spline state is equivalent to multiplying the B-spline state by $e^{ixE_i}$ and then applying QFT. Multiplying by a phase before QFT is equivalent to shifting by that phase after QFT, hence we get amplitudes proportional to:
+    \begin{equation}
+     \left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m 
+\end{equation}
+    So all we need to do is find the approximate normalisation. To find this we approximate the centre of the distribution by a Gaussian by Taylor expanding its logarithm:
+    \begin{align}
+                \log \left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m &= m \log \frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\\
+                &= m \log \left( 1 - \frac{1}{3!}(\frac{x\pi}{m})^2 + O(x^4) \right)\\ 
+                &= m(- \frac{1}{6}(\frac{x\pi}{m})^2 + O(x^4))\\
+                &= - \frac{x^2 \pi^2}{6m} + O(x^4)
+    \end{align}
+    Therefore, we can approximate the centre of the distribution by $e^{ - \frac{x^2 \pi^2}{6m}}$ and so we can utilise the normalisation for the gaussian $\sqrt{\frac{\pi}{6m}}$ to approximate the normalisation for our distribution.
+
+\end{proof}
+\begin{lemma}
+    Let $\delta$ be the probability of measuring an energy $x$ outside of the confidence interval of $E_i\pm m$ when performing $m$-th B-spline boosted QPE. Then,
+    \begin{equation}
+        \delta = O\left(\exp (-m)\right)
+    \end{equation}
+    \label{lemma:bspline_prob}
+\end{lemma}
+\begin{proof}
+From Lemma~\ref{lemma:bspline_def} we get:
+\begin{equation}
+     \delta = \sum_{|x - E_i| > m} \left\| \sqrt{\frac{\pi}{6m}}\left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m \right\|^2
+\end{equation}
+Therefore, we can bound $\delta$ as follows:
+    \begin{align}
+        \delta = \sum_{|x - E_i| > m} \left\| \sqrt{\frac{\pi}{6m}}\left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m \right\|^2 &\leq \sum_{|x - E_i| > m} \frac{\pi}{6m}\left(\frac{1}{ \frac{(x-E_i)\pi}{m}}\right)^{2m} \\
+        &\leq 2\int_{m}^{\infty} \frac{\pi}{6m}\left(\frac{1}{ \frac{x\pi}{m}}\right)^{2m} dx\\
+        &\leq  \frac{ \pi^{1-2m}}{3} \frac{1}{2m -1}\\
+        &= O\left(\exp (-m)\right)
+    \end{align}
+\end{proof}
+\begin{duplicate}
+To achieve a given probability $\delta$ of measuring energy outside of a given confidence interval $\epsilon$ (when using $O(\log \frac{1}{\delta})$-th B-spline boosted QPE), one must use $O(\log \frac{1}{\epsilon} + \log \log \frac{1}{\delta})$ ancillary qubits.
+\end{duplicate}
+\begin{proof}
+Let $l$ be the number of ancilla qubits used by B-spline boosted QPE. Using Lemma \ref{lemma:bspline_prob}, we can achieve a normalised confidence interval of $\frac{2m}{2^l}$ where $m = O(\log \frac{1}{\delta})$. Hence, $\epsilon = \frac{\log \frac{1}{\delta}}{2^{l-1}}$. Therefore,
+\begin{equation*}
+    l = O\left(\log \left(\frac{1}{\epsilon}\log \frac{1}{\delta}\right)\right)
+\end{equation*}
+\end{proof}

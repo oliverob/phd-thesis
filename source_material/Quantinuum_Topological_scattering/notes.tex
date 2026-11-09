@@ -1,0 +1,296 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{Notes on Topological scattering on Quantum Computer}
+\author{Oliver O'Brien and Atsushi Ueda}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+    The goal is to reproduce the wavepacket scattering experiment discussed in
+\cite{ueda2025}, i.e.\ to prepare an initial ground state of an Ising-type
+impurity / duality-defect spin chain, locally create an (approximate) wavepacket
+excitation, and then time-evolve and measure the resulting dynamics. In code, the two key subroutines are:a low-depth approximation to the ground state (GS) in a gapped regime ($g\gg 1$),a non-unitary wavepacket creation operator implemented using an ancilla (LCU + post-selection).
+\end{abstract}
+
+\section{Model and duality defect (Hamiltonian structure)}
+A minimal impurity model that we discussed in Ref.~\cite{ueda2025} can be written as
+\begin{align}
+H &= H_L + H_{\mathrm{im}} + H_R, \\
+H_L &= -\sum_{j=1}^{I-2} X_jX_{j+1} \;-\; g_L\sum_{j=1}^{I-1} Z_j, \\
+H_R &= -\sum_{j=I+1}^{L-1} X_j \;-\; g_R\sum_{j=I+1}^{L-1} Z_jZ_{j+1}, \\
+H_{\mathrm{im}} &= -X_{I-1}X_{I} \;-\; g_R\, Z_{I}Z_{I+1}.
+\end{align}
+The right-half degrees of freedom can be viewed as the Kramers--Wannier(KW) dual of
+the left-half Ising chain, so the ``interface'' at the impurity couples a theory
+to its dual (a lattice realization of a duality defect). The wavepacket created in the left medium can pass through this duality defect with a perfect transmittance when $g_L = g_R$. Interestingly, the duality defect attaches a topological string to the wave packet, making it a non-local excitation. 
+
+In the implementation, the duality transformation on (part of) the right half is
+realized by a short Clifford circuit (a CNOT ladder), which is applied once as a
+basis change before the time evolution.
+
+\section{Ground-state preparation by perturbation theory (low depth)}
+We use that in the gapped regime $g\gg 1$ the transverse-field part dominates.
+Writing (up to an overall scale)
+\begin{equation}
+H_L \;=\; -\sum_{i} Z_i \;-\; \frac{1}{g}\sum_{i} X_iX_{i+1},
+\end{equation}
+the unperturbed ground state is the fully polarized state
+$\ket{\psi_{\uparrow}} = \ket{0}^{\otimes L}$ (in the $Z$-basis).
+To first order in $1/g$, perturbation theory gives the (unnormalized) state
+\begin{equation}\label{eq:GS_uniform}
+\ket{\psi_{\mathrm{GS}}} \;\approx\; \ket{\psi_{\uparrow}}
+\;+\; \sum_{i=1}^{L-1}\frac{1}{4g}\,X_iX_{i+1}\ket{\psi_{\uparrow}}.
+\end{equation}
+
+A convenient circuit realization (also used in the notebook) is to approximate this
+state by a product of small two-qubit rotations and single-qubit $Z$ rotations:
+\begin{align}
+U_{XX} &= \prod_i \exp\!\left(+ i\,\frac{1}{4g} X_iX_{i+1}\right), \\
+U_{Z}  &= \prod_i \exp\!\left(+ i\,\frac{\pi}{8} Z_i\right), \\
+\ket{\psi_{\mathrm{prep}}} &\equiv U_Z U_{XX}\ket{0}^{\otimes L}.
+\end{align}
+On hardware, the nearest-neighbor $XX$ rotations are scheduled in two layers (even
+bonds then odd bonds) to reduce circuit depth. In Qiskit conventions,
+\[
+\mathrm{RXX}(\theta)=e^{-i\theta\,XX/2}\quad\Rightarrow\quad
+\theta=-\frac{1}{2g},
+\qquad
+\mathrm{RZ}(\varphi)=e^{-i\varphi\,Z/2}\quad\Rightarrow\quad
+\varphi=-\frac{\pi}{4}.
+\]
+
+
+\section{A neat way for the ground state preparation}
+In the previous sections, we prepared the ground state with two steps: 1. Prepare the uniform ground state 2. Apply a KW unitary circuit to the right half. These steps, however, are undesirable because the second part requires a series of CNOT gates, which are unstable in quantum devices.
+Here, we propose a direct way to construct the ground state of the impurity model.
+\subsection{Preliminaries}
+The KW unitary circuit is made by stacking the GHZ and CNOT gates alternately. As it is unitary, the product with its conjugate is the identity. Schematically, it is represented as
+\begin{align*}
+    \includegraphics[width=0.5\linewidth,page=2]{KW_operators.pdf}.
+\end{align*}
+This unitary circuit maps the operator of $H_L$ to $H_R$. Graphically, it is 
+\begin{align*}
+    \includegraphics[width=0.6\linewidth,page=4]{KW_operators.pdf}.
+\end{align*}
+Here, it is important to note that the impurity Hamiltonian goes back to the original Hamiltonian by conjugating it with the circuit again.
+This means that one can construct the ground state of the impurity by applying the circuit to that of the uniform Hamiltonian as
+\begin{align*}
+    \includegraphics[width=0.5\linewidth,page=3]{KW_operators.pdf} .
+\end{align*}
+We explicitly evaluate this state by applying the above relation to Eq.~\eqref{eq:GS_uniform}.
+% \subsection{Low-depth preparation of GS}
+% The answer is immediately obtained by noticing that $XX$ is mapped to $X$:
+% \begin{equation}\label{eq:GS_impurity}
+% \ket{\psi_{\mathrm{GS}}} \;\approx\; \ket{\psi_{\uparrow}}
+% \;+\; \sum_{i=1}^{I-1}\frac{1}{4g}\,X_iX_{i+1}\ket{\psi_{\uparrow}} + \sum_{i=I+1}^{L-1}\frac{1}{4g}\,X_i\ket{\psi_{\uparrow}}.
+% \end{equation}
+% There is no longer the KW operator $U_{KW}$ because it acts trivially to the spin polarized st ate $U_{KW}|\psi_{\uparrow}\rangle=|\psi_{\uparrow}\rangle.$ 
+
+% Similarly to the previous section, this state can be prepared easily.
+% \begin{align*}
+% U^L_{XX} &= \prod_{i=1}^{I-1} \exp\!\left(+ i\,\frac{1}{4g} X_iX_{i+1}\right), \\
+% U^R_{X} &= \prod_{i=I+1}^{L-1} \exp\!\left(+ i\,\frac{1}{4g} X_i\right),\\
+% U^L_{Z}  &= \prod_{i=1}^{I-1}  \exp\!\left(+ i\,\frac{\pi}{8} Z_i\right), \\
+% U^R_{Z}  &= \prod_{i=I+1}^{L-1}  \exp\!\left(+ i\,\frac{\pi}{4} Z_i\right), \\
+% \ket{\psi_{\mathrm{prep}}} &\equiv (U_Z^L\otimes U^R_Z) (U_{XX}^L\otimes U_X^R)\ket{0}^{\otimes L}.
+% \end{align*}
+
+\subsection{Generalized case}
+Let us generalize to $g_L\neq g_R$. It is straightforward to see the perturbed ground state becomes
+\begin{align}
+\ket{\psi_{GS}}
+\approx\;&
+\ket{\psi_\uparrow}
++\frac{1}{4g_L}\sum_{j=1}^{I-2}
+\Bigl(X_jX_{j+1}\ket{\psi_\uparrow}\Bigr)
++\frac{1}{4g_R}\sum_{j=I+1}^{L-1}
+\Bigl(X_j\ket{\psi_\uparrow}\Bigr)
++\frac{1}{2(g_L+g_R)}
+\Bigl(X_{I-1}X_I\ket{\psi_\uparrow}\Bigr),
+\end{align}
+
+The state preparation is a bit more complicated as
+\begin{align*}
+U^L_{XX} &= \left[\prod_{i=1}^{I-2} \exp\!\left(+ i\,\frac{1}{4g_L} X_iX_{i+1}\right)\right] \exp\!\left(+ i\,\frac{1}{2(g_L+g_R)} X_{I-1}X_{I}\right), \\
+U^R_{X} &= \prod_{i=I+1}^{L-1} \exp\!\left(+ i\,\frac{1}{4g_R} X_i\right),\\
+U^L_{Z}  &= \prod_{i=1}^{I}  \exp\!\left(+ i\,\frac{\pi}{8} Z_i\right), \\
+U^R_{Z}  &= \prod_{i=I+1}^{L-1}  \exp\!\left(+ i\,\frac{\pi}{4} Z_i\right), \\
+\ket{\psi_{\mathrm{prep}}} &\equiv (U_Z^L\otimes U^R_Z) (U_{XX}^L\otimes U_X^R)\ket{0}^{\otimes L}.
+\end{align*}
+\section{Results on emulator}
+We have performed the proposed experiment (preparing the ground state, locally creating a wavepacket excitaiton an then time-evolving) on an noisy emulator of the Quantinuum H2 device. The results of this simulation are given in Fig~\ref{fig:emulator}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{gl4gr2.png}
+    \includegraphics[width=0.4\linewidth]{gl4gr4.png}
+    \caption{Simulation showing $<Z_i>$ for every site index of time evolution of a wavepacket on top of approximate ground state using the noise model of the Quantinuum H2 system. Simulation was performed with $L=14$, $I=8$, $25$ trotter steps and $2000$ shots per circuit.}
+    \label{fig:emulator}
+\end{figure}
+
+\section{Wavepacket creation using an ancilla (LCU)}
+The wavepacket creation operator used in the simulation is \emph{not} unitary.
+Operationally, we approximate the desired Gaussian wavepacket by a short-range
+(three-site) operator of the form
+\begin{equation}
+W(k_0)\;\propto\;
+\frac{1}{2}e^{i 2k_0}\,X_{j-1} \;+\;
+1\cdot e^{i 3k_0}\,X_{j} \;+\;
+\frac{1}{2}e^{i 4k_0}\,X_{j+1},
+\end{equation}
+which is a linear combination of unitaries (LCU)~\cite{2012_LCU,Berry_2015}. To implement $W(k_0)$ on a quantum
+computer we introduce two ancilla qubits and use the standard LCU gadget:
+\begin{enumerate}
+  \item Prepare an ancilla state $\ket{A}=\sum_{\ell=0}^2 \sqrt{|w_\ell|/\lambda}\,\ket{\ell}$,
+        where $\lambda=\sum_\ell |w_\ell|$ and $\ket{\ell}\in\{\ket{00},\ket{01},\ket{10}\}$ labels
+        which $X$ to apply.
+  \item Apply a diagonal phase gate on the ancilla so that each $\ket{\ell}$ carries the phase
+        $e^{i p_\ell k_0}$ (with $p_\ell\in\{2,3,4\}$ here).
+  \item Apply the controlled \textsc{select} operation
+        $\sum_{\ell}\ket{\ell}\!\bra{\ell}\otimes X_{j+\delta(\ell)}$.
+  \item Uncompute only the \emph{amplitude preparation} part (apply prep$^\dagger$) and measure the ancilla.
+        The diagonal phase gate is kept, since it encodes the complex phases of the LCU coefficients.
+\end{enumerate}
+Post-selecting the ancilla outcome $\ket{00}$ applies the \emph{non-unitary} operator
+proportional to $W(k_0)$ on the data register (up to the known normalization $\lambda$).
+
+In practice (especially on real hardware) the post-selection probability $\langle P_{00}\rangle$
+must be monitored, and conditional observables can be reconstructed as
+\begin{equation}
+\langle O\rangle_{\mathrm{post}} \;=\; \frac{\langle P_{00} O\rangle}{\langle P_{00}\rangle},
+\qquad
+P_{00}=\left(\frac{I+Z_{\mathrm{anc0}}}{2}\right)\left(\frac{I+Z_{\mathrm{anc1}}}{2}\right).
+\end{equation}
+\section{Alternative wavepacket creation using an ancilla (LCU)}
+The wavepacket creation operator used in the simulation is \emph{not} unitary. Operationally, we approximate the desired Gaussian wavepacket by a short-range
+(three-site) operator of the form
+\begin{equation}
+W(k_0)\;\propto\;
+\frac{1}{2}e^{i 2k_0}\,X_{j-1} \;+\;
+1\cdot e^{i 3k_0}\,X_{j} \;+\;
+\frac{1}{2}e^{i 4k_0}\,X_{j+1},
+\end{equation}
+which is a linear combination of unitaries (LCU)~\cite{2012_LCU,Berry_2015}. To implement $W(k_0)$ on a quantum
+computer we use a \emph{one-hot} ancilla encoding with three ancilla qubits, one for
+each term in the sum, and apply the standard LCU gadget:
+\begin{enumerate}
+  \item Prepare the ancilla state
+        \begin{equation}
+        \ket{A}
+        \;=\;
+        \sqrt{\frac{|w_{-1}|}{\lambda}}\ket{100}
+        \;+\;
+        \sqrt{\frac{|w_{0}|}{\lambda}}\ket{010}
+        \;+\;
+        \sqrt{\frac{|w_{+1}|}{\lambda}}\ket{001},
+        \end{equation}
+        where $w_{-1}=\tfrac{1}{2}$, $w_{0}=1$, $w_{+1}=\tfrac{1}{2}$ and
+        $\lambda=\sum_\ell |w_\ell|=2$.
+  \item Apply a diagonal phase gate on the ancillas such that each one-hot basis
+        state acquires the appropriate phase:
+        \begin{equation}
+        \ket{100}\mapsto e^{i2k_0}\ket{100},\quad
+        \ket{010}\mapsto e^{i3k_0}\ket{010},\quad
+        \ket{001}\mapsto e^{i4k_0}\ket{001}.
+        \end{equation}
+        This can be implemented using single-qubit $Z$ rotations, since each term
+        is associated with exactly one ancilla being in $\ket{1}$.
+  \item Apply the controlled \textsc{select} operation
+        \begin{equation}
+        \ket{100}\!\bra{100}\otimes X_{j-1}
+        \;+\;
+        \ket{010}\!\bra{010}\otimes X_{j}
+        \;+\;
+        \ket{001}\!\bra{001}\otimes X_{j+1}.
+        \end{equation}
+  \item Uncompute only the \emph{amplitude preparation} (apply prep$^\dagger$) and
+        measure the ancilla qubits. The diagonal phase gate is kept, since it
+        encodes the complex phases of the LCU coefficients.
+\end{enumerate}
+Post-selecting the ancilla outcome $\ket{000}$ applies the \emph{non-unitary}
+operator proportional to $W(k_0)$ on the data register (up to the known
+normalization $\lambda$).
+
+In practice (especially on real hardware) the post-selection probability
+$\langle P_{000}\rangle$ must be monitored, and conditional observables can be
+reconstructed as
+\begin{equation}
+\langle O\rangle_{\mathrm{post}}
+\;=\;
+\frac{\langle P_{000} O\rangle}{\langle P_{000}\rangle},
+\qquad
+P_{000}
+=
+\prod_{a=1}^3 \left(\frac{I+Z_{\mathrm{anca}}}{2}\right).
+\end{equation}
+\pagebreak
+
+\section{Wavepacket Preparation with post-determined momentum}
+\begin{enumerate}
+    \item First use state preparation on an ancilla register to prepare the following state:
+    \begin{equation}
+        \sum_p \alpha(p) e^{i k_0 p}\ket{p}
+    \end{equation}
+    \item Apply controlled excitations upon the system controlled by the ancilla register:
+    \begin{equation}
+        \sum_p \alpha(p) e^{i k_0 p}\ket{p}\otimes X_p \ket{\psi}
+    \end{equation}
+    \item Apply QFT to the ancilla register:
+    \begin{equation}
+        \frac{1}{\sqrt{N}}\sum_{p,q} \alpha(p) e^{i k_0 p}e^{\frac{2\pi i}{N}qp}\ket{q}\otimes X_p \ket{\psi}
+    \end{equation}
+    \item Measure the ancilla register ($q_0$) giving post measurement state:
+    \begin{equation}
+        \frac{1}{\mathcal{N}_{q_0}}\sum_{p} \alpha(p) e^{i (k_0+\frac{2\pi q_0}{N} )p} X_p \ket{\psi}
+    \end{equation}
+    Therefore, we have created a wavepacket with mean momentum $k_0+\frac{2\pi q_0}{N}$, we can control the shape of the wavepacket with $\alpha$. 
+    
+    
+    I hypothese that we should pick $\alpha$ to be some window function rather than a guassian as this will lead to a tighter variance in momenta. Now the problem is reduced to one of efficient state preparation of a window function which has been studied \cite{mcardle2022quantum, o2025quantum}.
+\end{enumerate}
+\section{Creating entangled pair of wavepackets}
+Here we will create an entangled pair of wavepackets on two copies of an ising chain. These wavepackets will have opposite momentum but the same initial position.
+\begin{enumerate}
+    \item First use state preparation on an ancilla register to prepare the following state:
+    \begin{equation}
+        \sum^{N}_p \alpha^2(p) e^{ \frac{2\pi i}{N}k_0 p}\ket{p}
+    \end{equation}
+    \item Apply controlled excitations upon the two ising chains controlled by the ancilla register:
+    \begin{equation}
+        \sum^N_p \alpha^2(p) e^{ \frac{2\pi i}{N}k_0 p}\ket{p}\otimes (X_p \otimes X_{M+p}) \ket{\psi}
+    \end{equation}
+    \item Apply QFT to the ancilla register:
+    \begin{equation}
+        \frac{1}{\sqrt{N}}\sum^N_{p,q} \alpha^2(p) e^{ \frac{2\pi i}{N}k_0 p}e^{\frac{2\pi i}{N}qp}\ket{q}\otimes (X_p \otimes X_{M+p})\ket{\psi}
+    \end{equation}
+    \item Measure the ancilla register ($q_0$) giving post measurement state:
+    \begin{equation}
+        \frac{1}{\mathcal{N}_{q_0}}\sum_{p} \alpha^2(p) e^{\frac{2\pi i}{N}(k_0+q_0) p}(X_p \otimes X_{M+p}) \ket{\psi}
+    \end{equation}
+    This is equivalent to a pair of entangled wavepackets with uncertain momentum that sum to $k_0+q_0$:
+    \begin{equation}
+        \sum_k \left(\sum_p \alpha(p)e^{-\frac{2\pi i}{N} kp} X_p\right)\left(\sum_q \alpha(q)e^{\frac{2\pi i}{N} (k+k_0  +q_0)q} X_{M+q}\right)\ket{\psi}
+    \end{equation}
+
+    Due to the conservation of momentum valid pair creation corresponds to when we measure $q_0$ such that $q_0= -k_0 \mod N$.
+\end{enumerate}
+\section{Detecting non-locality of partially transmitted particle}
+If we choose $g_L$ and $g_R$ so we have partial transmission and partial reflection (e.g. $g_L = 4$, $g_R = 3.2$), then the reflected left-moving spin-flip excitation should be entangled with the transmitted right-moving domain wall. In order to highlight this we would like to demonstrate these particles exhibit non-local bell violations.
+
+After passing partially transmitting the wavepacket can be described as:
+\begin{equation}
+    \sum_j f(j+vt) X_j + f(j-vt)X_
+\end{equation}
+\bibliographystyle{unsrt}
+\bibliography{ref}
+
+
+\end{document}

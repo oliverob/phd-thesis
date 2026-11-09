@@ -1,0 +1,31 @@
+\documentclass[a4paper, 12pt]{letter}
+% Name of sender
+\makeatletter
+  \def\@texttop{}
+\makeatother
+\begin{document}
+\name{Oliver O'Brien, Laurens Lootens, and  Frank Verstraete}
+
+
+% Name and address of receiver
+\begin{letter}
+% Correct for vertical displacement
+
+
+% Opening statement
+\opening{Dear Editor,}
+
+% Letter body
+
+Finding mappings between fermions and spins has been an active area of research over the last couple decades. Viewed from the quantum information perspective these mappings are a route for translating physical problems into a language a quantum computer can understand. The more efficient the mapping the lower depth circuits required, which further reduces the hurdle to useful quantum computation. When considered from a condensed matter angle these mappings are dualities between different topological phases, opening up new avenues for solving existing problems. The Jordan-Wigner transformation, for example, has been used to solve highly frustrated 1D quantum spin chains.
+
+Existing 2D generalisations of Jordan-Wigner do not respect the lattice symmetries of translational invariance, nor do they provide a mapping of the whole fermionic Hilbert space. We solve both of these issues for the first time by using a generalised approach in the language of fermionic tensor networks. 
+
+We are able to construct locality-preserving mappings on arbitrary graphs and consider the role of boundary conditions on the torus. We find that by including these boundary conditions as degrees of freedom we can recover a unitary mapping between the fermionic and the spin Hilbert spaces. As expected for a duality transformation our mapping exchanges (twisted) boundary conditions and topological charge sectors. We believe that using fermionic tensor networks in this way provides a unifying framework for understanding fermion-to-qubit mapping schemes.\\
+
+
+% Closing statement
+\closing{Best regards,}
+
+\end{letter}
+\end{document}

@@ -1,0 +1,100 @@
+\documentclass{beamer}
+% \bibliography{references.bib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Data loading using QSVT with piecewise polynomials}
+\author{Oliver O'Brien and Christoph Sünderhauf}
+\institute{Riverlane}
+\date{2024}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Requirements for data loading via QSVT}
+\begin{enumerate}
+    \item $d$-degree polynomial approximation ($f$)
+    \begin{itemize}
+        \item $L_\infty$ norm $ <\epsilon$
+        \item Cost of QSVT scales with $f_{max}=\max_{x \in [-1,1]} |f(x)|$
+    \end{itemize}
+    \item Diagonal block encoding with distinct entries, e.g.
+    \begin{itemize}
+        \item Linear
+        \item Sinusoidal
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+\begin{frame}{Immediate problems with data loading}
+\begin{itemize}
+    \item Any polynomial approximation with exponential convergence will necessarily have exponential ill-conditioning \cite{doi:10.1137/090774707}
+    \item However, we do not need exponential convergence. If we want a constant error in trace distance then we only need a linearly shrinking approximation of each amplitude
+\end{itemize}
+\end{frame}
+\begin{frame}{Solutions}
+\begin{itemize}
+    \item Any polynomial approximation of $n$ equispaced points with $d < 6^{\frac{1}{4}}\sqrt{n}$ has $f_{max} < \frac{1}{1-\frac{d^2(d^2-1)}{6n^2}}$ \cite{Ehlich}
+    \item Using polynomial frame approximation allows us to find a bounded approximation to within $O(n^{\frac{3}{2}}\epsilon)$ for $d < \frac{\sqrt{\gamma^2 -1 }}{36 \log\frac{1}{\epsilon}}n$ of functions that are analytic around [-1,1] \cite{adcock2022fast}
+\end{itemize}
+\end{frame}
+\begin{frame}{Classical Complexities}
+\begin{itemize}
+    \item Naive polynomial approximation: $O(nd^2)$
+    \item FFT-based (divide and conquer) polynomial approximation: $O(n\log^2 n)$ for $d=n-1$ \cite{Kung1973FastEA}, $O(n\log^2 d)$ \cite{LI199615}
+     - Highly numerically unstable, however new technique exists which claims to fix this: \cite{pan2017fast}
+
+     - Tempting to instead implement the $O(n^2)$ GPU optimised algorithm which would combine https://ipsj.ixsq.nii.ac.jp/ej/?action=repository_uri&item_id=129006&file_id=1&file_no=1 with https://louis.uah.edu/cgi/viewcontent.cgi?article=1820&context=honors-capstones
+    \item SVD: $O(dn^2)$
+    \item Matrix Inversion: $O(n^3)$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Quantum Complexity in T-gates (with no tradeoffs)}
+$\mathcal{E}_i$ - Cost of $i$-qubit block encoding, $f$ - Flag qubits required
+
+$\mathcal{R}_{\epsilon}$ - Cost of rotation with accuracy $\epsilon$
+
+$\mathcal{T}_i$ - Cost of $i$-qubit AND gate
+
+$\mathcal{F}$ - Filling fraction, $\alpha$ - Rescaling $\frac{\|f\|_{[-1,1],max}}{\|f\|_{2^n,max}}$ ($1 \leq \alpha \leq O(2^{2^n})$)
+\begin{itemize}
+    \item Naive data loading
+    $$
+    2^n\mathcal{R}_{\frac{\epsilon}{2^n}}
+    $$
+    \item QSVT data loading
+        $$
+        \frac{\alpha}{\mathcal{F}}(2D(\mathcal{E}_n+\mathcal{R}_{\frac{\mathcal{F}\epsilon}{2D \alpha }}+2\mathcal{T}_f)+\mathcal{T}_{n+f+2}+\mathcal{T}_{f+2}+2\mathcal{R}_{\frac{\mathcal{F}\epsilon}{2 \alpha }})
+        $$
+    \item Piece-wise QSVT data loading
+    $$
+        \frac{\alpha_{max}}{\mathcal{F}}(2d(\mathcal{E}_l+2^m\mathcal{R}_{\frac{\mathcal{F}\epsilon}{2^{m+1}d  \alpha_{max} }}+2\mathcal{T}_f)+\mathcal{T}_{n+f+2}+\mathcal{T}_{f+2}+2\mathcal{R}_{\frac{\mathcal{F}\epsilon}{2 \alpha }})
+        $$
+\end{itemize}
+    Therefore, an improvement only if $2^md < D$ and $2^md < 2^n\frac{\mathcal{F}}{2\alpha}$
+\end{frame}
+\begin{frame}{Space-time complexity (with tradeoffs)}
+\begin{itemize}
+    \item Naive data loading
+    $$
+    2^n\mathcal{R}_{\frac{\epsilon}{2^n}}n
+    $$
+    \item QSVT data loading
+        $$
+         \frac{\alpha}{\mathcal{F}}(2D(\mathcal{E}_n+\mathcal{R}_{\frac{\mathcal{F}\epsilon}{2D \alpha }}+2\mathcal{T}_f)+\mathcal{A})(2n + 2f+2)
+        $$
+    \item Piece-wise QSVT data loading
+    \begin{multline*}
+        \bigg( \frac{\alpha_{max}}{\mathcal{F}}(2d(\mathcal{E}_l+\mathcal{T}_3 (\log \left(\frac{1}{\epsilon}\right) -2)+2\mathcal{T}_f)+\mathcal{A})+ 2(2^m -1)\mathcal{T}_3\\ +\log \left(\frac{1}{\epsilon}\right) \mathcal{R}_{\frac{\mathcal{F}\epsilon}{2d \alpha_{max} \log \frac{1}{\epsilon}}}\bigg) 
+        \left(2n + (m+1)\log\left( \frac{1}{\epsilon} \right) +2f +2\right)
+    \end{multline*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{References}
+\bibliographystyle{plainnat}
+\bibliography{references.bib}
+\end{frame}
+\end{document}

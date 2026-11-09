@@ -1,0 +1,301 @@
+\documentclass[aps,floatfix,10pt,amssymb,amsfont,amsmath,superscriptaddress,float,nofootinbib,longbibliography,nobalancelastpage,twocolumn,prx]{revtex4-2}
+\usepackage{braket}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+
+\begin{document}
+\title{Particle-to-string conversion across duality defects on a quantum computer}
+\begin{abstract}
+Recent advances in quantum computing provide new opportunities for studying the dynamics of excitations in quantum many-body systems. Here, we introduce a unitary protocol for preparing a localized quasiparticle wavepacket on top of the ground state. By combining this protocol with time evolution across a duality defect, we efficiently convert local particles into non-local string-like excitations, avoiding the direct implementation of extensive string operators. We demonstrate this particle-to-string conversion in the Ising model and an SPT phase of the cluster model and implement the protocol on Quantinuum's H2 quantum computer. Our results establish duality defects and generalized symmetries as practical resources for preparing and probing non-local excitations on quantum hardware.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+
+Understanding the scattering of particles off monopoles has been an active area of intense research within high-energy physics for decades. Recently, it has come into particular focus with the resolution of the 50-year-old monopole paradox \cite{}. It was previously not understood how particles with seemingly invalid quantum numbers could be generated when scattering off a monopole. The new understanding \cite{} is that the monopole acts as a boundary to a topologically twisted sector of the physical theory which admits different valid particles. Further, these particles remain connected to the monopole via a non-local string as they continue to propagate away from it. In this work we present the toolkit necessary to study this phenomenon on a quantum computer, and implement a demonstration of these methods on an existing state-of-the-art quantum device.
+
+The principal challenge of studying the scattered particles is that they do not admit a localised description due to their non-local connection to the monopole. Therefore, initialising a quantum state with a scattered excitation would naively require a highly non-local operator. Further, if we wish to control the momentum of our initialised scattered state we must prepare a wavepacket of the scattered particle. This non-local wavepacket would typically be hugely expensive to implement on a quantum computer. We present a methodology for preparing these non-local wavepackets through the lens of generalised symmetries - for the first time using this powerful branch of condensed matter physics to improve a real-world quantum experiment.
+
+Our methodology for preparing scattered wavepackets is effectively an experimental realisation of monopole scattering, however, it can also be used devoid of this context for preparing non-local wavepackets of other origins. We first introduce a novel method for efficiently preparing a localised wavepacket (Section~\ref{section:localized_wavepacket}). Then we apply quantum time evolution under a specially chosen Hamiltonian to propagate the localised wavepacket past an impurity site (representing the monopole) to emerge as a non-local scattered wavepacket in a dual theory (Section~\ref{section:nonlocalwavepacket}). We demonstrate two different examples of monopole scattering given by the Ising model and the Cluster model. These highlight how to perform our methodology on periodic boundary conditions, for scattered wavepackets that are undetectable with local operators, and how to confine wavepackets to the dual theory. 
+
+We have carefully adapted our protocol for implementation on existing state-of-the-art quantum ion trap devices (Section~\ref{section:hardwareimplementation}) and have performed the experiment upon the H2 Quantinuum quantum computer (Section~\ref{section:results}). We believe this is the first example of monopole scattering performed on a quantum computer, and further is the first example of using generalised symmetries to improve a real-world experiment on a quantum computer.
+
+\section{Localized Wavepacket Preparation}
+\label{section:localized_wavepacket}
+Preparing a quasi-particle wavepacket excitation on top of a many-body ground state is an \textbf{open problem} and requires implementing a non-unitary operator of the form:
+\begin{equation}
+    \Psi_k^{\dagger} = \sum_{x=0}^{M-1} a_xe^{\frac{2\pi i}{M}kx} \phi^{\dagger}_x
+\end{equation}
+where $\phi^{\dagger}_x$ are the unitary creation operators for localised Wannier excitations and $a_x$ are real coefficients with $\sum_{x=0}^{L-1} a_x^2 =1$.
+
+In general, implementing a non-unitary operator (such as $\Psi^{\dagger}_k$) on a quantum computer requires post-selection or mid-circuit measurements with feed-forward (MCM-FF). These approaches both come with additional cost either in shot overhead or architectural complexity. We will instead use a \textbf{novel} ``post-classification" technique whereby we do not need to discard any shots. We achieve this by preparing the following state:
+\begin{equation}
+    \frac{1}{\sqrt{M}}\sum_{k=0}^{M-1} \ket{k}\otimes\Psi_{k+k_0}^{\dagger}\ket{\Omega} 
+\end{equation}
+Thus by measuring the ancilla register to be $k$ we find we have applied $\Psi^{\dagger}_{k + k_0}$. Therefore, we can prepare a wavepacket \textbf{without discarding any shots and without feed-forward}. We sacrifice explicit control over the momentum of the wavepackets we create, however as they are conditioned upon the outcome of the ancilla measurements we can easily post-classify the measurement outcomes.
+
+To achieve this, we use the following quantum circuit (which is very closely related to $LCU$):
+\begin{enumerate}
+    \item \textsc{PREP}: On $m = \log_2 M$ ancillas initialised to $\ket{0}$ prepare the following state: $
+        \sum_{x=0}^{M-1} a_xe^{\frac{2\pi i}{M}k_0x} \ket{x}$
+    \item \textsc{SELECT}: Controlled upon this ancilla register act with $\phi^{\dagger}_x$ upon the system giving:
+    $\sum_{x=0}^{M-1} a_xe^{\frac{2\pi i}{M}k_0x} \ket{x}\otimes \phi^{\dagger}_x\ket{\Omega}
+    $
+    \item \textsc{QFT}: Apply the Quantum Fourier Transform to the ancilla register giving the following final state:
+    \begin{multline}
+       \frac{1}{\sqrt{M}} \sum_{x,k=0}^{M-1} a_xe^{\frac{2\pi i}{M}(k_0+k)x} \ket{k}\otimes \phi^{\dagger}_x\ket{\Omega} = \\\frac{1}{\sqrt{M}}\sum_{k=0}^{M-1}  \ket{k}\otimes \Psi^{\dagger}_{k+k_0}\ket{\Omega}
+    \end{multline}
+\end{enumerate}
+In Appendix~\ref{appendix} we discuss how this formulation can be extended to create entangled multi-particle states. Further, we demonstrate that these multi-particle states retain this entanglement as they evolve with time and propagate genuine multi-partite entanglement to large distances. This genuine multi-partite entanglement (and non-locality) is detected experimentally through a Mermin inequality.
+\section{Non-local Wavepacket Preparation}
+\label{section:nonlocalwavepacket}
+When a localised wavepacket scatters off a monopole, it becomes a non-local wavepacket propagating in a twisted topological sector. Preparing such a non-local wavepacket on a quantum computer has not been previously addressed by the literature. These non-local wavepackets are not constructed from localised Wannier excitations but rather from non-local string-like excitations. Therefore, preparing them in the manner described in the previous section would be prohibitively expensive as it would require acting with extensive string-like operators within the \textsc{SELECT} step.
+
+We enable the efficient construction of these more complex wavepackets through the power of generalised symmetries. It is known that for any given model with non-local excitations there exists a dual model where the same excitations become localised \cite{}. Furthermore, in 1D we can represent the intertwinner between any two such dual models as an MPO \cite{}. Therefore, we can join the dual model and the original model through an impurity site in such a way that any wavepacket will be perfectly transmitted at the boundary \cite{}. This allows us to construct the localised wavepacket in the dual theory and then by applying time evolution propagate this wavepacket through the impurity to emerge as a non-local wavepacket in the original theory. Here the impurity site is playing the role of a monopole that acts as a boundary between two different topological sectors of the same theory.
+
+\subsection{Examplar models}
+We demonstrate the preparation and propagation of non-local wavepackets through monopole scattering on two following models. First, we will demonstrate the preparation of a domain-wall wavepacket on an Ising model with periodic boundary conditions. Second, we will demonstrate the preparation of a string-like wavepacket (undetectable by local observables) on a cluster model.
+
+\subsubsection{Periodic Ising Model}
+\begin{align*}
+H_{i} &= H_1 \;+\; H_2 \;+\; H_{\mathrm{im}}^{(L)} \;+\; H_{\mathrm{im}}^{(R)}, \\[6pt]
+%
+H_1
+&= -\sum_{j=I_L+1}^{I_R-2} X_j X_{j+1}
+\;-\; g \sum_{j=I_L+1}^{I_R-1} Z_j, \\[8pt]
+%
+H_2
+&= -\sum_{j=0}^{I_L-1} X_j
+\;-\; g \sum_{j=0}^{I_L-2} Z_j Z_{j+1} \\[4pt]
+&\quad -\; \sum_{j=I_R+1}^{L-1} X_j
+\;-\; g \sum_{j=I_R+1}^{L-2} Z_j Z_{j+1}\\
+&\;-\; g\, Z_{L-1} Z_0, \\[8pt]
+%
+H_{\mathrm{im}}^{(L)}
+&= - X_{I_L} X_{I_L+1}-g Z_{I_L-1} Z_{I_L}, \\[6pt]
+%
+H_{\mathrm{im}}^{(R)}
+&= - X_{I_R-1} X_{I_R}
+\;-\; g\, Z_{I_R} Z_{I_R+1}.
+\end{align*}
+
+% At first this Hamiltonian may seem contrived, however, after applying a modified Jordan-Wigner transformation it has a much clearer representation in terms of Majorana fermions.
+% \begin{multline}
+%     H = \sum_{j=0}^{2I_L-2} \gamma_{j}\gamma_{j+1} + \gamma_{2I_L-1}\gamma_{2I_L+1} + \\\sum_{j=2I_L+1}^{2I_R-1} \gamma_j\gamma_{j+1} + \gamma_{2I_R}\gamma_{2I_R+2} + \\\sum_{j=2I_R+2}^{2L-2}\gamma_j\gamma_{j+1} + \gamma_{2L-1}\gamma_0
+% \end{multline}
+% Under this representation it is clear that the impurities arise due to uncoupled majorana modes $\gamma_{2I_L}$ and $\gamma_{2I_R+1}$. Therefore, by relabeling the majoranas we could rewrite $H$ as:
+% \begin{equation}
+%     H = \sum_{j=0}^{2L-3} \gamma_j\gamma_{j+1} + \gamma_{2L-3}\gamma_0
+% \end{equation}
+% This is equivalent to 
+
+$H_1$ and $H_2$ are examples of dual models as discussed above, with the MPO intertwinner between these models given by the Kramers-Wannier duality. The overall Hamiltonian $H$ is derived by acting with the Kramers–Wannier duality upon a periodic Transverse-Field Ising model and two maximally entangled impurity sites as demonstrated below:
+
+\begin{equation}
+    \centering
+\begin{array}{c}
+
+H_i =\>\>\includegraphics[width=0.5\linewidth, page=2, valign=c]{figs.pdf} \\
+\\
+\big\downarrow \\
+\\
+H_i =\>\> \includegraphics[width=0.3\linewidth, page=3, valign=c]{figs.pdf}
+
+\end{array}
+\end{equation}
+
+As the Kramers-Wannier duality is a unitary transformation we preserve all of the physics of the original model, and hence we expect perfect transmission of wavepackets across the two boundaries (impurity sites). However, as we have coupled to the impurity sites via the Kramers-Wannier duality we would expect wavepackets which begin as local in $H_1$ to become non-local wavepackets when they pass into $H_2$. Hence, they will appear as propagating string-like excitations. We should consider this model as having two monopoles present. The particle scatters off the first monopole and enters the twisted sector, and then upon scattering off the second monopole returns to the original theory.
+
+% In order to probe the non-trivial physics of these non-local wavepackets we will instigate a quench some time after the wavepacket has crossed into $H_2$ by introducing an additional local longitudinal field. The quenched Hamiltonian $H_2'$ is given by:
+% \begin{align*}
+%    H_2' = &-\sum_{j=0}^{I_L-1} X_j
+% - g \sum_{j=0}^{I_L-2} Z_j Z_{j+1} \\
+% & - \sum_{j=I_R+1}^{L-1} X_j
+% - g \sum_{j=I_R+1}^{L-2} Z_j Z_{j+1}\\
+% &- g Z_{L-1} Z_0 \\
+% &- g_z \sum_{j=0}^{I_L-1} Z_j - g_z \sum_{j=I_R+1}^{L-1} Z_j
+% \end{align*}
+% This longitudinal field makes the model non-integrable and acts as an effective ``tension" in the string-like excitation. Implementing this quench breaks the duality between $H_1$ and $H_2$ leading to a confinement of the non-local excitation to the dual theory. Therefore, due to the ``tension" in the string we observe a wavepacket oscillating back-and-forth from the boundary of $H_2$.
+\subsubsection{Cluster Model}
+In the previous model we can create non-local wavepackets in the form of propagating domain walls. These are non-local as they naively require a linear combination of non-local operators to be instantiated, however, they can be detected by local order parameters. In this section, we go further by introducing the following three phase model that allows the creation of non-local wavepackets on top of the cluster state which can only be detected through non-local string-like order parameters:
+
+\begin{align*}
+    H_{c} &= H_1 + H_2 + H_3 + H_{im}^{(L)} + H_{im}^{(R)}\\
+    H_1 &=-\sum_{j=0}^{I_L-1} Z_j- g\sum_{j=0}^{I_L-3}X_jX_{j+2}  \\
+    H_2 &=- \sum_{j=I_{L}+2}^{I_R-3} Z_{j}Z_{j+2} -g \sum_{j=I_{L}+2}^{I_R-1} X_j\\
+    H_3 &= - \sum_{j=I_R+1}^{L-3}Z_j X_{j+1}Z_{j+2} - g \sum_{j=I_R+1}^{L-1}  X_j\\
+    H^{(L)}_{im} &= -Z_{I_L}Z_{I_L+2} - Z_{I_L+1}Z_{I_L+3}\\
+    &\;\;-g X_{I_L-2}X_{I_L} -g X_{I_L-1} X_{I_L+1}\\
+    H^{(R)}_{im} &= -Z_{I_R-2}Z_{I_R}Z_{I_R+1} - Z_{I_R-1}X_{I_R}X_{I_R+1}Z_{I_R+2}
+\end{align*}
+
+This model consists of a pair of interleaved open boundary transverse field ising chains which have had three dualities applied to them. First, two copies of the Kramers-Wannier duality have been applied to the left-hand side of each chain leading to a duality between paramagnetic and ferromagnetic phases (similarly to the previous section). Second, a spin-$\frac{1}{2}$ analogue of the Kennedy-Tasaki transformation has been applied to the right-side of both chains leading to a single $XZX$ cluster model. This Kennedy-Tasaki transformation is constructed as an MPO consisting of two tensors:
+\begin{equation}
+    \includegraphics[page=4, valign=c]{figs.pdf} = \sum_{a,j=0}^1(-1)^{aj} \ket{a}\bra{a} \otimes \ket{j}\bra{j}
+\end{equation}
+\begin{equation}
+    \includegraphics[page=5, valign=c]{figs.pdf} = \sum_{a,j=0}^1 \ket{a\oplus j}\bra{a} \otimes \ket{j}\bra{j}
+\end{equation}
+These combine together into the following Kennedy-Tasaki MPO:
+\begin{equation}
+    \includegraphics[page=6]{figs.pdf}
+\end{equation}
+By applying this to a pair of interleaved open boundary TFIM models (which have each already had the Kramers-Wannier duality applied to their LHS) we are able to produce $H_{c}$:
+\begin{equation}
+    H_{c}=\includegraphics[width=0.8\linewidth, page=8, valign=c]{figs.pdf}
+\end{equation}
+
+The $H_3$ cluster model realizes a 1D SPT phase with its ground state given by the well-known cluster state. Therefore, by creating a localised wavepacket in $H_1$ and propagating with time we first transition to a domain wall wavepacket in $H_2$ and then to a non-local string-like wavepacket propagating through an SPT phase in $H_3$. We can again interpret this behaviour as a particle scattering off two monopoles, however, this time the particle does not return to the original theory as the two monopoles are different in nature.
+
+\subsection{Implementation on quantum hardware}
+\label{section:hardwareimplementation}
+In order to study these quantum time dynamics of both our examplar models on a quantum computer we must: 
+\begin{enumerate}
+    \item Construct an approximation to the ground state on our quantum computer
+    \item Use our localised wavepacket preparation protocol to excite a local wavepacket on top of this background
+    \item Apply quantum time evolution to propagate this local wavepacket through the dualities
+    \item Measure our non-local wavepacket
+\end{enumerate}
+Each of these steps requires careful consideration and optimization for hardware-efficient implementation in the NISQ era. In the following section we will break down the detailed implementations of each step.
+
+\subsubsection{Ground state preparation}
+An MPS representation for the ground states can be found very efficiently and to high precision using DMRG \cite{}. Therefore, we can deploy AQCtensor \cite{robertson2025approximate} to find an efficient low-depth quantum circuit for preparing such a ground state. This method proceeds by first constructing a parameterised hardware-efficient low-depth ansatz, then using tensor network simulation techniques to compress this into an MPS representation and finding the fidelity with the desired ground state MPS. By applying a standard numerical optimisation (e.g. L-BFGS-B) we are able to quickly converge to a low-depth quantum circuit that approximates the MPS. This method is efficient for states of at least up to 100 qubits. In Fig.~\ref{fig:groundstateprep} we illustrate how the accuracy of the optimised ansatz used in our experiment depends upon its depth. Based on this data we chose to use an optimised ansatz with a 2-qubit depth of 8 for the Ising model and ? for the Cluster model.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{groundstateprep.png}
+    \caption{Ground-state preparation error for the Ising model on a 50-qubit system at $g=1.5$ as a function of the two-qubit depth of the optimised hardware-efficient ansatz. The vertical axis shows the infidelity, $1-\mathcal{F}$, between the variationally prepared state and the target DMRG/MPS ground state. }
+    \label{fig:groundstateprep}
+\end{figure}
+\subsubsection{Wavepacket Preparation}
+In order to prepare the localised wavepacket we will follow the protocol laid out in Section~\ref{section:localized_wavepacket}. However, we first make some minor alterations to improve compatibility with NISQ devices. 
+
+Firstly, \textsc{SELECT} poses a difficulty for NISQ devices as the standard approach requires multiplexed controlled unitaries that are very expensive to implement. Therefore, we will instead use a unary encoding of the ancilla registers which at the expense of requiring more ancillas reduces SELECT to $M$ 2-qubit \textsc{CNOT} gates. Further, it is important to note that in $H_1$ (where we will create the wavepacket) we have that the localised Wannier excitations $\phi_i^{\dagger}$ are given by Pauli $X$ on site $i$ for both example models.
+
+Second, as we chose to prepare guassian wavepackets, \textsc{PREP} requires preparing the following state:
+\begin{equation}
+    \sum_{x=0}^{M-1}e^{-\left(\frac{x-\frac{M-1}{2}}{\sigma}\right)^2}e^{\frac{2\pi i}{M}k_0 x} \ket{2^x}
+\end{equation}
+Due to the exponentially decaying tails of the gaussian wavepacket we can take $M \ll L$ with minimal truncation error from the full gaussian, and hence \textsc{PREP} can be approximated by numerically optimising a hardware efficent variational ansatz for a very modest classical computational cost.
+
+The form of \textsc{QFT} is complicated by switching to a unary encoding scheme. We use the shallow depth unary QFT circuit proposed in \cite{jain2024quantum}. This proceeds by replacing the radix-2 operations in the Cooley-Tukey algorithm \cite{cooleytukey} for implementing classical FFT with 2-qubit gates. It requires $n \log n$ 2-qubit gates to implement and heavily benefits from the all-to-all connectivity of the trapped ion architecture. 
+
+Finally, switching to a unary encoding for our ancillas introduces a simple but effective error mitigation technique through discarding shots with ancillary hamming weight not equal to 1. 
+
+\subsubsection{Time Evolution}
+We perform quantum time evolution through a first-order Suzuki--Trotter decomposition \cite{}. We can bound the trotter error $\epsilon_T$ introduced through this decomposition for a target Hamiltonian $H = \sum_j h_j$ as $\epsilon_T = O\left(\frac{t^2}{r} \sum_{j,k} \|[h_j, h_k]\|\right)$ \cite{childs2019theory}. For local models (like our examples) we have $\sum_{j,k} \|[h_j, h_k]\| = O(L)$. Throughout our work we will use a fixed time step $\delta t$ and hence the trotter error after $r$ steps is given by $\epsilon_T=O\left( \delta t^2Lr\right)$.
+
+The overall circuit depth will be dominated by Trotter time evolution, and hence it is pivotal to minimise the cost of every Trotter step. To this end we choose an ordering of terms to maximally parallelise every step. Through this we can reduce the 2-qubit circuit depth of a single trotter step to ? and ? for the Ising and Cluster models respectively.
+\subsubsection{Measurement}
+For the Ising model measuring the non-local wavepacket is simple as it can be detected by local observables. Therefore, simply measuring all the qubits in the $Z$ basis will suffice. However, the cluster model is much more challenging. In the cluster model we can only detect the presence of a wavepacket via the following non-local order parameters: 
+\begin{align}
+Z_{I_R}Z_{i}\prod_{j=1}^{\frac{i-I_R-1}{2}}X_{I_R+2j} & \text{ for odd } (i-I_R)\\
+    X_{I_R}Z_{i}\prod_{j=1}^{\frac{i-I_R-2}{2}}X_{I_R+2j+1} &\text{ for even }  (i-I_R)
+\end{align}
+Luckily, the strings which terminate at even (and odd) sites all qubit-wise commute with all other strings terminating at even (and odd) sites. Therefore, by splitting the strings into two groups we can evaluate the expectation values of all the non-local order parameters through just the following two measurement settings:
+\begin{equation}
+    Z_{I_R}\prod_{j=I_R+1}^{L-1} Z_{j}X_{j+1} \;\text{ and }\;  X_{I_R}\prod_{j=I_R+1}^{L-1} X_{j}Z_{j+1}
+\end{equation}
+Therefore, we can detect the non-local wavepacket in the cluster model by simply doubling our shot count.
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{isingmodel.png}
+    \caption{Momentum-resolved propagation of a localised wavepacket in the periodic Ising model (with $g=0.7$, $I_L = 21$, $I_R=29$ and $L=48$) on the Quantinuum H2 quantum computer. Each panel shows the normalised local $Z$-basis signal as a function of lattice site and evolution time, conditioned on the measured unary-ancilla outcome corresponding to momentum $k$. The number of shots measured with each momentum is shown above the corresponding panel. The opposite slopes obtained for positive and negative momenta demonstrate propagation in opposite directions with momentum-dependent group velocities. The broader and partially bidirectional signals at small $|k|$ arise from the finite momentum width of the Gaussian wavepacket.}
+    \label{fig:isingmodel}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{cluster_model_Z.png}
+    \includegraphics[width=\linewidth,trim=0cm 0cm 0cm 0.8cm, clip=true]{cluster_model_Z_strings.png}
+    \caption{Propagation of a wavepacket through the three-region cluster-model (with $g=0.7$, $I_L = 20$, $I_R=28$ and $L=48$) construction on the Quantinuum H2 quantum computer. The columns correspond to the four post-classified momentums indicated above the panels, together with their respective numbers of shots. The upper row shows the local $Z$-basis signal, whereas the lower row shows the non-local string-order signal defined in Eqs.~(10) and (11). Before the wavepacket enters the cluster region, its trajectory can be identified using local observables. After crossing the second defect at $I_R$, the excitation is no longer distinguishable from the background using local $Z$ measurements, but its continued propagation remains visible in the string-order measurements. This demonstrates the conversion of a locally detectable excitation into a non-local excitation in the SPT sector.}
+    \label{fig:clustermodel}
+\end{figure*}
+\subsection{Results}
+\label{section:results}
+We have used the above techniques to prepare local wavepackets and scatter them off topological defects in both the Ising and Cluster model on Quantinuum's H2 quantum computer with 56 qubits. We ran simulations for 15 and 13 trotter steps with $\delta t$ of 0.4 and 0.6, with $g=0.7$ and $g=0.7$ respectively. For the Ising model we choose $k_0 = \arccos g$ to be the momentum that would give the minimum spread in the wavepacket.
+
+The localised wavepacket created in the cluster model is given by:
+\begin{equation}
+    \Psi_k^{\dagger} = \sum_{p=0}^{M-1} e^{-\left(\frac{p-\frac{M-1}{2}}{\sigma}\right)^2}e^{\frac{2\pi i}{M}k p} X_p 
+\end{equation}
+As the model consists of two separate Ising chains on odd and even sites, we should rewrite this as:
+\begin{equation}
+    \Psi_k^{\dagger} = \Psi_{k,1}^{\dagger} +\Psi_{k,2}^{\dagger}
+\end{equation}
+where we have:
+\begin{equation}
+        \Psi_{k,1}^{\dagger} = \sum_{p=0}^{\frac{M-1}{2}} e^{-\left(\frac{2p-\frac{M-1}{2}}{\sigma}\right)^2}e^{\frac{4\pi i}{M}k p} X_{p,1} 
+\end{equation}
+\begin{equation}
+        \Psi_{k,2}^{\dagger} = \sum_{p=0}^{\frac{M-3}{2}} e^{-\left(\frac{2p+1-\frac{M-1}{2}}{\sigma}\right)^2}e^{\frac{2\pi i}{M}k (2p+1)} X_{p,2} 
+\end{equation}
+Therefore, the actual momentum of the wavepackets created is $2k$ rather than $k$. Therefore, pairs of ancilla outcomes actually correspond to the same effective momentum, and we must choose $k_0= \frac{1}{2}\arccos g$ to get the minimum spread of group velocities.
+
+For both experiments we choose to use a wavepacket of width 8, hence we require $M=8$ ancillas and leave $L=48$ qubits to be used as lattice sites. We post-classify the results of the circuits based on the measured ancilla bits, thus we generate plots over a range of wavepacket momentum. For the Ising model we generate 8 different momentum, whereas we just generate 4 different momentum for the cluster model due to the degeneracy introduced by having two underlying Ising chains. Figures~\ref{fig:isingmodel} and \ref{fig:clustermodel} show the results of this time evolution. We can clearly observe the wavepackets propagating with differing group velocities as accorded by their differing momentum. As each wavepacket is a gaussian in position space, it is also described by a gaussian in momentum space. Thus each wavepacket does not have a single definite momentum, but rather contains a range of differing momentum. This is observed most strongly for the wavepackets with small momentum which propagate in both directions due to containing this spread of momentum.
+
+
+Fig.~\ref{fig:clustermodel} demonstrates clearly how the topological defect transforms the particle from a local excitation into a non-local excitation. Here we can see that after the particle passes through the second boundary into the cluster model it cannot be detected by the local $\braket{Z}$ operators. However, the particle can be seen when we instead measure the non-local string operators originating at the boundary.
+
+Figure~\ref{fig:isingmodel} additionally demonstrates the conversion of a local excitation into a non-local domain-wall wavepacket as it crosses a defect. The wavepacket is initially prepared in the $H_1$ region using a superposition of local Pauli-$X$ excitations. Upon reaching either impurity site, it is transmitted into the dual $H_2$ region, where the Kramers--Wannier transformation maps the corresponding local excitation to the endpoint of an extended disorder string. The outgoing particle should therefore be interpreted as a propagating domain wall whose direct preparation would require a non-local superposition of string operators. Nevertheless, unlike the string excitation in the cluster model, this domain wall remains detectable through local order parameters, allowing its trajectory to be followed after it has entered the dual sector. The continuation of the diagonal wavepacket feature across the defect, without a clearly resolved reflected branch, is consistent with the expected transmission through the duality interface. In the periodic geometry, subsequent passage through the second defect would transform the excitation back into a local excitation of the original theory.
+
+A useful feature of the post-classification procedure is that a single family of circuits provides access to all of the momentum sectors shown in Figs.~2 and 3. Every measurement outcome satisfying the unary Hamming-weight constraint is retained and assigned to its corresponding value of $k$. The different numbers of shots shown above the panels reflect the non-uniform probabilities of the ancillary outcomes rather than separate experimental shot budgets. Consequently, sectors with fewer classified shots exhibit larger sampling fluctuations, but they still contain information that would have been discarded in a conventional post-selection procedure targeting a single momentum.
+\section{Discussion}
+
+In this work, we have developed and experimentally demonstrated a method for preparing and studying non-local wavepackets on a quantum computer. The central idea is to avoid directly implementing the extensive string operators that would ordinarily be required to initialise such excitations. Instead, a wavepacket is first prepared in a dual description in which the excitation is local, and quantum time evolution is then used to propagate it through a defect that intertwines the two descriptions. After crossing the defect, the same excitation is represented by a non-local operator in the adjoining topological sector. In this sense, the defect provides a lattice realisation of monopole scattering: it acts as a boundary between differently twisted descriptions of the theory and changes the operator content required to describe the outgoing particle.
+
+The hardware results demonstrate two distinct aspects of this construction. In the periodic Ising example, post-classification of the ancillary measurements resolves wavepackets with different momenta and therefore different propagation directions and group velocities. In the cluster-model example, the wavepacket remains visible as it moves through the first two regions using local observables, but becomes invisible to local $Z$ measurements after entering the SPT region. Its trajectory can nevertheless be recovered using the appropriate non-local string-order parameters. The agreement between the disappearance of the local signal and the persistence of the string signal provides the clearest evidence that the defect has transformed the excitation from a locally detectable object into a genuinely non-local one.
+
+An important feature of the wavepacket-preparation protocol is that every valid ancillary outcome is assigned to a momentum sector. It is therefore unnecessary to post-select on a single desired momentum and discard all other otherwise valid experimental shots. Instead, the same circuit simultaneously generates data for several momentum-resolved experiments. This comes at the cost of unequal statistical precision between momentum sectors, since the different ancillary outcomes do not occur with equal probability. Nevertheless, the approach is particularly well suited to near-term devices because it replaces feed-forward and expensive multiplexed controlled operations with post-classification and a unary representation of the ancilla register. The unary encoding also supplies a simple error-detection condition: outcomes with ancillary Hamming weight different from one can be identified as invalid and removed.
+
+These experiments should be understood as a proof-of-principle demonstration rather than a precision determination of scattering amplitudes. The observable wavepackets have a finite spatial width and consequently contain a distribution of momenta and group velocities. Their trajectories are additionally affected by imperfect ground-state preparation, first-order Trotter error, finite-size effects, sampling noise, and errors in the hardware implementation. These contributions are not separately identified by the present data. In particular, the broadening and site-to-site fluctuations visible in the measured trajectories should not be attributed to a single source without further numerical comparison. Quantitative extraction of transmission probabilities, group velocities, and wavepacket distortions would therefore provide an important next step.
+
+More broadly, the results illustrate how dualities and generalised symmetries can serve not only as tools for classifying phases of matter, but also as practical resources for quantum-algorithm design. A transformation that makes an operator highly non-local may appear undesirable from the perspective of direct circuit implementation. Here, however, the corresponding defect is used dynamically: the state is prepared where its excitation is local and is subsequently transported into the sector where the desired non-local excitation resides. This viewpoint may be applicable to other dualities represented by matrix-product operators and to models containing symmetry defects, disorder operators, anyonic strings, or topological boundary conditions.
+
+Several extensions are natural. Higher-order or optimised product-formula methods could reduce the accumulated time-evolution error, while mid-circuit measurement and feed-forward could be used when direct preparation of a selected momentum sector is preferable to obtaining all sectors simultaneously. Larger systems would allow the outgoing wavepackets to propagate farther from the defects and would reduce the influence of finite-size recurrences. Finally, the multiparticle extension described in Appendix~A suggests a route towards preparing spatially separated, momentum-entangled particles and studying how multipartite entanglement is transported through duality defects.
+
+Taken together, these results establish a toolkit for preparing, propagating, and detecting excitations whose natural descriptions change from local to non-local across a topological defect. They also demonstrate that experimentally accessible local operations, time evolution, and appropriately chosen measurements can be combined to investigate sectors of quantum many-body systems that would otherwise require prohibitively non-local state-preparation circuits.
+\bibliography{ref}
+\appendix
+\section{Entangled Wavepacket Preparation}
+\label{appendix}
+Our methodology for preparing localised wavepackets can be extended to entangled multi-particle states. For example, for an entangled two particle system we can prepare the following state:
+\begin{equation}
+    \frac{1}{M}\sum_{k,k'=0}^{M-1}\ket{k}\otimes \Psi_{k_0+k'}^{A\dagger}\Psi_{k-k'}^{B\dagger} \ket{\Omega}
+\end{equation}
+Here when measuring the ancilla register to be $k$, we find we have applied $\sum_{k'} \Psi_{k_0+k'} \Psi_{k-k'}$. Thus we have created a pair of particles entangled through their momentum such that their total momentum is given by $k_0+k$.
+
+This is achieved through a simple modification of the existing protocol in the \textsc{SELECT} step. Here instead of acting with $\phi_x^{\dagger}$ we act with $\phi^{A\dagger}_x\phi^{B\dagger}_x$ thereby creating the state: $\sum_{x=0}^{M-1} a_xe^{\frac{2\pi i}{M}k_0x} \ket{x}\otimes \phi^{A\dagger}_x\phi^{B\dagger}_x\ket{\Omega}$. Therefore, after acting with \textsc{QFT} we are left with:
+\begin{equation}
+    \frac{1}{\sqrt{M}}\sum^M_{x,k=0} a_x e^{ \frac{2\pi i}{M}(k_0+k) x}\ket{k}\otimes \phi^{A\dagger}_x\phi^{B\dagger}_x\ket{\Omega}
+\end{equation}
+which can be rewritten as:
+\begin{multline}
+            \frac{1}{M}\sum_{k,k'} \ket{k}\otimes\left(\sum_x \sqrt{a_x}e^{\frac{2\pi i}{M} (k_0+k')x} \phi^{A\dagger}_x\right)\\\left(\sum_y \sqrt{a_y} e^{\frac{2\pi i}{N} (k-k')y} \phi^{B\dagger}_y\right)\ket{\Omega}
+\end{multline}
+It is important to note here the subtle modification to the shape of the wavepacket from following $a_x$ to $\sqrt{a_x}$.
+
+We can demonstrate this entangled wavepacket preparation on two copies of the ising model representing a particle and its anti-particle. In this instance, we have that $\phi_i^{A\dagger}$ is given by Pauli $X$ on site $i$ of chain $A$ and $\phi_i^{B\dagger}$ is given by Pauli $X$ on site $i$ of chain $B$. 
+\begin{figure}
+    \centering
+    % \includegraphics[width=\linewidth]{nn.png}
+    \includegraphics[width=\linewidth]{n(1-n).png}
+    \caption{Noiseless simulation of the entangled-wavepacket preparation protocol on two Ising chains of length five with $M=4$. The heat maps show the conditional occupation correlator $\langle n_i^A(1-n_i^B)\rangle$ as a function of site $i$ and evolution time for the four post-classified total-momentum sectors $k_0+k=0,1,-2,$ and $-1$. The zero-total-momentum sector produces the clearest counter-propagating wavepackets, corresponding to the particle and antiparticle carrying approximately opposite momenta.}
+    \label{fig:pairsim}
+\end{figure}
+Fig.~\ref{fig:pairsim} shows a noiseless simulation for Ising chains of length 5 with $M=4$. We can demonstrate that the wavepackets are truly entangled, and remain entangled as they propagate by considering the following Mermin inequality between sites $-2$ and $+2$ on both chains: 
+\begin{multline}
+    M = X_{-2}^AX^A_{2}X^B_{-2}X^B_2 + Y_{-2}^AY^A_{2}X^B_{-2}X^B_2 + \\Y_{-2}^AX^A_{2}Y^B_{-2}X^B_2 - Y_{-2}^AX^A_{2}X^B_{-2}Y^B_2 - \\X_{-2}^AY^A_{2}Y^B_{-2}X^B_2 + X_{-2}^AY^A_{2}X^B_{-2}Y^B_2+ \\X_{-2}^AX^A_{2}Y^B_{-2}Y^B_2 + Y_{-2}^AY^A_{2}Y^B_{-2}Y^B_2
+\end{multline}
+When we have $M \geq 4$ this gives a bell violation, demonstrating that the system cannot be described by local hidden variable theory. Furthermore, the same condition proves that the four qubits are genuine multipartite entangled \cite{toth2005entanglement}. This is effectively due to the state of these four qubits being very close to the GHZ-like state: 
+\begin{equation}
+    \ket{10}_A\ket{01}_B + \ket{01}_A\ket{10}_B
+\end{equation}
+as either particle $A$ had positive momentum and particle $B$ had negative momentum or vice versa. Therefore, as we can see in Fig.~\ref{fig:M} we expect this violation to occur most strongly when we measure $k_0+k=0$ (when the particles have exactly opposite momenta). Additionally, as seen in Fig.~\ref{fig:pairsim} we the violation coincides with when the two particles reach site $-2$ and $2$ respectively.
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{M.png}
+    \caption{Time-dependent Mermin parameter $\mathcal{M}$ evaluated on sites $-2$ and $+2$ of both Ising chains for the four momentum sectors shown in Fig.~4. The local-hidden-variable and genuine-multipartite-entanglement threshold is $\mathcal{M}=4$. The strongest violation occurs in the $k_0+k=0$ sector, for which the particle and antiparticle have opposite momenta, and coincides with the time at which the two counter-propagating wavepackets reach the measured sites. The remaining momentum sectors exhibit substantially weaker correlations and do not cross the threshold.}
+    \label{fig:M}
+\end{figure}
+\end{document}

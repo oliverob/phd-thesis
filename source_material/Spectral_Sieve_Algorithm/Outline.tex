@@ -1,0 +1,31 @@
+\documentclass[10pt]{amsart}
+
+\begin{document}
+\begin{enumerate}
+    \item Introduce Microcanonical Ensemble
+        \begin{enumerate}
+            \item The main motivation/novelty of the paper is introducing this problem to the quantum algorithms community
+            \item Define as sampling from $[\Lambda_0 - O(\frac{poly(n)}{2^n}), \Lambda_1+ O(\frac{poly(n)}{2^n})]$, therefore this becomes equivalently hard to sampling the ground state of a Hamiltonian with a gap that scales with $O(\frac{poly(n)}{2^n})$.
+            \item Need to explain physical motivation behind microcanonical ensemble
+        \end{enumerate}
+    \item QPE approach
+        \begin{enumerate}
+            \item Need to be clear that this is an approach to tackling this problem using existing state-of-the-art techniques (effectively to benchmark proposed algorithms against)
+            \item We will utilise Kaiser window and grover in this approach
+        \end{enumerate}
+    \item Operator Fourier Transform approach
+        \begin{enumerate}
+            \item An example of a novel way to solve this new problem.
+            \item Extends ideas of operator fourier transform from caltech, but has a different simpler circuit $\int e^{iHt}X f(t)dt$ vs $\int e^{iHt}Xe^{-iHt} f(t)dt$
+            \item Key to this approach are the nice properties of quadrature methods (e.g. Guassian quadrature) which allow us to discretise the above expressions into $T$ terms with an approximation error that scales with $O(\exp(-T))$.
+            \item Include our proof's of exponenetial time convergence in the case of general Hamiltonian and Haar random kicks for both ideal and realistic situations
+        \end{enumerate}
+    \item Discussion
+    \begin{enumerate}
+        \item We hope to argue that while the asympotic costs of the Operator Fourier Transform technique are worse than the QPE approach in the general case, they allow you to input information about the Hamiltonian
+        \item We hypothesise that choosing informed kicks could lead to an exponential improvement in convergence rate for some classes of Hamiltonians. As all the other costs are polynomial (due to our relaxed definition of the problem) this gives a polynomial runtime verus an exponential runtime for the QPE approach
+        \item TODO: we prove or hand-wave that under the ETH assumption we see this exponential improvement in convergence for Operator Fourier transform
+        \item We demonstrate a small toy example of maybe 2 qubits for which the operator fourier transform has both a lower resource cost and faster convergence.
+    \end{enumerate}
+\end{enumerate}
+\end{document}

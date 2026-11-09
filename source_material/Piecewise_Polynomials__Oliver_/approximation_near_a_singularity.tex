@@ -1,0 +1,151 @@
+\documentclass[aps]{revtex4-2}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}{Corollary}[theorem]
+\begin{document}
+\begin{theorem}
+Given a function $f$ which is analytic in an open Bernstein ellipse $E_{\rho}$ and satisfies $|(x+\frac{\rho + \rho^{-1}}{2})^k f(x)| \leq M$ for some constant $M$ within this ellipse and $k \in {0,1}$. Then the Chebyshev approximation $f_n$ has approximation error bounded by:
+\begin{equation}
+        \|f-f_n\| \leq 2M\left(\frac{2}{\rho-\rho^{-1}}\right)^k \frac{\rho^{-n}}{\rho -1}
+\end{equation}
+\end{theorem}
+\begin{proof}
+We can map from $f(x)$ and $T_k(x)$ on $[-1,1]$ to $F(z)$ and $(z^k + z^{-k})/2$ on the unit circle with $x = (z + z^{-1})/2$ and $F(z) = f(x)$.
+\begin{equation}
+    a_l = \frac{1}{\pi i} \int_{|z|=1} z^{-1-l} F(z) dz
+\end{equation}
+If $F$ is analytic in region $\rho^{-1} \leq |z| \leq \rho$ (which corresponds to a Bernstein ellipse in $x$ space), then we can expand this contour integral without changing its value to:
+\begin{equation}
+    a_l = \frac{1}{\pi i} \int_{|z|=s} z^{-1-l} F(z) dz
+\end{equation}
+for $1<s< \rho$.
+
+If we have that $|(x+\frac{\rho + \rho^{-1}}{2})^kf(x)| \leq M$ then $|(\frac{z + z^{-1}}{2}+\frac{\rho + \rho^{-1}}{2})^kF(z)| \leq M$ hence:
+\begin{equation}
+    |a_l| \leq \frac{1}{\pi} \int_{|z|=s} |z|^{-1-l}\left|\frac{1}{\frac{z + z^{-1}}{2}+\frac{\rho + \rho^{-1}}{2}}\right|^k M dz
+\end{equation}
+\begin{equation}
+    |a_l| \leq M|b_{l,k}|
+\end{equation}
+where $b_{l,k}$ is the $l$-th Chebyshev coefficient of $f(x) = (x- \frac{\rho + \rho^{-1}}{2})^{-k}$.
+
+Lemma 2 shows that for $l > \frac{k+3}{\ln \rho}$:
+$$
+ \|b_{l,k}\| = O(l^k\rho^{-l})
+ $$
+Therefore for $l > \frac{k+3}{\ln \rho}$,
+$$
+\| a_l \| = O(Ml^k\rho^{-l})
+$$
+
+$\|f-f_n\| \leq \sum_{l=n+1}^{\infty} |a_l|$. Therefore, if $n \geq \frac{k+3}{\ln \rho}$ we have
+\begin{equation}
+    \|f-f_n\| = O(M\sum_{l=n+1}^{\infty}l^k\rho^{-l})
+\end{equation}
+As $n>\frac{k+3}{\ln p}$, this is always decreasing, hence:
+\begin{equation}
+    \|f-f_n\| = O(M\int_{l=n}^{\infty}l^k\rho^{-l}dl)
+\end{equation}
+Therefore,
+\begin{equation}
+    \|f-f_n\| = O(\frac{M}{\ln^{k+1} \rho}\Gamma(k, n \ln \rho))
+\end{equation}
+If $n > \frac{k}{\ln \rho}$ then:
+\begin{equation}
+    \|f-f_n\| = O(\frac{M}{\ln \rho} k n^k \rho^{-n} )
+\end{equation}
+
+\end{proof}
+\begin{lemma}
+    Let $\alpha_l^n$ be the Chebyshev coefficients for $f(x)=\left(x+\frac{\rho+\rho^{-1}}{2}\right)^{-n}$. For $l> \frac{n+2}{2\ln \rho}-\frac{1}{2}$ we have
+    \begin{equation}
+        \|\alpha_l^n\| = O(l^n\rho^{-l})
+    \end{equation}
+    \end{lemma}
+\begin{proof}
+\begin{equation}
+    \frac{1}{x+\frac{\rho+\rho^{-1}}{2}} = \frac{2}{\rho-\rho^{-1}}\left[1+2\sum_{k=1}^{\infty} \rho^{-k}T_k(x)\right]
+\end{equation}
+\begin{equation}
+    \left(x+\frac{\rho+\rho^{-1}}{2}\right)^{-n} = \sum_{k=0}^{\infty} \alpha_k^n(\rho) T_k(x)
+\end{equation}
+Take derivative of both sides:
+\begin{equation}
+    \left(x+\frac{\rho+\rho^{-1}}{2}\right)^{-n-1} = -\frac{1}{n}\sum_{k=0}^{\infty} \alpha_k^n(\rho) T_k'(x)
+\end{equation}
+\begin{equation}
+    T_k'(x) = \sum_{l=0}^{k} \beta_l^k T_l(x)
+\end{equation}
+\begin{equation}
+    \beta_{2l-1}^{2p} = 4p \>\> \beta_{2l}^{2p} = 0  \>\>\forall\>\> l \in \mathbb{Z}_0^+, p \in \mathbb{Z}_0^+ 
+\end{equation}
+\begin{equation}
+    \beta_{0}^{2p+1} = 2p+1\>\> \beta_{2l}^{2p+1} = 2(2p+1) \>\> \beta_{2l-1}^{2p+1} = 0 \>\>\forall\>\> l \in \mathbb{Z}^+, p \in \mathbb{Z}_0^+ 
+\end{equation}
+\begin{equation}
+    \left(x+\frac{\rho+\rho^{-1}}{2}\right)^{-n-1} = -\frac{1}{n}\sum_{k=0}^{\infty} \sum_{l=0}^{k}\alpha_k^n(\rho)  \beta_l^k T_l(x)
+\end{equation}
+\begin{equation}
+    \left(x+\frac{\rho+\rho^{-1}}{2}\right)^{-n-1} = -\frac{1}{n} \sum_{l=0}^{\infty}\sum_{k=l}^{\infty}\alpha_k^n(\rho)  \beta_l^k T_l(x)
+\end{equation}
+\begin{equation}
+    \alpha^{n+1}_l =  -\frac{1}{n} \sum_{k=l}^{\infty}\alpha_k^n(\rho)  \beta_l^k
+\end{equation}
+\begin{equation}
+    \alpha^{n+1}_{2l} =  -\frac{1}{n} \sum_{p=l}^{\infty}\alpha_{2p}^n(\rho)  \beta_{2l}^{2p}  -\frac{1}{n} \sum_{p=l}^{\infty}\alpha_{2p+1}^n(\rho)  \beta_{2l}^{2p+1} 
+\end{equation}
+\begin{equation}
+    \alpha^{n+1}_{2l} =  -\frac{2}{n} \sum_{p=l}^{\infty}(2p+1)\alpha_{2p+1}^n(\rho)  \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+\begin{equation}
+    \alpha^{n+1}_{0} =-\frac{1}{n} \sum_{p=0}^{\infty}(2p+1)\alpha_{2p+1}^n(\rho)  
+\end{equation}
+\begin{equation}
+    \alpha^{n+1}_{2l-1} =  -\frac{1}{n} \sum_{p=l}^{\infty}\alpha_{2p}^n(\rho)  \beta_{2l-1}^{2p}  -\frac{1}{n} \sum_{p=l}^{\infty}\alpha_{2p+1}^n(\rho)  \beta_{2l-1}^{2p+1} 
+\end{equation}
+\begin{equation}
+    \alpha^{n+1}_{2l-1} =  -\frac{2}{n} \sum_{p=l}^{\infty}2p\alpha_{2p}^n(\rho) 
+\end{equation}
+Assume $\|\alpha_l^n\| = O(l^n \rho^{-l})$. Then:
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| \leq  \frac{2C}{n} \sum_{p=l}^{\infty}(2p+1)^{n+1} \rho^{-2p-1}  \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+for some $C$.
+
+If $2p+1 > \frac{n+2}{\ln \rho}$ then $(2p+1)^{n+1} \rho^{-2p-1}$ is decreasing, and hence we can bound by an integral:
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| \leq  \frac{2C}{n} \int_{l-1}^{\infty} (2p+1)^{n+1} \rho^{-2p-1} dp \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+$k = (2p+1)\ln \rho$
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| \leq  \frac{C}{n\ln^{n+2} \rho} \int_{(2l+1)\ln \rho -1}^{\infty} k^{n+1} e^{-k} dk \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| \leq  \frac{C}{n\ln^{n+2} \rho} \Gamma(n+2,(2l+1)\ln \rho -1) \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+If $(2l+1)\ln \rho-1 > n+2$ then
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| \leq  \frac{C}{n\ln^{n+2} \rho} (n+2)((2l+1)\ln \rho-1)^{n+1} \rho^{-2l-1} \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| \leq  \frac{C}{\ln \rho} \frac{n+2}{n}(2l+1)^{n+1} \rho^{-2l-1} \>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+\begin{equation}
+    \|\alpha^{n+1}_{2l}\| = O((2l)^{n+1}\rho^{-2l})\>\>\forall \>\> l\in \mathbb{Z}^+
+\end{equation}
+As $\alpha_{2l}^0 = 2\rho^{-2l}$ for $l> 0$, by induction $\|\alpha_{2l}^n\| = O(l^n\rho^{-l})$
+\end{proof}
+\begin{theorem}
+    
+\end{theorem}
+\begin{proof}
+    Consider regions $[2^{-i}, 2^{-i+1})$, which map to $[-1,1]$ by $\bar x = 2^{i+1} (x- 3*2^{-i-1})$. As the only singularity is at zero the maximum semi-major axis of the Bernstein ellipse is $3$, and hence, $\rho = 3 + \sqrt{8}$. Therefore,
+    \begin{equation}
+    \|f-f_n\| \leq  \frac{2M}{2 + \sqrt{8}}(3 + \sqrt{8})^{-n} \sqrt{8}^{-p}
+\end{equation}
+where $M$ satisfies $|x^p f(x)| \leq M$ within all the Bernstein ellipses.
+\end{proof}
+\end{document}

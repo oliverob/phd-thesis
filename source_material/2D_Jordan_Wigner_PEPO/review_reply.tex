@@ -1,0 +1,280 @@
+\documentclass[aps,prx,floatfix,10pt,amssymb,amsfont,amsmath,superscriptaddress,float,nofootinbib,longbibliography,nobalancelastpage]{revtex4-2}
+\usepackage[export]{adjustbox}
+\usepackage[T3,T1]{fontenc}
+\usepackage{xcolor}
+\DeclareSymbolFont{tipa}{T3}{cmr}{m}{n}
+\DeclareMathAccent{\invbreve}{\mathalpha}{tipa}{16}
+
+\newenvironment{reply}
+   {\medskip \noindent \begin{sf}\textbf{Reply}:\ \color{blue}  }
+   {\medskip \end{sf}}
+
+\begin{document}
+
+\section*{Referee A}
+
+\subsection*{SUMMARY}
+
+The authors define a projected entangled pairs operator (PEPO) that maps fermions living at the vertices of an arbitrary graph to a system of spins on the edges. For systems on a circle and
+a torus, they study the boundary conditions of the PEPO needed to map a given fermion parity subspace to a desired topological sector of the spin Hilbert space. They state that, by treating
+the choice of boundary conditions as an additional degree of freedom, their PEPO can be made into a unitary operator. This work provides a succinct description of a PEPO implementation of
+Jordan-Wigner transformation and for that reason could be valuable to the community. However, I am afraid that, without extensive revisions and additional content, the manuscript does not meet
+the high level of novelty and potential impact needed to warrant publication in PRL.
+
+\subsection*{GENERAL COMMENTS}
+
+\paragraph*{Novelty:} My biggest concern with the manuscript is with the novelty of the results. Fortunately, I believe there are changes that can be made to help alleviate some of this concern.
+
+First and foremost, one of the main selling points, as advertised in the abstract, is that the mapping can be made unitary by treating the boundary conditions as additional degrees of freedom. Unfortunately, this is only mentioned in the text and not spelled out explicitly. To me this is possibly the most novel aspect of this work and ought to be worked out in detail. It might not be surprising that this is possible, but it could be insightful to further explore the implications.
+
+\begin{reply}
+    We thank the referee for noting the importance of our discussion of unitarity, and the insistence that we explain it better. %We are disappointed to hear that our explanation of this vital aspect was not spelled out explicitly enough in the text. 
+
+    The current discussion of unitarity is found in Section III:
+    "By treating these boundary conditions as additional quantum degrees of freedom, we are able to recover a completely unitary transformation from fermions to spins. If we did not consider boundary conditions we would only have an isometry between the periodic even fermionic space and the periodic $-1$ spin eigenspace of $\prod_i X_i$, rather than mapping the entire fermionic Hilbert space to the entire spin Hilbert space."
+
+    To elaborate upon this discussion we have added an End Matter on Unitarity, which explicitly spells out how our mapping is made unitary by the inclusion of boundary conditions. This discussion explicitly covers the 1D and 2D PEPO cases we consider and demonstrates a one-to-one mapping from the fermionic basis to the spin basis using stabiliser formalism.
+\end{reply}
+
+Second, I feel as though the novel aspects of this work could be made more apparent by emphasizing the connections to previous works. There is an extensive body of work on fermion-to-qubit
+mappings, so it is especially important to clarify which aspects of your construction are new and not a previous construction in disguise. For example,
+
+\begin{enumerate}
+
+\item You have presented a PEPO for implementing a fermion-to-qubit mapping on an arbitrary graph. A system of fermions on an arbitrary graph can also be mapped to spins using Bravyi and Kitaev’s construction. How does your mapping relate? Does it reproduce their
+construction and this should solely be thought of as a tensor-network version of their mapping?
+
+\begin{reply}
+    We thank the referee for this excellent point. Our construction can reproduce the Bravyi-Kitaev Superfast Mapping on an arbitrary graph. We have added the following sentence to the end of Section II highlighting this relationship: "It can be seen from the symmetries of our tensors that our construction on a general graph without a defect is an explicit PEPO representation of the BKSF mapping [6]". It is important to note the main distinction between our construction and existing schemes is the unitarity of the mapping afforded by adding a defect degree of freedom. Hence, our construction is not simply a tensor-network version of their mapping but an abstraction that captures both the Bravyi-Kitaev Fast and Superfast mapping schemes under one umbrella.
+\end{reply}
+
+\item It seems the boundary conditions of the 1D PEPO are discussed in Ref. [1]. How does the discussion of boundary conditions here differ? Do they reproduce the same results or is there
+a case missing in Ref. [1]?
+
+\begin{reply}
+    We agree there is some overlap with the discussion of 1D PEPO boundary conditions that can be found in Ref. [1]. We have added a comment to direct the reader to this at the start of Section III: "Further insight into how 1D boundary conditions map charge sectors can be found in Appendix D of [1].". We extend their discussion in two crucial ways:
+    \begin{enumerate}
+        \item We consider the twists introduced by these boundary conditions to ensure translation invariance. These twists relate to the periodicity of the states mapped by the PEPO, and so are crucial for considering the unitary of the mapping.
+        \item We include a discussion on how composing our MPO with the Kramers-Wannier MPO recovers the canonical Jordan-Wigner transformation. This provides a deep insight into why we can consider the 1D Jordan-Wigner transformation a unitary transformation without including boundary degrees of freedom, which is an unusual and specific feature that does not generalise to higher dimensions. 
+    \end{enumerate}
+
+    Aside from these novel features of our discussion, we included our discussion of 1D PEPO boundary conditions to help the reader understand our methodology before we then extend into 2D. There exist other methods for analysing the 1D boundary conditions such as first bosonising the virtual legs, however these do not easily generalise to higher dimensions. 
+\end{reply}
+
+\item It also seems as though boundary conditions on a torus are discussed in Ref. [1] and are understood as different choices of spin structure in previous works. What was missing in previous works, which is addressed here?
+
+    \begin{reply}
+        In Ref. [1] a 2D PEPO for implementing a fermion-to-qubit mapping is presented. In their treatment they do not consider inserting specific boundary conditions before closing the fPEPS on the torus, however, they do allow for a choice of spin structure to be made. Inequivalent spin structures can be converted into each other by application of a non-contractible loop of $Z$ operators. Hence, this choice of spin structure is equivalent to a choice of $\invbreve{Z}_V/\invbreve{Z}_H$ boundary conditions. 
+        
+        Ref [1] goes on to discuss how inserting an MPO to perform a particular sum over these boundary conditions allows one to remove the grading of the virtual legs of the PEPO. This sum can be consider a combination of the first four of eight possible PEPOs discussed in our Table II.
+
+        They do not consider the mapping of these boundary conditions independently. Therefore, they do not discuss how different boundary conditions are mapped to different charges. Furthermore, they do not show how to map the odd fermionic sector.
+
+        Hence, our treatment extends previous work on boundary conditions on a torus in two main ways:
+        \begin{enumerate}
+            \item We discuss the mapping of topological sectors between the fermionic and spin states performed by our PEPO. In particular we provide detailed analysis of how different boundary conditions relate to various charge sectors. This is a key feature of dualities and it is important to demonstrate that these features carry across to the Jordan-Wigner transformation in 2D.
+            \item We discuss the unitarity afforded by treating the boundary conditions as additional degrees of freedom. Further, the inclusion of an odd defect allows us to consider the full 8 possible PEPOs mentioned in Table II, rather than only the first four. 
+        \end{enumerate}
+    \end{reply}
+\end{enumerate}
+\paragraph*{Impact:} My second concern is that I am having difficulty seeing the potential impact of this work. The introduction should asnswer the questions: what is the motivation for this work, and why is it an essential contribution to the literature? At the end of the introduction, it is mentioned that controlling the boundary conditions is particularly important for simulating the Hubbard model. Can you comment further on this – what light does this work shed on that issue? More generally, is the goal to use this technology to simulate fermionic systems? Do you have a use case in mind? How does it compare with alternative approaches to simulating fermionic systems with tensor networks? Could this technology be used to help illuminate which bosonic systems are secretly dual to non-interacting fermions, as in these works: 10.1088/1751-8121/ab305d; arXiv:2305.15625? I think
+the paper could be strengthened by clearly stating the motivation and elaborating on any potential
+implications.
+
+\begin{reply}
+    The results we present here can be utilised to better simulate fermionic systems. From a tensor network point of view it is often much easier to simulate the dual model than the original one as dualities (such as our PEPO) change the entanglement structure of interacting systems. In our particular case, we introduce an extensive number of symmetries on the spin side, making the spin ground state highly degenerate. Therefore, there should exist a low entanglement ground state that breaks all the extensive symmetries [30]. This lower entanglement state will admit lower bond dimension PEPS representations. Our work is also crucial if we wish to use these techniques to simulate fermionic systems on a torus, as we must understand the correspondence between topological sectors to correctly map the ground states. Hence, our work whilst theoretical in nature underpins a very practical development. We have added a paragraph explaining this to the end of the introduction. 
+    
+    Furthermore, in another project in our group we are trying to simulate the Hubbard model and so need to work with periodic boundary conditions to reduce the finite size effect. This has proven very challenging and revealed to us the current lack of understanding in how to set up boundary conditions for fermionic systems. This is exactly the question this paper answers. To help the reader this impact of our work we have added the following to the introduction:
+    "Hence our results can be utilised to improve fermionic quantum simulation by reducing the finite size effect through the introduction of (anti-)periodic boundary conditions."
+\end{reply}
+
+\subsection*{SPECIFIC COMMENTS AND QUESTIONS}
+\begin{itemize}
+
+\item In my opinion, the manuscript could benefit from a more specific title. You could emphasize the PEPO implementation or allude to the fact that your analysis accounts for different topoological sectors. As is, the title does not convey what distinguishes your work from other treatments of fermion-to-qubit mappings in 2D, which can also be implemented on a torus.
+
+\begin{reply}
+    As the referee suggests we have made our title more specific: "Local Jordan-Wigner transformations and topological sectors on the torus".
+\end{reply}
+
+\item Maybe I am being naïve here, but in the first sentence of the introduction, why is a projective space necessary for wave functions to be anti-symmetric?
+
+\begin{reply}
+The wavefunction of an indistinguishable fermionic system is not invariant under the symmetry of the system, but instead transforms projectively (is anti-symmetric). This requires the wavefunctions to be from the space of projective representations of the symmetry.
+\end{reply}
+
+\item In the introduction, I find the statement that anti-symmetric wave functions prohibit a tensor product structure to be somewhat misleading, especially given that graded tensor products are used throughout the text. I understand the intent of the statement, but I think it deserves being stated more precisely to avoid confusion.
+
+\begin{reply}
+    We thank the referee for this comment. We have removed the misleading comment from the text.
+\end{reply}
+
+\item Just to clarify, in the introduction and throughout the text, by locality preserving, you mean specifically that local fermion parity even operators are mapped to local spin operators (up to gauge constraints)? This would be useful to state explicitly, since the maps that you discuss take fermion-parity odd operators to nonlocal operators.
+
+\begin{reply}
+    We do mean that local fermion parity even operators are mapped to local spin operators. We have clarified this by slightly modifying the only reference to our mapping being local in the main body of text to: "This mapping will be local in the sense that even fermionic hopping terms acting along edges of the graph $G$ will map to spin operators with a maximum Pauli weight $2\Delta-1$ (where $\Delta$ is the maximum degree of $G$)."
+\end{reply}
+
+\item In the introduction, what is meant by the “maximal diameter of the Hamiltonian terms”? What Hamiltonian do you have in mind, and by maximal diameter of an operator, do you mean the size of the support?
+
+\begin{reply}
+    We thank the referee for pointing out the vagueness of this statement. We meant the "the maximum support in the spin representation of a single fermionic hopping term" which we have modified the manuscript to reflect.
+\end{reply}
+
+\item In the introduction, it is stated that it was unclear how to deal with “higher dimensional tori”. What does this mean exactly, and is it addressed explicitly in the text? It is worth noting that, in principle, this is captured by the bosonization duality in 10.1103/PhysRevResearch.2.033527. The boundary conditions correspond to different choices of spin structure.
+
+\begin{reply}
+    We thank the referee for this comment. We believe our approach can be simply generalised to higher dimensional tori, though as the referee has pointed out we do not address this in the text. As such we have edited this line to remove the term "higher dimensional".
+
+    Whilst we agree that 10.1103/PhysRevResearch.2.033527 provides an interesting insight into how to generalise bozonization to arbitrary dimensions, we would like to reiterate that this and other prior work do not consider the mapping of topological sectors or the mapping of the odd fermionic algebra. One of our key findings is how the presence of an odd defect changes the mapping from fermionic boundary conditions to spin charge sectors. To clarify what was missing in prior work we have modified the sentence to read: "it was not clear how to modify the mappings when dealing with odd charge sectors especially when dealing with periodic and twisted boundary conditions on a torus".
+\end{reply}
+
+\item In response to the comment in Section II, I agree that spin structure is not strictly necessary to define the mapping, but it does clarify some of the choices and the in-homogeneity that appears in defining the map. I think it would be enlightening and novel to develop an understanding of spin structure for an arbitrary graph – at least, I am not aware of such a treatment. To me, that would help to make the mapping on an arbitrary graph feel more like a complete story.
+
+\begin{reply}
+    Spin structure does not play a part in our construction as we only consider finite graphs. Developing an understanding of spin structure on arbitrary graphs would only be necessary when considering the continuum limit which we do not attempt in our work.
+\end{reply}
+
+\item I appreciate the joke about rounded objects being recalcitrant, but at first, I was confused and did not understand it as a joke. I think it would be best to remove it for clarity.
+
+\begin{reply}
+    We thank the referee for highlighting this. We have removed the comment for the sake of clarity.
+\end{reply}
+
+\item It would be worthwhile to mention that when writing ⟨s|(E||Vv)|Vp) you are writing the tensor network prior to contracting the virtual legs. It took me some time to process the meaning of ⟨s|(E||Vv)|Vp) with the virtual legs appearing explicitly. Also, what dictates here whether the state is written as a ket or a bra?
+
+\begin{reply}
+    We thank the referee for pointing out potential confusion here. We have added "(before contraction of the virtual legs)" to the initial definition of this term and now specify that we use the symmetry properties of our tensors "before contraction" in a later paragraph. We hope this will be enough to elucidate the method to the reader. 
+
+    Whether a state is a bra or a ket is simply by definition of the GHZ and vertex tensors. All that is important is that the virtual legs can be contracted. We made the choice for the spin states acted on by this PEPO to be kets whilst the fermionic states acted on by this PEPO are bras.
+\end{reply}
+
+\item In Section II, the motivation for inserting a fermion-parity odd defect into the PEPO is to allow for a mapping of odd fermionic operators. This seems to be at odds with the statement in the introduction that only fermion parity even operators are physically relevant. Maybe the motivation for inserting a defect is more clearly that it allows one to map the fermion-parity odd subspace of states to a spin state. Intuitively, the PEPO is made into an odd operator so that an odd operator applied to an odd state yields an even spin state.
+
+\begin{reply}
+    We agree with the referee that mapping the odd fermion-parity odd subspace of states to spin states is the true motivation of including the odd defect, as this allows us to create a unitary mapping. We have modified the manuscript to refer to mapping odd fermionic states rather than odd fermionic operators.
+\end{reply}
+
+\item In Section II, the defect is inserted with the operator $C\invbreve X$. It is not clear to me how the $C\invbreve X$ gate is meant to be applied. Can you include a figure to clarify which states are to be contracted? This operator also does not have definite fermion parity, right? Why should it be called a fermionic charge defect? I could use more intuition for how this defect works.
+
+\begin{reply}
+    We thank the referee for drawing our attention to this. Our reference to the $C\invbreve X$ gate is confusing and out of line with the rest of the treatment in the paper. Originally this was intended to illustrate how this fermionic boundary condition manifests as a spin degree of freedom. Upon reflection we think it is best to remove this. By odd defect we mean an $\invbreve X$ operator on the virtual legs of the PEPO and unitary is gained from treating the presence of this defect as an additional spin degree of freedom.
+\end{reply}
+
+\item In Section II, what is meant by saying that the point-like defect is a boundary condition? It is point-like, correct? In what sense is it a boundary condition, say on a torus?
+
+\begin{reply}
+    We state that the defect "can be understood as a boundary condition for the dual spin theory". This is a boundary condition in the sense that translations of states past this defect in the dual spin theory may need to be modified to map to a similarly translated fermionic state. For example, when the 1D $\sum_{i=1}^{N-1} Z_i Z_{i+1} - Z_0Z_1$ chain translates past an odd fermionic defect it gets conjugated by the $X$ twist, and hence maps to the same fermionic hamiltonian with the boundary shifted along by one site, whereas the 1D $\sum_{i=0} Z_i Z_{i+1}$ chain gets conjugated to $\sum_{i=2}^{N-1} Z_i Z_{i+1} - Z_0Z_1 - Z_{1}Z_2$ which then maps to a different fermionic hamiltonian.
+
+    On a torus this consideration becomes more important as there are now two ways to translate past the defect which led to two different twists. 
+\end{reply}
+
+\item I think Eqs. (7) and (8) could use some clarification. The left-hand side is meant to be two string operators approaching the defect from different directions, and the right-hand side is to demonstrate that the string operators fail to commute on the spin degrees of freedom? Where is the defect? Is the defect an $\invbreve X$ operator on the middle virtual bond?
+
+\begin{reply}
+    We thank the referee for communicating the confusion caused by Eqs. (7) and (8). We have removed these figures in the interest of maintaining brevity and clarity.
+\end{reply}
+
+\item In the paragraph before Section III, it is stated that any 2D fermion-to-qubit mapping can be implemented with the right choice of graph, internal ordering of the virtual bonds, single qubit gates, and Majorana repairing. What if I apply a finite-depth quantum circuit to one side of the duality? Can this be implemented by simply making a subset of the aforementioned modifications? I would need to see this stated more carefully.
+
+\begin{reply}
+    [22] shows that all 2D fermion-to-qubit mappings are equivalent up to Clifford finite-depth local unitary transformations and majorana repairing. Hence, the justification for our claim is that we can find representations of CZ and CX on nearest neighbour edges and SWAP on arbitrary edges in terms of graph manipulations. A CZ gate on edges sharing a vertex is equivalent to exchanging the internal ordering of the two edges. A CX gate on neighbouring edges is equivalent to moving the endpoint of the control edge along the target edge to connect to its other vertex plus some single qubit Z gates. A SWAP gate simply involves swapping the labels of the spins. We think a detailed and rigorous explaination of this would detract from the story of this paper which is primarily concerned with the mapping of topological sectors. This will be the subject of future work by our group.
+\end{reply}
+
+\item I find the discussion of boundary conditions in the second paragraph of Section III difficult to parse. It may be helpful to define your use of “topological sector” and “twists”, possibly in the context of an example.
+
+\begin{reply}
+    We thank the referee for pointing out this paragraph is hard to follow. The current explanation of topological sectors is: "These sectors are characterised by the charge sector under the global symmetries of each side, and the twists required for translational symmetries." The following two paragraphs then include examples designed to help explain what these twists and charge sectors are. 
+
+    We have added the following two sentences to define these terms before jumping straight into the examples: "Charge sectors are the eigenspaces of a symmetry operator. Twists are the modifications required to either side of a PEPO upon translation in order to recover the same PEPO."
+\end{reply}
+
+\item In Section IV below Eq. (10), the comment, “It is quite marvellous to see how...” reads to me as a touch too editorializing.
+
+\begin{reply}
+    We have made our statement less strong, it now reads: "It is interesting to see how...".
+\end{reply}
+
+\item In the conclusion, it is stated that the construction captures arbitrary fermion-to-qubit encodings. This seems like too strong of a statement to me. What is meant by “arbitrary”?
+
+\begin{reply}
+    By arbitrary fermion-to-qubit encodings we refer to the fact we can capture all existing fermionic encodings, and map both the even and odd fermionic charge sectors.
+\end{reply}
+
+\item In the last paragraph, there is a comment about ungauging. How are you using ungauging here? Do you mean ungauging the fermion parity symmetry? In that case, the ungauging map is precisely the PEPO, with the input taken to be the spin degrees of freedom. The last sentence of the paragraph also suggests that graded tensor networks are not needed to ungauge in 1D. In this case, do you mean ungauging the Z2 symmetry, as in applying a Kramers-Wannier duality? This could use some clarification.
+
+\begin{reply}
+    We do mean ungauging the fermion parity symmetry using exactly this PEPO. The conjecture we are making is that whilst it is possible to ungauge the fermion parity in 1D using an MPO without virtual fermonic legs (as described in https://arxiv.org/pdf/2404.14611), we suggest this is not possible in higher dimensions. We have modified the final paragraph to make this more clear. It now reads: "We conjecture that such gauge theories in two dimensions can only be ``ungauged''  with graded tensor network intertwiners such as the PEPO we have described. This highlights the difference between the 1- and the 2-D case, as fermions seem to be indispenable in the latter whereas in the 1D case we can easily bosonise the virtual legs of the MPO."
+\end{reply}
+
+\end{itemize}
+\section*{Referee B}
+I have carefully reviewed the manuscript "Local Jordan-Wigner Transformations on the Torus" by Oliver O'Brien, Laurens Lootens, and Frank Verstraete. I am writing to express my strong recommendation for the publication of this manuscript in the Physical Review Letter. This work presents significant advancements in the domain of quantum information and quantum physics, notably in transforming fermionic systems to qubit systems on a 2D torus.
+
+\subsection*{Summary of the Manuscript:}
+
+
+The manuscript delivers a robust methodology for locality-preserving unitary mapping from fermions to qubits, skillfully addressing the mapping of topological sectors. By employing a projected entangled pair operator (PEPO) that encodes critical information about charge sectors and boundary conditions, the authors introduce a novel approach where this intertwiner operates as a unitary that can swap boundary conditions and charge sectors effectively. The technical execution in the paper is impressive, particularly in maintaining locality with fermionic hopping terms transforming into spin operators within manageable Pauli weights. The formulation of the gauge theory on the spin side and the isomorphism from the even fermionic sector to the +1 joint eigenspace of the gauge conditions are both well-articulated and innovative. Furthermore, the introduction of an odd tensor defect into the PEPO allows for the inclusion of odd fermionic operators, broadening the applicability of this mapping.
+
+\begin{reply}
+We thank the referee for their careful and accurate summary of our work.
+\end{reply}
+
+\subsection*{Strengths:}
+
+\begin{enumerate}
+\item Extending the locality-preserving unitary mappings from 1D or simpler structures to more complex 2D lattice systems.
+
+\item Innovative use of a single odd tensor defect to facilitate mapping across both even and odd fermionic sectors.
+
+\item Detailed discussion on how different topological and boundary conditions relate to various charge sectors, with a novel approach to using these as quantum degrees of freedom, thus preserving the spectral properties of the system.
+
+\item The approach to constructing tensor networks for arbitrary fermion to qubit encodings that culminate in a gauge theory is both a theoretical and practical contribution to the field.
+\end{enumerate}
+
+\subsection*{Minor Questions and Suggestions:}
+
+
+While I strongly support the publication of this manuscript, I have a couple of suggestions that might further enhance its impact and utility:
+
+\begin{enumerate}
+\item Lattice Generalization: The current manuscript focuses on 2d constructions on a square lattice. It would be enriching if the authors could extend this construction to other lattice types or arbitrary triangulations, such as honeycomb and Kagome lattices. Including these could greatly benefit researchers working with models defined on these lattices.
+
+\begin{reply}
+    We thank the referee for pointing out the interest in extending our mapping to other lattice types. Our construction can already be utilised to produce these results and the tables produced would all be very similar to Table II simply with different twists and labels for charge sectors. We have added the following paragraph to the end of Section IV to explain this: "We have made the choice of a square lattice to illustrate the mapping of topological sectors. This choice is not necessary to reproduce the results of Table II, and suitable definitions of boundary conditions/charge sectors/twists on other 2D lattices (e.g. Kagome or honeycomb) will produce identical results."
+\end{reply}
+
+\item Dimensional Extension: Considering the systematic generalization of (2+1)D bosonization to (3+1)D (https://journals.aps.org/prb/abstract/10.1103/PhysRevB.100.245127) and higher dimensions (https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.2.033527), I am curious whether the approach described in this manuscript can be similarly extended. An exploration or discussion regarding this potential extension would be fascinating.
+
+\begin{reply}
+    We agree with the referee that a discussion of this generalisation is very interesting. As such we have added the following short paragraph to the end of our conclusion:
+    "We believe our methodology could be extended to higher dimensions in line with other systematic generalisations [33, 34]. Higher dimensions would lead to even more possible boundary conditions. For example, in 3D we would expect our mapping between charge sectors and boundary conditions to be between sheets of Paulis and lines of Paulis."
+\end{reply}
+\end{enumerate}
+
+\subsection*{Conclusion:}
+
+The paper clearly meets the high impact and relevance expected by Physical Review Letters, as it significantly advances the state-of-the-art in quantum simulations and transformations in higher dimensions. The authors have clearly delineated their advancements over prior art and presented a cogent, well-organized argument supported by rigorous mathematical constructs. Given its novel contributions and the rigorous approach to a complex problem, I strongly recommend the publication of this manuscript in Physical Review Letters.
+
+\end{document}
+
+
+
+Argue that the embedding of spin manifolds is the reason we do not need a spin structure as we are on a graph.
+
+Refer to other paper Ref 30 on quantum circuits for dualities to explain the unitary of dualities and that we will make more adjustments to make it more clear. Then state that we explicitly show that this also works for fermions which is not obvious. The fact dualities can be understood as unitary circuits is the novel result of this paper. 
+
+Read ref 1 and check that it does not include bc in 2d. The way we do the 1D PEPO is so we can do it in exactly the same as the way we do it in 2D whereas their method does not easily generalise to 2D.
+
+Check the BK relationship is explained and if we removed it then add it back in.
+
+Impact
+Generate a list of papers that mention there is no 2D jordan-wigner transformation - laurens warns to lean away from this to avoid the argument that exact bosnoisation now exists so no longer a problem.  Potentially quote the first referee. In another project in our group we are trying to simulate the Hubbard model and it gives us band structures and we need to work with periodic boundary conditions to reduce the finite size effect and this has been very tricky and very non obvious, this paper clarifies we don't understand how to set up boundary conditions with fermions. We want to use our results to simulate fermionic systems, and from a tensor network point of view  it could be much easier to simulate the dual model than the original one as the dualities change the entanglement structure of interacting systems. Now we can simulate fermions on a torus by simulating spins on a torus which we have tools for in tensor networks. Better for quantum simulation as periodic boundary conditions are better than open boundary conditions. Theoretical work underpinning something very practical, any finite size scaling problem in quantum simulation. Me to write and then frank to edit.
+
+Only 52 papers with Jordan-Wigner in title, this is not very much.
+
+Projective space is necessary as if it is a symmetry of the wavefunction but it is a projective representation as it has minus signs when you swap. It is a symmetry of your system but your wavefunction is not invariant under it but rather the symmetry acts protectively.
+
+We can rephrase to explain that a graded tensor product is different and necessary from a tensor product structure.
+
+Remove recalcitrant

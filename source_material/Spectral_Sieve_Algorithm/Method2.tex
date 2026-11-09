@@ -1,0 +1,93 @@
+\documentclass[10pt]{amsart}
+
+\usepackage{tikz}
+\usetikzlibrary{quantikz}
+\usepackage[utf8]{inputenc}
+\usepackage{subcaption}
+\usepackage{bm}
+\usepackage{amsmath, amsfonts, hyperref,braket,amssymb}
+% Define theorem-like environments with independent numbering
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newcommand{\A}{\mathcal{A}} 
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\XX}{\chi}
+\newcommand{\X}{\textbf{X}}
+
+
+\newcommand{\dmat}[1]{{| #1 \rangle \langle #1 |}} 
+
+\newcommand{\rl}[1]{{\rangle \langle}} 
+\newcommand{\dm}[2]{\left|#1\right\rangle\left\langle#2\right|}
+
+\newcommand{\EE}{{\mathcal E}}
+
+
+
+\DeclareMathOperator{\Tr}{\textnormal{Tr}}
+
+\title[Quantum algorithms for preparing microcanonical ensembles]{Quantum algorithm for \\ preparing microcanonical ensembles:\\ II Spectral Projection}
+\author{Oli, Subhayan}
+
+\begin{document}
+\maketitle
+
+Let $H \in \mathbb{C}^{N\times N}$ be a Hamiltonian with spectral decomposition, $$H = \sum_{j} \lambda_j \dmat{\phi_j}, \qquad \lambda_j \leq \lambda_{j+1}.$$ 
+Let $\Lambda = [E, E+\Delta]$ be an interval, with $\Delta = \Omega(\frac{1}{poly(n)})$
+
+\begin{definition}[Microcanonical Ensemble] 
+For bounded norm Hamiltonian $H$ and interval $\Lambda=[\Lambda_0,\Lambda_1]$, the microcanonical ensemble $\Theta^{(H)}_{\Lambda}$ is the set of quantum states spanned by eigenstates of $H \cong \sum_j\lambda_j \dmat{\phi_j} $ with eigenvalues $\lambda_j \in \Lambda$. \\
+Write $\Theta_{\Lambda}= \text{span}\{ \dm{\phi_j}{\phi_k} : H \ket{\phi_j} = \lambda_j \ket{\phi_j}, H \ket{\phi_k} = \lambda_k \ket{\phi_k}, \text{ and } \lambda_j,\lambda_k \in \Lambda \}$. \\ 
+\end{definition}
+
+
+[TFD state of TFIM example in 1906.02699] 
+\begin{example}
+[Uniform density TFD states] The uniform density thermofield double state  over $\Lambda$ is $$\ket{TFD_\Lambda} = \frac{1}{\sqrt{D_{\Lambda}}}\sum_{\lambda_j\in\Lambda}\ket{\phi_j}\ket{\phi_j^*}$$  
+where $D_{\Lambda} = rank(P_{\Lambda})$ is the number of microstates of $H$ that have energy in interval $\Lambda=[E,E+\Delta]$.
+\end{example}
+
+\begin{example}
+[TFD Gibbs]  The microcannonical thermofield double (TFD) state at inverse temperature $\beta$ is 
+$$ \ket{TFD(\beta)} = \frac{1}{\sqrt{Z(\beta)}} \sum_{\lambda_j\in\Lambda} e^{-\beta \lambda_j}\ket{\phi_j}\ket{\phi_j^*}$$
+\end{example}
+
+
+Define spectral projector 
+$$P_{\Lambda} = \sum_{\lambda_j \in \Lambda} \dmat{\phi_j} = \int_{\mathbb{R}} e^{iHt} f_{\Lambda}(t) dt, \qquad f_{\Lambda}(t) = \frac{e^{i(E+\Delta)t}-e^{iE t}}{\sqrt{2\pi}it}$$
+
+Define smoothened approximate spectral projector,
+$$\widetilde{P}_{\Lambda} =  \sum_{t\in T} e^{iH \tau_t} \widetilde{f}_{\Lambda}(\tau_t) w_t, \qquad \widetilde{f}_{\Lambda}(t) = e^{\frac{-\sigma^2 t^2 }{4} }\frac{e^{i(E+\Delta)t}-e^{i E t}}{\sqrt{2\pi} it}, \sigma=\frac{\textcolor{orange}{\Delta}}{12},$$
+
+
+where $w_k, \tau_k$ are Clenshaw-Curtis quadrature weights and nodes on the interval $[-T, T]$ with $T = \frac{c}{\sigma}\sqrt{\log M}$ ($c > 0$ constant). The nodes and weights are given by:
+\begin{align*}
+\tau_k &= T \cos\left(\frac{(k-1)\pi}{M-1}\right), \quad k=1,\dots,M \\
+w_k &= \frac{4T}{M-1} \sum_{j=0}^{\lfloor (M-1)/2 \rfloor} \cos\left( \frac{2\pi j (k-1)}{M-1} \right)\frac{d_j}{1-4j^2} 
+\end{align*}
+where $d_j = \begin{cases} 
+\frac{1}{2} & \text{if } j=0 \text{ or } j=(M-1)/2 \\
+1 & \text{otherwise}
+\end{cases}$ is the endpoint factor \cite{T08}. 
+
+LCU-Based Quantum Algorithm to prepare Microcanonial Ensemble
+
+Let initial state be $\ket{\phi_0} = (\frac{\ket{01}-\ket{10}}{\sqrt{2}})^{\otimes n}$
+
+Define m-qubit unitary 
+$$V_P : \ket{0} \rightarrow \frac{1}{\sqrt{M}} \sum_{t\in T} \sqrt{f(\tau_t)w_t} \ket{t},$$ where $M= \sum_{t \in T}|\widetilde{f}(t)w_t|$.
+
+Define n qubit unitary $$V_s = \sum_{t\in T} \dmat{t}\otimes e^{iHt}$$
+
+The spectral projection algorithm is 
+$$(\bra{0}^{\otimes m} \otimes I_{N^2}) \circ V_P^{\dagger}V_S V_P \circ \ket{0}^{\otimes m}\ket{\phi_0} \approx \frac{1}{\sqrt{D_{\Lambda}}}\sum_{\lambda_j \in \Lambda} \ket{\phi_j}\ket{\phi_j^*},$$
+where $D_{\Lambda}$ is the number of eigenstates with eigenvalues in the interval $\Lambda$.
+
+Probability of success = $||\widetilde{P_{\Lambda}}\ket{0}||^2$,
+
+\end{document}
