@@ -382,7 +382,7 @@ Both these mappings have been designed for a square-lattice fermionic interactio
 \caption{\label{fig:fenwick_tree_cells_example_4} Hybrid mapping with $2\times 2$ cells showing the qubit operator representation of $\frac{i}{2}(a_{6}-a^{\dagger}_{6})$. Orange = target, Red = Parity set, Green = Update set}
 \end{figure}
 It is important to note that while we have presented the Hybrid mapping in terms of the even fermionic operators (keeping inline with the Hybrid\+ mapping which can only represent even fermionic operators), it can also admit a representation of the whole fermionic space. \Cref{fig:fenwick_tree_cells,fig:fenwick_tree_cells_example_1,fig:fenwick_tree_cells_example_2,fig:fenwick_tree_cells_example_3,fig:fenwick_tree_cells_example_4} illustrate in detail how the odd fermionic operators are mapped, and it is clear how to construct the even fermionic operators by multiplying these together.
-\subsection{Hybrid\+ mapping algorithm}
+\subsubsection{Hybrid\+ mapping algorithm}
 \label{section:auxHybridmapping}
 \noindent
 \textbf{Input:} \textit{$N\times N$ Fermion Square-Lattice Interaction Graph, Cell Shape $n \times n$}, $n \times n = 2^k$ for some integer $k$, $n$ is a factor of $N$\\
@@ -434,11 +434,11 @@ It is important to note that while we have presented the Hybrid mapping in terms
     \end{figure}
     \end{enumerate}
 \end{enumerate}
-\section{Algorithm analysis}
+\subsection{Algorithm analysis}
 \label{section:algorithmanalysis}
 % Graphs showing performance of our two algorithms
 % Theoretical explanation of speed up offered by Hybrid
-\subsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid on an $N\times N$ lattice}
+\subsubsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid on an $N\times N$ lattice}
 \label{section:hybridanalysis}
 There are two primary contributions to the Pauli-weight of a fermionic operation in the Hybrid scheme:
 \begin{enumerate}
@@ -474,7 +474,7 @@ and so for large lattices:
 \end{equation}
 When $N\gg n$, the Hybrid mapping produces $n^2$ times smaller Pauli-strings than the Jordan-Wigner mapping.
 % Theoretical constant performance of Hybrid\+ mapping
-\subsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid\+ on an $N\times N$ lattice}
+\subsubsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid\+ on an $N\times N$ lattice}
 Similarly to the Hybrid mapping, there are two primary contributions to the Pauli-weight of a fermionic operation:
 \begin{enumerate}
     \item Local (Bravyi-Kitaev type) gates acting on qubits within the target cells
@@ -482,7 +482,7 @@ Similarly to the Hybrid mapping, there are two primary contributions to the Paul
 \end{enumerate}
 The first contribution scales with $O(\log(n^2))$, whereas the second contribution scales with $O(\frac{1}{n})$ (as the ratio of inter-cell/intra-cell interactions decreases as $n$ increases). Therefore, as $N$ (and therefore the number of fermionic modes) increases the average Pauli-weight will remain constant.
 
-\subsection{Varying impact of connectivity}
+\subsubsection{Varying impact of connectivity}
 \label{section:connectivity}
 The limitations of the underlying qubit architecture has a large impact on the performance of various mappings. In this section, we demonstrate the advantages our mappings give over existing schemes when used on a quantum computer with the common square-lattice connectivity. The connectivity constraints impact mappings by requiring SWAP gates to perform entangled operations between physically non-local qubits. In our analysis, we compare the number of qubits acted upon by a Pauli or SWAP gate during a fermionic operation (the \textit{range}). Below we consider the varying impact of connectivity upon different mappings.
 
@@ -545,7 +545,7 @@ The Hybrid\+ mapping retains a constant average Pauli-weight when considering th
     \caption{The average range of each fermionic operation on an $128\times 128$ lattice when using an $n\times n$ Hybrid/Hybrid\+  mapping against $n$ in the context of a square-lattice qubit connectivity for $n=\{1,2,4,8,16,32,64,128\}$. These results include qubits solely acted on by SWAP gates. The crosses denote the qubit-to-fermion ratio of the $n\times n$ Hybrid\+ mapping for each choice of $n$.}
     \label{fig:vary_cell_sizes_128}
 \end{figure}
-\subsection{Numerical Analysis}
+\subsubsection{Numerical Analysis}
 \label{section:numerical}
 We have considered the locality of each algorithm by computing the average range on a $N \times N$ square lattice. When investigating the case of a $4 \times 4$ cell, we found that the theoretical predictions held; the average interaction qubit count scaled with $\frac{N}{32}$ for the Hybrid algorithm and asymptotically approached a constant for the Hybrid\+ algorithm (as illustrated in Figure~\ref{fig:compare_mappings_ex_SWAP}).
 
@@ -559,7 +559,7 @@ We have investigated which cell sizes give optimal performance. The behaviour sh
 
 For the Hybrid\+ mapping, there is no $O(\frac{1}{2n^2})$ regime as there are no non-local gates acting on the roots. Therefore, the behaviour is dominated by the Bravyi-Kitaev mapping within the cell. This is reflected in the $O(\log n)$ growth of average range. However, the optimal cell size is not simply the smallest (equivalent to AQM \cite{steudtner2019quantum}). The main benefit of this mapping is in offering a direct trade-off between number of ancillas and range. As the current minimum qubit-to-fermion ratio achieved by a local mapping is 1.25 \cite{chen2022equivalence}, we have analysed the next possible cell size of $4 \times 4$ which achieves a qubit-to-fermion ratio of 1.0625. However, using larger cell sizes requires far fewer ancilla qubits. For example, an $8 \times 8$ Hybrid\+ mapping requires 94\% fewer ancillas than the super-compact mapping scheme \cite{chen2022equivalence}.
 
-\section{Discussion}
+\subsection{Discussion}
 We have presented two novel mappings: the Hybrid mapping achieves the shortest circuits of all known mappings without ancillas. The margin of improvement is significant. As demonstrated in our simulations of a real-world qubit architecture, it generates $75\%$ lower range interactions than the Jordan-Wigner and Bravyi-Kitaev mappings. Additionally, as the lattice sizes increases the optimum cell size grows and the performance of the Hybrid mapping further improves.
 
 For calculations on current or near-term quantum computers the Hybrid mapping demonstrates an improvement over the Bravyi-Kitaev and Jordan-Wigner mappings even with all-to-all connectivity. This holds for lattices up to $164 \times 164$ (Figure~\ref{fig:compare_mappings_ex_SWAP}). Lattices larger than this would require more than 27000 qubits to simulate, which is much larger than the current largest quantum computer (433 qubits~\cite{gambetta2020ibm}). Therefore, the Hybrid mapping will likely outperform the Bravyi-Kitaev and Jordan-Wigner mappings on real devices for the foreseeable future.
