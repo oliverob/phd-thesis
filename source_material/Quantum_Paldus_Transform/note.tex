@@ -1,0 +1,162 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{color}
+\usepackage{url}
+\usepackage[export]{adjustbox}
+\usepackage{braket}
+\begin{document}
+\section{Spherically Symmetric potential}
+Let us start by considering the electrons around a free atom in a spherically symmetric potential with no spin-orbit or spin-spin coupling. In this model we can neglect spin for the moment and focus entirely upon the spatial orbitals. We can decompose the space of spherically symmetric orbitals into a direct sum of irreducible representations of $SO(3)$:
+\begin{equation}
+    SO(3) = 0 \oplus 1 \oplus 2 \oplus \cdots
+\end{equation}
+Therefore, we can describe each possible subshell by $SO(3)$ irrep label $l$ and each orbital in a subshell by basis element $m_l$. Often spectrosopic notation is used for the $SO(3)$ irreps (subshells) with $s$ corresponding to $l=0$, $p$ to $l=1$, $d$ to $l=2$, $f$ to $l=3$, and so on. 
+
+We can add back in the spin degree of freedom and hence the possible single particle fermionic modes are given by $\ket{l,m_l,m_s}$. By the Pauli exclusion principle no two electrons may occupy the same state hence the number of distinct single fermionic modes per $SO(3)$ irrep is equal to twice the dimension of the irrep: $2(2l+1)$. An electronic configuration is given by how many electrons are occupying each subshell (e.g. $1s^22s^22p^3$ which has two full $s$ subshells and one half filled $p$ subshell).
+
+In the absence of spin-orbit coupling we can independently couple the orbital angular momentum and spin of each electron in the subshell. This gives us a direct sum of irreducible representations of $SO(3)\times SU(2)$ for the whole subshell. These irreducible representations of $SO(3)\times SU(2)$ are normally labeled by term symbols: $^{2S+1}L$ where $L$ is the spectrosopic notation for the $SO(3)$ irrep and $S$ an the irrep label for $SU(2)$. 
+
+Performing this coupling to find this direct sum of term symbols is complicated by the fermionic nature of the electrons. If they weren't fermions we could just use normal Clebsch-Gordan coupling e.g. $\frac{1}{2}\otimes \frac{1}{2} = 0 \oplus 1$ on the spin and angular momentum independently. However, as they are indistinguishable fermions by the Pauli exlcusion principle no two may occupy the same mode, therefore some multi-electron states are not allowed (e.g. $\ket{1,\frac{1}{2},1,\frac{1}{2}}\otimes \ket{1,\frac{1}{2},1,\frac{1}{2}}$), and hence the Clebsch-Gordan coupling will give us the wrong answer. We can proceed by using Slater's method whereby we couple the electrons by summing $m_s$ and $m_l$ separately. We then form a table of possible $\sum m_s$ against possible $\sum m_l$ with the entries the number of times these values appeared after coupling all possible electron combinations. We then decompose this table into a sum of tables of all 1s which correspond to a particular tensor product of $S$ and $L$. Using this technique we can find the decomposition of any subshell with a given number of electrons into direct sums of irreps of $SU(2)\times SO(3)$. For example, the full decomposition of $p$ for different electronic configurations is given below:
+\begin{align}
+    p^1 &= \>^2S\\
+    p^2 &= \>^1S \oplus \>^3P \oplus \>^1D\\
+\end{align}
+
+In this setting we can continue this process of coupling angular momentum and spins separately between different subshells within the same atom (between non-equivalent electrons). This will proceed normally and not require any appeals to the Pauli exclusion principle (as the differing $l$ and $n$ labels guarantee the electrons are inequivalent) so if we treat each subshell as a site and then couple between them with $L$ and $S$ separately we can generalise the Quantum Paldus Transformation.
+
+However, if we want to couple with the subshells of a different atom we must remember that the presence of the other atom will break the $SO(3)$ symmetry we initially started with so we must proceed with caution.
+
+\section{Point group symmetric potential}
+
+If we consider an atom in a crystaline environment such that there is a small point group symmetric perturbation to the spherical potential then each of the existing subshells (e.g. $s,p,d,\ldots$) may be further split. To establish this splitting we must consider how the $SO(3)$ symmetry reduces to the point group symmetry $H$ of the perturbation. We can achieve this by first calculating the characters of all classes of group elements in $H$ under the various irreps of $SO(3)$. Then for each irrep of $SO(3)$ we simply must find the direct sum of irreps of $H$ that reproduce the same characters. Further, this decomposition applies equally well to $\>^{2S+1}L$ and so we can rewrite our decomposition of subshells (e.g. $p$) in terms of direct sums of irreps of $H$.
+
+For example, consider the octahedral point group symmetry $O$ which has $5$ irreducible representations ($A_1$, $A_2$, $E$, $T_1$ and $T_2$). The character of any element in $O$ under the $s$-subshell ($l=0$) irrep of $SO(3)$ is $1$, therefore, the $s$-subshell reduces to the irreducible reprsentation $A_1$. Similarly, the $p$-subshell irrep of $SO(3)$ has the same character as $T_1$ for all the classes of elements in $O$. All the higher shells must split as they have dimension larger than $3$ which is the largest dimension of an irrep of $O$. e.g. $d$ goes to $E\oplus T_2$ and $f$ goes to $A_2 \oplus T_1 \oplus T_2$. Therefore, we can rewrite the full decomposition of $p$ as:
+\begin{align}
+    p^1 &= \>^2A_1\\
+    p^2 &= \>^1A_1 \oplus \>^3T_1 \oplus \>^1E \oplus \>^1T_2 \\
+\end{align}
+
+Similarly to the $jj$-coupling we could instead build up the multi-electron states from the irreps of $H$ of individual electrons. After we have split the $SO(3)$ into $H$ we have individual electron states specified by $\ket{l,h,m_h,m_s}$ and as we have no $m_h$ or $m_s$ dependance in our Hamiltonian electrons with the same $l$ and $h$ are equivalent. Therefore, our subshell splits into subsubshells each corresponding to a different irrep of $H$. For example, the $d$ subshell which has 5 orbitals (and hence 10 electrons) splits into an $E$ subshell with 2 orbitals (4 electrons) and an $T_2$ subshell with 3 orbitals (6 electrons). Coupling between subsubshells is now standard Clebsch-Gordans of $H$ as these are inequivalent electrons, but we must obey the Pauli exclusion principle whilst coupling within each subsubshell. Therefore, if we wish we can dispense entirely with the subshell groupings and simple take each site to be one subsubshell. 
+
+The problem of finding the direct sum of irreps that represent the $d$-electron state is the problem of finding the decomposition of the $d$ times exterior product of $h \otimes\frac{1}{2}$ into a direct sum of irreps of $H$ tensored with irreps of $SU(2)$. For $H=SO(3)$ there is the clever slater method for doing this, but otherwise we must resort to representation theory. We know that $\>^d\bigwedge (V\otimes W)= \oplus_{\lambda} S_{\lambda} V \otimes S_{\lambda'}W$ where $\lambda$ are partitions of $d$ and hence we can decompose $\>^d\bigwedge (h\otimes \frac{1}{2})=\oplus_{\lambda}S_{\lambda} h \otimes S_{\lambda'}\frac{1}{2}$. As $S_{\lambda'}\frac{1}{2}$ is zero for all $\lambda'$ with more than 2 rows, and $S_{\lambda}h$ is zero for all $\lambda$ with more than $\dim h$ rows, we are summing over $\lambda$ with maximum $2$ columns and $\dim h$ rows. We also must further decompose $S_{\lambda} h$ and $S_{\lambda'}\frac{1}{2}$ into sums of irreps as these may be reducible representations. For example let us take $H=O$ and $h =E$, here $\dim E = 2$ and so we are considering partitions with at most $2$ rows and $2$ columns. Therefore, we have:
+\begin{equation}
+    \>^2\bigwedge (E\otimes \frac{1}{2}) = S_{(2)} E \otimes S_{(1,1)}\frac{1}{2} \oplus S_{(1,1)} E \otimes S_{(2)}\frac{1}{2}
+\end{equation}
+\begin{equation}
+    \>^2\bigwedge (E\otimes \frac{1}{2}) = S_{(2)} E \otimes 0 \oplus S_{(1,1)} E \otimes 1
+\end{equation}
+To find the decomposition of $S_{\lambda} E$ we use the character tables and rules. We first relate the character of the $S_{\lambda} E$ to the schur polynomial [Theorem 6.3.3 Fulton+Harris]:
+\begin{equation}
+    \chi_{S_{\lambda}V}(g) = s_{\lambda}(x_1,\ldots,x_d)
+\end{equation}
+where $s_{\lambda}$ is the schur polynomial associated with parition $\lambda$ and $x_i$ are the eigenvalues of $g$ under the representation $V$ with $d = \dim V$. One can simply proceed from here by explictly evaluating the matrices that represent $g$ in $V$, diagonalising them and pluggin the eigenvalues into the Schur polynomial. However, we can use a clever re-expression of schur polynomials to calculate the character purely using the character table and group multiplication rules (which can be derived from the character table) without resorting to explicitly finding all the eigenvalues of $g$. The schur polynomial power sum expansion gives [Theorem 4.6.4 Sagan]:
+\begin{equation}
+    s_{\lambda} = \frac{1}{n!}\sum_{\pi \in S_n} \chi^{\lambda}_{S_n}(\pi) p_{\pi}
+\end{equation}
+where $p_{\pi}$ is a power sum corresponding the the conjugacy class of $\pi$ and $\lambda \vdash n$. As all $\chi^{\lambda}_{S_n}(\pi)$ with be identical for all $\pi$ in the same conjugacy class $\mu$, we can rewrite this as:
+\begin{equation}
+        s_{\lambda} = \frac{1}{n!}\sum_{\pi \in S_n} k_{\mu}\chi^{\lambda}_\mu p_{\mu}
+\end{equation}
+where $k_{\mu}$ is the size of the conjugacy class. As the conjugacy classes of $S_n$ are labeled by partitions $\mu$ of $n$ and the size of these conjugacy classes are given by:
+\begin{equation}
+    k_{\mu} = \frac{n!}{1^{m_1}m_1!2^{m_2}m_2!\ldots n^{m_n}m_n!}
+\end{equation}
+where $m_i$ are the number of rows in $\mu$ of size $i$. The power sum corresponding to partition $\mu$ is given by:
+\begin{equation}
+    p_{\mu} = \left(\sum_{i=1}^dx_i^{\mu_0}\right)\left(\sum_{i=1}^dx_i^{\mu_1}\right)\ldots
+\end{equation}
+This can be rewritten in terms of the character of $g$ on $V$:
+\begin{equation}
+     p_{\mu} = \chi_V(g^{\mu_0})\chi_V(g^{\mu_1})\ldots
+\end{equation}
+Therefore, we have:
+\begin{equation}
+    \chi_{S_{\lambda}V}(g) = \sum_{\mu \vdash n} \chi_{\mu}^{\lambda}\frac{ \chi_V(g^{\mu_0})\chi_V(g^{\mu_1})\ldots}{1^{m_1}m_1!2^{m_2}m_2!\ldots n^{m_n}m_n!}
+\end{equation}
+We can compute $\chi_{\mu}^{\lambda}$ using the Murnaghan–Nakaygama rule and they do not vary depending upon $V$ or $g$. Therefore, we can use this to derive generic character rules. For example:
+\begin{align}
+    \chi_{S_{(1,1)}V}(g) &= \chi_{(1,1)}^{(1,1)}\frac{\chi_V(g)\chi_V(g)}{2} + \chi_{(1,1)}^{(2)}\frac{\chi_V(g^2)}{2}\\
+    &= \frac{1}{2}(\chi_V(g)^2 - \chi_V(g)^2)
+\end{align}
+We then apply use these character rules, character table and the known conjugacy classes of $g^{\mu_i}$ to find the character of the $S_{\lambda}V$ representation. Once we have an explicit set of characters for $S_{\lambda}V$ for each conjugacy class in $H$ we can use orthogonality of irreps to find the decomposition of this representation into irreps of $H$. For example for $S_{(2)}E$ we have the character rule $\chi_{S_{(2)}E}(g)= \frac{1}{2}(\chi_E(g)^2 + \chi_E(g)^2)$, therefore, the character of the various conjuancy classes of $H$ are given by:
+
+\begin{tabular}{|c|c|c|c|c|c|}\hline
+& E&$8C_3$&$3C_2$&$6C_2$&$6C_4$\\\hline
+$A_1$& 1&1&1&1&1\\\hline
+$A_2$& 1&1&1&-1&-1\\\hline
+$E$& 2&-1&2&0&0\\\hline
+$T_1$& 3&0&-1&-1&1\\\hline
+$T_2$& 3&0&-1&1&-1\\\hline
+$S_{(2)}(E)$& 3&0&3&1&1\\\hline
+$S_{(1,1)}(E)$& 1&1&1&-1&-1\\\hline
+$S_{(2)}(T_1)$& 6&0&2&2&0\\\hline
+$S_{(1,1)}(T_1)$& 3&0&-1&-1&1\\\hline
+\end{tabular}
+
+Therefore, we can see that $S_{(2)}(E) = E \oplus A_1$ and $S_{(1,1)}(E) = A_1$. Finally, we can return to the original deocmposition and see that:
+\begin{equation}
+    \>^2\bigwedge (E\otimes \frac{1}{2}) = (E\oplus A_1) \otimes 0 \oplus A_1 \otimes 1
+\end{equation}
+\begin{equation}
+    \>^2\bigwedge (E\otimes \frac{1}{2}) = \>^1E \oplus \>^1A_1\oplus \>^3A_1
+\end{equation}
+
+Though we can leave it at this level as each of the subsubshells can be treated independently before applying the Quantum Paldus Transform, we can also combine these back into one subshell to confirm we get the same result irregardless of the method we use.
+\begin{equation}
+    \>^2\bigwedge (T_1\otimes \frac{1}{2}) = S_{(2)} T_1 \otimes 0 \oplus S_{(1,1)} T_1 \otimes 1
+\end{equation}
+as $S_{(2)}T_1 = T_2 \oplus E \oplus A_1$ and $S_{(1,1)}T_1 = T_1$ we have:
+\begin{equation}
+    \>^2\bigwedge (T_1\otimes \frac{1}{2}) = (T_2 \oplus E \oplus A_1) \otimes 0 \oplus T_1 \otimes 1
+\end{equation}
+\begin{equation}
+    \>^2\bigwedge (T_1\otimes \frac{1}{2}) = \>^1T_2 \oplus \>^1E \oplus \>^1A_1 \oplus \>^3T_1
+\end{equation}
+which matches our previous result. We really should check $d$ subshell as this will require us taking the tensor product of $E$ and $T_2$ subsubshells and applying $H$  and $SU(2)$ Clebsch-Gordan coefficents.
+
+
+% An important point is that whilst the $SO(3)$ symmetry has been broken so $m_l$ is no longer a good quantum number, $l$ still is a good quantum number as $L^2$ commutes with the point group symmetry $H$. Therefore, a $p$ subshell state can be written as $\ket{l,h,s,m_h,m_s}$. The possible states of $p^1$ are given by: $\ket{0,A_1,\frac{1}{2},0,\frac{1}{2}}$,$\ket{0,A_1,\frac{1}{2},0,-\frac{1}{2}}$, and the possible states of $p^2$ are given by: $\ket{0,A_1,0,0,0}$,$\ket{1,T_1,1,0,1}$,$\ket{1,T_1,1,0,0}$, $\ket{1,T_1,1,0,-1}$, $\ket{1,T_1,1,1,1}$, $\ket{1,T_1,1,0,0}$, $\ket{1,T_1,1,1,-1}$, $\ket{1,T_1,1,2,1}$, $\ket{1,T_1,1,2,0}$, $\ket{1,T_1,1,2,-1}$, $\ket{2,E,0,0,0}$, $\ket{2,E,0,1,0}$, $\ket{2,T_2,0,0,0}$, $\ket{2,T_2,0,1,0}$, $\ket{2,T_2,0,2,0}$. For the $p$ subshell it turns out the $l$ label is unnecessary as it can be disentangled using $h$, however, the same is not true for higher subshells which reach $F$ orbitals or for smaller point group symmetries than the octahedral group where it becomes a necessary degeneracy index. Depending on the point group symmetry the label $h$ may also need to contain a degeneracy index to distinguish between multiple copies of the same irrep (e.g. for $H = D_3(32)$ you get $d = E\oplus E \oplus A_2$ so we will need $E_0$, $E_1$ and $A_2$ labels).
+
+We can now proceed by coupling different sites (each corresponding to a single subshell) together using the Clebsch-Gordan coefficents of $H$ and $SU(2)$ separately, and in doing so we can generalise the Quantum Paldus Transformation to a lattice of orbitals in a point group crystaline environment. Unlike before where the subshells all obeyed a spherical symmetry and so belonged to the same atom now we can consider coupling between orbitals in different atoms which each site in the same point group symmetric crystaline environment.
+\section{Spherically symmetric potential with strong spin-orbit coupling}
+
+If we return to the setting of a free atom, but now consider when strong spin-orbit coupling is present. Now we must couple the orbital angular momentum and spin of each electron to each other before coupling together different electrons. As the spin of an electron is always $\frac{1}{2}$, this means that each electron with orbital angular momentum $l$ can have a total combined orbital momentum of $l\pm \frac{1}{2}$. Therefore, the subshell of equivalent electrons labeled by $l,\frac{1}{2}$ is split into two subsubshells of equivalent electrons labeled by $j = l\pm \frac{1}{2}$. Each of these subsubshells can be treated separately (as distinct sites in the Quantum Paldus Transformation). As there is no residual spin degree of freedom in these equivalent electrons finding the multi-electron states allowed by the Pauli exclusion principle is easier than before. We can still use slaters method, however, now our table only has a single column as there is no $\sum_s m_s$. Using this technique we can decompose $p$ into two subsubshells of $\frac{1}{2}$ and $\frac{3}{2}$. We can then calculate the multielectron Hilbert space of subsubshells:
+\begin{align}
+    \frac{1}{2}^0 &= 0\\
+    \frac{1}{2}^1 &= \frac{1}{2}\\
+    \frac{1}{2}^2 &= 0\\
+\end{align}
+\begin{align}
+    \frac{3}{2}^0 &= 0\\
+    \frac{3}{2}^1 &= \frac{3}{2}\\
+    \frac{3}{2}^2 &= 0 \oplus 2\\
+    \frac{3}{2}^3 &= \frac{3}{2}\\
+    \frac{3}{2}^4 &= 0\\
+\end{align}
+It is important to note that these subsubshells cannot be further split into separate sites depending upon particle number or irrep, and the Hilbert space is given by the direct sum of all of these representations.
+
+Coupling between these subshell shells can proceed as normal simply using $SU(2)$ Clebsch-Gordan coefficents, and this gives the simplist extension of the Quantum Paldus Transform to higher orbitals.
+
+% The reason the direct sum $\frac{3}{2}\oplus \frac{1}{2}$ in the single electron basis seems transform to a tensor product of two multi-electron sites, is due to the fact that Jordan-Wigner maps the occupation basis onto spins and so it is possible to choose a partition of spins that maps onto the partition of single electron modes. This can be seen more clearly be considering how the single electron Hilbert space is mapped by Jordan-Wigner. It is transformed onto the Hamming weight 1 bit strings, and a tensor product of spin sites restricted to the subspace of Hamming weight 1 bit strings is equivalent to a direct sum of spin sites.
+\section{Point group symmetric potential with spin-orbit coupling}
+
+If we consider an atom in a crystaline envrionment when spin-orbit coupling is present. We first couple the spin of each electron to its orbital angular momentum which splits the subshell into irreps of $SU(2)$. We then apply the point group symmetry to the subsubshell to split it further into irreps of the double group $H_D$. We split into irreps of the double group of the point group as $H$ is not a subgroup of $SU(2)$ so the irreps of $SU(2)$ restricted to $H$ do not admit a decomposition into irreps, whereas $H_D$ is a subgroup of $SU(2)$ so we can decompose the irreps of $SU(2)$ into direct sums of irreps of $H_D$. We cannot proceed exactly as before as once we have decomposed into irreps of $H_D$ we no longer have a residual spin symmetry so finding the multi-electron terms is simplified. We simply have to find the decomposition of the $d$-exterior product of the irrep of $H_D$ (also written as $S_{(1^d)}h_D$ or $\>^d\bigwedge h_D$) and we can treat each irrep of $H_D$ as a separate site of equivalent electrons with coupling between sites following the standard Clebsch-Gordan coefficients of $H_D$.
+
+As an example let us consider the subshell $p$. This splits into two subsubshells $\frac{1}{2}$ and $\frac{3}{2}$. These irreps of $SU(2)$ are also irreps of $H_D$ so this is the end of our decomposition into single particle states. To find the multi-electron states we need to find the character rules for $S_{(1^d)}$. For $S_{(1,1)}$ we have already done so and hence we must compute the character table for $S_{(1,1)}\frac{1}{2}$ and $S_{(1,1)}\frac{3}{2}$.
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}\hline
+& E&$8C_3$&$3C_2$&$6C_2$&$6C_4$&$R$&$8RC_3$&$6RC_4$\\\hline
+$A_1$& 1&1&1&1&1&1&1&1\\\hline
+$A_2$& 1&1&1&-1&-1&1&1&-1\\\hline
+$E$& 2&-1&2&0&0&2&-1&0\\\hline
+$T_1$& 3&0&-1&-1&1&3&0&1\\\hline
+$T_2$& 3&0&-1&1&-1&3&0&-1\\\hline
+$\frac{1}{2}$& 2&1&0&0&$\sqrt{2}$&-2&-1&-$\sqrt{2}$\\\hline
+$\frac{3}{2}$& 4&-1&0&0&0&-3&1&0\\\hline
+$S_{(1,1)}\frac{1}{2}$& 1&&&&&&&\\\hline
+\end{tabular}
+
+\end{document}

@@ -1,0 +1,29 @@
+\documentclass[aps,prx,twocolumn,floatfix,10pt,amssymb,amsfont,amsmath,superscriptaddress,float,nofootinbib,longbibliography,nobalancelastpage]{revtex4-2}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{color}
+\usepackage{url}
+\usepackage[export]{adjustbox}
+
+\usepackage{braket}
+
+\begin{document}
+\title{GUGA}
+I first discovered the Racah Algebra approach in \url{https://www.osti.gov/servlets/purl/1258517#page=1.00&gsr=0}, which explores using GUGA instead of Racah algebra for atomic physics.
+
+GUGA works in an almost identical way to how one could use three line diagrams to evaluate the matrix elements of operators in the basis of configuration state functions. Effectively you draw a three line diagram representing an operator, this requires specifying what the horizontal line is and what the central lines of the boundary F symbols are. Then the two csfs $v$ and $v'$ specify the values of $S_i$ and $S_i'$ of every curved line and then boundary lines. They then take use of the fact that you can factorise the lines to split this into a product of seperate F symbols of which all those in the middle of the operator will be identical functions of their respective $S_i$ and $S_i'$.
+
+This phd thesis \cite{dobrautz2019development} seems to suggest that GUGA does not in fact utilise wigner 6j symbols at all. ARGGGH it seems that the Frank Nesse ICE-ORCA matrix element calculations are not GUGA at all - I got drawn in by the fact it used configuration state functions, but the whole point of GUGA is that is finds matrix elements between configuration state functions using the unitary group algebra rather than the su(2) algebra! Read this phd thesis and \cite{shavitt1978matrix} for how GUGA actually works. It seems that we should be able to rewrite interms of three leg symbols, but that a lot of clever work has gone into figuring out that there are only a limited number of non-zero ones we need to care about. It turns out that GUGA was not originally done using spin algebra methods but then \cite{paldus1980unitary} showed that it is more efficent to use spin algebra (it reproduces the same results for 1 body operators but is more efficent than 2 body operators as it does not require inserting an identity and performing a sum over intermediatary values see. fig. 10 of \cite{paldus2021matrix}). A series of papers by paldus in 2021 e.g. \cite{paldus2021matrix} compare this method with two others: the original unitary group inspired approach and a Green‑Gould
+approach? Paldus wrote these because of the Ali Avi papers
+
+\cite{gaigalas1997efficient} acts in an almost identical manner but does not restrict itself to only csfs that differ by at most $1/2$ at each step. They do not use many diagrams in their work so it is harder to figure it out but I think C1 in eq (15) corresponds to A in \cite{lang2025treating}, C2 corresponds to $\prod_i T_i$ and C3 corresponds to B. So Equations (71-83) of \cite{lang2025treating} correspond to equations 14, 19, 22 and 24 of \cite{gaigalas1997efficient}. It is a bit suprising that both of these expressions have this extensive product of wigner 6j symbols for spin dependant terms as in our three line langauge I would have expected spin-orbit terms which are spin dependant but symmetric under total angular momentum to be local. If you look at \cite{gaigalas2021angular} Fig.1 and \cite{lang2025treating} Fig.9 you see this in action. Here is the review of the atomic physics peoples methods \cite{gaigalas2004integration}. This explictly writes out the diagrams and discusses the factorisation techniques which are the same as GUGA, makes it most obvious that at least in this LS presentation (I think the jj-coupling is done in exactly the same way as \url{https://www.mdpi.com/2218-2004/10/4/129} references this review as what it has implemented in GRASP for relativistic and similarly the documentation of the JAC impelementation which is definitely for just relativsitic CSFs uses the same diagrams)  it is equivalent to GUGA but without restricting to just spin 1/2.
+
+I find it particularly enlighting to compare Section 6 of \cite{gaigalas2004integration} to \url{https://github.com/OpenJAC/JenaAtomicCalculator.jl/blob/8900741f69363f07482f8ab14b9f154fa956725e/src/module-SpinAngular.jl#L1068} and seeing that the recoupling diagrams really are just F-symbols. It is very interesting to see that for rank-0 (scalar) operators these are those that carry spin-0 (SU(2) invariant, e.g. spin-orbit coupling) we have a different set of recoupling diagrams that are not extensive in system size just as we would expect. The "rank" of an operator in their language is the angular momentum the operator carries.
+
+Apparently these are extensions of UGA to higher spins: \cite{kent1991multibody, kent1989graphical}
+
+\bibliography{references}
+\end{document}

@@ -1,0 +1,169 @@
+\documentclass[aps,prx,twocolumn,floatfix,10pt,amssymb,amsfont,amsmath,superscriptaddress,float,nofootinbib,longbibliography,nobalancelastpage]{revtex4-2}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{color}
+\usepackage{url}
+\usepackage[export]{adjustbox}
+
+\usepackage{braket}
+
+\begin{document}
+\title{Quantum Paldus Transform as an MPO Duality}
+
+\maketitle
+
+\section{Motivation}
+Using MPOs it is possible to gauge any on-site global symmetry. The consequences of this gauging map is that the global action of the symmetry is mapped to an action upon a boundary degree of freedom in the gauge theory.
+
+The Quantum Paldus transformation \cite{burkat2025quantum} block-diagonalises $2d$ fermion spin-free Hamiltonians. This can be viewed as gauging the global $U(1) \times SU(2)$ symmetry of a system of $d$ $s$-orbitals, and then applying a Kramers-Wannier-esk ungauging map.
+
+Further using standard techniques it is possible to decompose any MPO into a quantum circuit of at most linear depth.
+\textcolor{red}{It is very interesting that GUGA is actually just a purely tensor network method. The state of the art seems to be a fortan program called COLUMBUS or NECI, maybe this can be improved on with modern tensor network contraction techniques?}
+
+\textcolor{red}{Configuration space functions are the sums of slater derminiants you get from doing the inverse paldus transform upon a single set of valid $d_i$ and $\lambda$. These are much more compact than slater determinants and fewer are required to have good overlap with the ground state as they already obey the symmetry. Is it possible that we can find generalised CSFs using the generalised QPT that are even more compact than CSFs for systems with more than just $SU(2)$ symmetry? The reason CSFs are useful is because using GUGA you can find the explict matrix elements of the ladder operators in the CSF basis without having to first transform to Slater determinants anyway, this would still be true for generalised QPT but instead of using vanilla GUGA we would use modern tensor network methods for computing the matrix elements. It looks to me that the CSFs themselves would not be affected if we do not introduce spin-orbit coupling, rather just some of the CSFs (paths in the Shavitt graph) would be banned as they would led to the wrong $L^2$. However, if we introduce spin-orbit coupling we leave the world of GUGA as each site might have higher spin than 0 or 1/2 and hence we will not be able to use the existing GUGA techniques, but they could in principle be relatively easily generalized. Currently spin-orbit coupling is being handled by using standard CSFs \cite{wen1994explicit,yabushita1999spin}, finding the Hamiltonian in the basis of CSFS (including the spin-orbit coupling terms which may mix between different irrep spaces (different shavitt graphs)) and then diagonalising the Hamiltonian in this basis. As this basis includes multiple shavitt graphs it is larger than the non spin-orbit coupling case, so if we made our generalised CSFs we might be able to make a smaller basis.}
+
+\textcolor{red}{Using the Paldus transformation in reverse would potentially allow a cheap way of preparing a particular CSF (though this would probably still require the spin ancillas to store the intermediary spins even though the final spin is known). This could potentially be applied to SQD as far fewer CSFs are required to capture the ground state of a chemical than SDs, so fewer samples needed? OHHH instead of drawing SD samples maybe we should draw CSF samples which could be done by applying QPT (or generalised QFT) at the end of SQD and then post selecting for the spin sector of interest. It also appears the order in which the coupling is performed makes a difference to how well a single CSF can capture the ground state \cite{PhysRevB.105.195123}, so there is some room for optimising this approach as well.}
+
+% \textcolor{blue}{I think the Paldus Duality is a special case of the skew Howe Duality for reductive pair $U(d)\times SU(2)$. The Paldus Transform is a generalisation of the Schur Transfrom to include spin-$0$ or spin-$\frac{1}{2}$ (which are the irreps possible from a fermionic site with single particle representation given by irrep $\frac{1}{2}$ of $SU(2)$).}
+
+\section{MPO Duality Gauging map}
+Given a spin Hamiltonian with on-site global symmetry $G$. The symmetry need not act with the same representation upon every site (in fact each site may have a completely different dimension). 
+\begin{equation}
+    [H, \bigotimes^n_i U_{\Gamma_i}(g) ] = 0 \> \> \forall g \in G
+\end{equation}
+% \textcolor{blue}{Is this exactly schur weyl if all $\Gamma_i$ are identical and irreducible?}
+
+% By applying the MPO gauging map we can find dual Hamiltonian $H'$ such that:  
+% \textcolor{blue}{}
+% \textcolor{blue}{I am not sure what, Laurens says that actually the new Hamiltonian may have no symmetry as it should have an SU(2) symmetry but we break this by specifying that the first $\lambda$ is $0$ which we need to enforce unitarity.}
+
+The first step of constructing the MPO gauging map is to decompose the Hilbert space of each site into irreducible representations of $G$:
+\begin{equation}
+    \Gamma_i = \bigoplus_j A_j
+\end{equation}
+We can then rewrite each local state as $\sum_j \ket{a_j} \ket{j}$ where $a_j \in A_j$ and $A_j$ are irreps of $G$. The MPO gauging map requires the following tensor $M$:
+\begin{multline}
+   M= \sum_{j,a_j,J,b_J, J', b'_{J'}} C_{j,a_j;J,b_J}^{J',b'_{J'},\nu}\ket{a_j}_1 \ket{j}_2 \ket{b_J}_3\ket{J}_4\\ \bra{J'}_5\bra{b'_{J'}}_6 \bra{j,J,J',\nu}_7
+\end{multline}
+where $C$ are the Clebsch-Gordans of $G$ and hence by definition:
+\begin{multline}
+    (\ket{\Gamma_1}\bra{\Gamma_1}_2\otimes U_{\Gamma_1}(g)_1) (\ket{\Gamma_2}\bra{\Gamma_2}_4\otimes U_{\Gamma_2}(g)_3) M =\\ M \sum_{\lambda, \nu} \ket{\Gamma_1,\Gamma_2,\Gamma_\lambda, \nu}\bra{\Gamma_1,\Gamma_2,\Gamma_\lambda, \nu}_7\otimes\ket{\Gamma_\lambda}\bra{\Gamma_\lambda}_5\otimes U_{\Gamma_\lambda}(g)_6
+\end{multline}
+In general it is not known how to implement Clebsch-Gordan coupling efficently as a quantum circuit for any group. In this work we focus on those groups for which this is possible. For $SU(2)$ and $SO(3)$ closed form expressions for the Clebsch-Gordan coefficents are known so it is possible to construct a quantum circuit that performs the coupling by computing the coefficents on the fly. Further, for any finite group (e.g. finite subgroups of $SU(2)$ and $SO(3)$) we can exhaustively precompute all of the possible Clebsch-Gordan coefficents and hence compile a finite quantum circuit that performs the coupling. 
+
+After performing this gauging map we are left with irrep labels of $G$ in the bulk. We can "ungauge" these labels by replacing them with an onsite term that specifies how the irrep labels update with each step along the chain. This is only possible as the Hilbert space of each site is finite dimensional, so the number of possible irreps that any individual irrep can be transformed to is finite, so we can write a finite dimensional update step (even if there are an infinite number of possible irreps). This allows us to remove the potentially infinite dimensional irrep label degrees of freedom from the bulk, however they remain at the boundary.
+% It is clear to see that these tensors have the following symmetries:
+% \begin{multline}
+%    \sum_lU_{A_l}(g)_3\otimes\ket{l}\bra{l}_4\sum_kU_{A_k}(g)_1\otimes\ket{k}\bra{k}_2\\\sum_{j,a_j,J,b_J, J', b'_{J'}} C_{j,a_j;J,b_J}^{J',b'_{J'}}(g)\ket{a_j}_1 \ket{j}_2 \ket{b_J}_3\ket{J}_4 \bra{J'}\bra{b'_{J'}}\bra{j}= \\
+%    \sum_{j,a_j,J,b_J, J', b'_{J'}} C_{j,a_j;J,b_J}^{J',b'_{J'}}(g)\ket{a_j}_1 \ket{j}_2 \ket{b_J}_3\ket{J}_4 \bra{J'}\bra{b'_{J'}}\bra{j}\\
+% \end{multline}
+% The MPO gauging map works by simply coupling the representations of successive sites using the standard Clebsch-Gordan coefficents of $G$. The dual Hamiltonian acts upon the multiplicities of these couplings and the irreps of the fully coupled system. The dual Hamiltonian will act diagonally upon the irrep labels of the fully coupled system, and hence each of the subspaces labeled by them can be considered independently.
+
+\subsection{Fermionic Hilbert Space}
+The Hilbert space of each local site is defined by the representation $\Gamma_i$ and finding this representation for sites of multiple fermions is non-trivial. We will only consider number preserving fermionic Hamiltonians (enforcing $G = U(1) \times \tilde G$), which allows us to decompose $\Gamma_i$ into particle number sectors: $\Gamma_i = \Gamma_i^{(0)}\otimes 0 \oplus \Gamma_i^{(1)}\otimes 1\oplus \cdots$. The single particle representation $\Gamma_i^{(1)}$ defines the full representation as we can use it to build up the representations of higher particle number sectors. Thus it is common to label a local site by the single particle representation. The naive (but incorrect) approach to building up the higher particle number sectors would be to utilise Clebsch-Gordan coefficents to decompose tensor products of the single particle representation: $\Gamma_i^{(1)}\>^{\otimes d}$. This would generate many irreps that would be subsequently excluded by the Pauli exclusion principle. Instead we must take the exterior product which respects the anti-symmetric nature of fermions:
+\begin{equation}
+    \Gamma_i^{(k)} = \bigwedge^k(\Gamma_i^{(1)})
+\end{equation}
+As $\bigwedge^k\Gamma$ vanishes for $k > \dim \Gamma$ the maximum particle number of the site is given by the dimension of the single particle representation. If the single particle representation is reducible (i.e. $\Gamma_i^{(1)} = A_0 \oplus A_1$) we can split the local site into multiple smaller sites as:
+\begin{align}
+    \bigoplus_{k}^d \bigwedge^k(A_0 \oplus A_1) \otimes k &= \bigoplus_{k}^d \bigoplus_{a=0}^k \left( \bigwedge^a A_0 \otimes \bigwedge^{k-a} A_1\right) \otimes k\\
+    &= \left(\bigoplus_k^{d'} \bigwedge^k A_0 \otimes k\right)\otimes \left(\bigoplus_{k''}^{d-d'} \bigwedge^{k'} A_1 \otimes k'\right)
+\end{align}
+where $\dim \Gamma_i^{(1)} = d$, $\dim A_0 = d'$ and $\dim A_1 = d - d'$. Therefore, without loss of generality we may restrict ourselves to considering systems with sites labeled by the irreducible representations of $\tilde G$. Such sites are composed of equivalent electrons as the electrons are indistinguishable due to the symmetry and hence build up to multi-particle states with careful attention to the Pauli exclusion principle. On the other hand in-equivalent electrons can be distinguished by their irrep labels (energy) and hence can be combined normally using Clebsch-Gordan coefficents. This is essential to our gauging map which relies upon Clebsch-Gordan coupling between different sites, and hence sites must be in-equivalent.
+
+Another important consideration for fermionic Hamiltonians is that before applying our MPO gauging map we must apply Jordan-Wigner to represent the fermionic state with spins. Therefore, the ordering of the modes becomes important as different orderings will lead to different dual Hamiltonians. Throughout our work we will assume an ordering that preserves the locality of each site is chosen. We have chosen to focus on the action of our mapping upon states rather than operators, so it is not immediately clear how to convert a generic fermionic operator into a spin operator in our dual space. However, as we will describe an MPO and quantum circuit that performs our duality such a transformation is possible to compute.
+\section{Connection to the Howe Duality}
+
+The Howe Duality states that:
+\begin{equation}
+    \bigwedge^k(V\otimes W) = \bigoplus_{\substack{\lambda \vdash k\\l(\lambda
+    ) \leq \dim V\\l(\tilde \lambda
+    ) \leq \dim W}}\mathbb{S
+}_{\lambda}V\otimes \mathbb{S
+}_{\tilde \lambda}W
+\end{equation}
+where $V$ and $W$ are irreps of $GL(m)$ and $GL(l)$ respectively. We can restrict to where $V$ and $W$ are irreps of $U(m)$ and $U(l)$ and the Howe Duality still holds. As every irrep of $U(2)$ restricts to a single irrep of $SU(2)$, we can further apply the Howe Duality in the case that $V = \mathbb{C}^d$ and $W=\frac{1}{2}$ are irreps of $U(d)$ and $SU(2)$. We can then take the direct sum over all particle number sectors \textcolor{blue}{I think this might be where the ``gauging" of $U(1)$ is introduced?}. This is what we term the Paldus Duality:
+\begin{equation}
+    \bigwedge(\mathbb{C}^d\otimes \frac{1}{2}) = \bigoplus_{k=0}^{2d}\bigoplus_{\substack{\lambda \vdash k\\l(\lambda
+    ) \leq d\\l(\tilde \lambda
+    ) \leq 2}}\mathbb{S
+}_{\lambda}\mathbb{C}^d\otimes \mathbb{S
+}_{\tilde \lambda}\frac{1}{2}
+\end{equation}
+
+The Gelfand-Tsetlin (GT) basis of an irrep of $U(n)$ is given by performing a chain of subgroup restrictions $U(n) \subset U(n-1) \subset \ldots \subset U(2) \subset U(1)$ \cite{paldus1976many}. Every irrep of $U(i)$ is labeled by a partition into $i$ pieces. As irreps of $U(i)$ decompose into a multiplicity free direct sum of irreps of $U(i-1)$, we can uniquely define a GT basis state in an irrep of $U(n)$ by listing the partitions labeling the unique irrep subspaces it belongs to as you restrict down to $U(1)$. 
+
+We can use the Gelfand-Tsetlin basis to specify a state in the irrep $\mathbb{S}_{\lambda} \mathbb{C}^d$ of $U(d)$ with a Gelfand-Tsetlin pattern $\bm m_{\lambda}$. The irrep $\mathbb{S}_{\tilde \lambda} \frac{1}{2}$ of $SU(2)$ is labeled by $S_{\tilde \lambda} =\frac{\tilde \lambda_1 - \tilde \lambda_2}{2}$ and only non-zero for partitions $\tilde \lambda$ of two parts.  Therefore, we can write a $k$ particle state as:
+\begin{equation}
+    \ket{\lambda} \ket{\bm m_{\lambda}} \ket{M_{\lambda}}
+\end{equation}
+for some valid Gelfand-Tsetlin pattern $\bm m_{\lambda}$ beginning with $\lambda$, some half-integer $|M_{\lambda}| \leq S_{\tilde \lambda}$ and $\lambda$ a partition of $k$ with at most two columns. Due to the two column restriction on $\lambda$ it is possible to derive a unique $\lambda$ for each pair of $S_{\tilde \lambda}$ and $k$, so we could instead write the state as:
+\begin{equation}
+    \ket{k}\ket{S}\ket{\bm m_{k,S}} \ket{M_{S}}
+\end{equation}
+We will refer to this choice of basis as the Paldus basis \textcolor{blue}{Slightly confusingly \cite{burkat2025quantum} refers to this basis as the Gelfand-Tsetlin basis, though I think only the $\bm m_{\lambda}$ bit is actually this}. The existing Quantum Paldus Transform is a unitary transformation from the occupation basis to the Paldus basis. This is accomplished in \cite{burkat2025quantum} through repetitive Clebsch-Gordan coupling of spin-$0$ and spin-$\frac{1}{2}$ orbitals. \textcolor{blue}{The idea that these couplings produce the Paldus Duality is claimed by \cite{burkat2025quantum} to have been proven by \cite{moshinsky1971group} and \cite{paldus1980unitary}. They refer to the states produced by this coupling as Yamanouchi-Kotani states. I do not fully understand this relationship but below is my current explanation. } 
+
+As $\wedge \frac{1}{2} \otimes \wedge \frac{1}{2} = \wedge(\frac{1}{2}\oplus \frac{1}{2}) = \wedge(\mathbb{C}^2\otimes \frac{1}{2})$ \textcolor{blue}{Is this true?} we can see:
+\begin{equation}
+    \bigwedge(\mathbb{C}^d\otimes \frac{1}{2}) = \bigwedge\frac{1}{2} \otimes \bigwedge\frac{1}{2} \otimes \cdots \otimes \bigwedge\frac{1}{2}
+\end{equation}
+\textcolor{blue}{To me this seems to be an essential step as this decomposition into a tensor product basis allows us to start thinking in terms of MPOs. Hence I suspect that the Howe Duality may not be able to be represented with an MPO unless you take the direct sum over $k$ so it admits this decomposition.}
+
+The RHS of the above equation can be viewed as the occupation basis. \textcolor{blue}{Is this true?}. The Quantum Paldus Transformation proceeds by decomposing $\wedge \frac{1}{2} = 0\otimes 0\oplus 1\otimes \frac{1}{2} \oplus 2 \otimes 0$ into irreps of $U(1)\times SU(2)$ and then performing unitary Clebsch-Gordan coupling (like with Schur-Weyl). This can be performed using tensor network methods and will give us something of the form:
+\begin{equation}
+    \bigoplus_{k,S} V_{k,S} \otimes W^{U(1)\times SU(2)}_{k,S}
+\end{equation}
+where $V_{k,S}$ are restricted Hilbert spaces in the multiplicity (including intermediary irrep labels) degrees of freedom of the Clebsch-Gordan coupling (i.e. those multiplicities possible given that the final irrep produced is $W^{U(1)\times SU(2)}_{k,S}$) and $W^{U(1)\times SU(2)}_{k,S}$ is the fully coupled irrep of $U(1)\times SU(2)$ we produce. We can always write $W^{U(1)\times SU(2)}_{k,S}$ as a tensor product of $W^{U(1)}_k$ and $W^{SU(2)}_S$ \textcolor{blue}{Is this true?}, so we have:
+\begin{equation}
+     \bigwedge(\mathbb{C}^d\otimes \frac{1}{2}) = \bigoplus_{k,S}V_{k,S} \otimes W^{U(1)}_k \otimes W_S^{SU(2)}
+\end{equation}\textcolor{blue}{Is it only possible to have one unique decomposition of this form and so $V_{k,S}$ must be of the form given by the Paldus duality? It might be important to note that given $k$ and $S$ we can find a unique 2 column partition $\lambda$.}
+
+An example of the above for two sites is given below:
+\begin{align*}
+    \wedge \frac{1}{2} \otimes \wedge \frac{1}{2} &= (0\otimes 0\oplus 1\otimes \frac{1}{2} \oplus 2 \otimes 0) \otimes (0\otimes 0\oplus 1\otimes \frac{1}{2} \oplus 2 \otimes 0)\\
+    &= 0\otimes 0\oplus 1\otimes \frac{1}{2} \oplus 2 \otimes 0 \oplus 1 \otimes \frac{1}{2}\oplus 2 \otimes 0\\
+    & \oplus 2\otimes 0 \oplus 2 \otimes 1 \oplus 3 \otimes \frac{1}{2}\oplus 3 \otimes \frac{1}{2} \oplus 4 \otimes 0\\
+    &= 0\otimes 0\oplus \mathbb{C}^2 \otimes 1\otimes \frac{1}{2} \oplus \mathbb{C}^3 \otimes 2 \otimes 0 \\
+    & \oplus 2 \otimes 1 \oplus \mathbb{C}^2 \otimes3 \otimes \frac{1}{2} \oplus 4 \otimes 0\\
+\end{align*}
+
+
+The combinatorics of building up the irreps of $SU(2)$ and inducing representations of $U(d)$ happen to coincide. \textcolor{blue}{I believe this must be related to the fact they are a reductive pair. I do not think it is necessarily relevant to the discussion but I leave it here as I found it intereseting.} First, a induction of $GL(d) \subset GL(d+1)$ gives the following:
+\begin{equation}
+    \text{Ind}(\mathbb{S}_{\lambda} V) = \bigoplus_{\mu} \mathbb{S}_{\mu} V
+\end{equation}
+where $\mu$ are all the partitions obtained by adding any number of boxes from $\lambda$ but no two to the same column. Similarly, the tensor product of some schur functor of irrep $\frac{1}{2}$ of $SU(2)$ with a fermionic site with single particle representation given by $\frac{1}{2}$ is given by:
+\begin{align}
+    \mathbb{S}_{\tilde \lambda}\frac{1}{2} \otimes \bigoplus_k\bigwedge^k \frac{1}{2} &= \mathbb{S}_{\tilde \lambda}\frac{1}{2} \otimes (\mathbb{S}_{()}\frac{1}{2} \oplus \mathbb{S}_{(1)}\frac{1}{2} \oplus \mathbb{S}_{(1,1)}\frac{1}{2})\\
+    &= \mathbb{S}_{\tilde \lambda}\frac{1}{2} \otimes (0 \oplus \frac{1}{2} \oplus 0)\\
+    &= \bigoplus_{\tilde \mu} \mathbb{S}_{\tilde \mu} \frac{1}{2}
+\end{align}
+where $\tilde \mu$ are all the paritions obtained from $\tilde \lambda$ by adding any number of boxes but no two to the same row (as $\tilde \lambda$ has at most 2 rows due to the dimension of $\frac{1}{2}$). Effectively this means that due to the Howe Duality the chain of restrictions specified by the Gelfand-Tsetlin basis is in direct correspondence with a chain of Clebsch-Gordan couplings of spin-$\frac{1}{2}$ and spin-$0$ orbitals. Both of these chains are described by the intermediary partitions $\tilde \lambda$. It is important to note that for this to be true we must retain the full description of $\tilde \lambda$ rather than just the spin. 
+% \textcolor{blue}{This seems highly relevant to the question of whether or not the $U(1)$ symmetry is being gauged, as .}
+
+If we where to instead perform the Howe Duality with a higher dimension irrep of $SU(2)$ e.g. $\frac{3}{2}$ which has dim $4$. Then the allowed $\lambda$ will be those with at most $4$ columns, and hence we need to take a Clebsch-Gordan coupling with the following in order to produce the conjugates to the partitions produced through recursive induction:
+\begin{equation}
+    \mathbb{S}_{()}\frac{3}{2} \oplus\mathbb{S}_{(1)}\frac{3}{2} \oplus\mathbb{S}_{(1,1)}\frac{3}{2} \oplus\mathbb{S}_{(1,1,1)}\frac{3}{2} \oplus\mathbb{S}_{(1,1,1,1)}\frac{3}{2} = \bigoplus_k \bigwedge^k \frac{3}{2}
+\end{equation}
+
+\section{Existing Quantum Paldus Transform: $U(1) \times SU(2)$}
+The existing Quantum Paldus Transform acts on a fermionic system with a $U(1) \times SU(2)$ symmetry where the single particle representation of every site is given by irrep $\frac{1}{2}$ of $SU(2)$. Therefore, the full Hilbert space of each site is given by $0 \otimes 0 \oplus \frac{1}{2} \otimes 1 \oplus 0\otimes2$. Performing Quantum Paldus Transform upon this is a simple case of taking successive Clebsch-Gordan couplings of this reducible representation. The intermediary irrep values (the couplings themselves are otherwise multiplicity free) of these couplings become the space the representations of $U(d)$ are embedded in, whereas, $U(1) \times SU(2)$ acts on the outcome of all of the couplings. When we perform this as a quantum circuit each irrep labels $k$ and $S$ become boundary conditions of the system and so if we make a particular choice of these we project the intermediary irrep values into a constrained Hilbert space associated with that particular choice of $k$ particle number and $S$ spin. We can perform the KW-esk ``ungauging" map in order to remove the intermediary irrep values from the bulk and replace them with $\bm d$ update steps. As at each step there are 4 potential couplings, $S \rightarrow S$ $k \rightarrow k$, $S \rightarrow S-\frac{1}{2}$ $k \rightarrow k+1$,$S \rightarrow S+\frac{1}{2}$ $k \rightarrow k+1$ and $S \rightarrow S$ $k \rightarrow k+2$, this onsite $\bm d$ update step is $4$ dimensional. 
+
+
+\section{Generalised Quantum Paldus Transform}
+We can play the above tricks of defining a set of local anti-symmetric Hilbert spaces, decomposing into irreps of some global onsite symmetry $U(1) \times G$ and then performing Clebsch-Gordan coupling of these representations. We then will end up with a single ``virtual" leg that transforms according to irreps of the symmetry $U(1) \times G$ and multiplicities/intermediary irrep labels that make up the rest of the space. \textcolor{blue}{It is not clear if this is an example of the Howe Duality, but it will perform some sort of duality that block diagonalises with respect to the global onsite symmetry.} We can then play all the same tricks in the dual theory e.g. projecting onto a particular irrep of the fully coupled symmetry to restrict the remaining Hilbert space to the multiplicites compatible with that particular choice of irrep. \textcolor{blue}{But it is not clear if the space we restrict to under this projection is an irrep of some reductive dual pair of $U(1) \times G$, I suspect that in general this is not the case but that it holds for $G= SU(n)$. Does it matter if the remaining space is an irrep of some group or not? What consequences does it have if it is?}
+\subsection{Without spin-orbit coupling: $U(1) \times H \times SU(2)$}
+The first question we wanted to answer is what if you had a fermionic system with a $U(1) \times SO(3) \times SU(2)$ symmetry and the single particle representation of every site was given by the $1 \otimes \frac{1}{2}$ irrep of $SO(3) \times SU(2)$. This would correspond to a system of $p$ subshells compared to the system of $s$ subshells considered by the existing quantum paldus transformation. Extending the Quantum Paldus Transform to this setting is simple as the Clebsch-Gordan coefficents of $U(1) \times SO(3) \times SU(2)$ can be simply found by treating each group separately. 
+\textcolor{blue}{I do not know how to think of this as an example of the Howe duality. Maybe we would have something like the reductive dual pair of $SO(3) \times SU(2)$ and $U(d)$ in the larger group of $SO(3) \times SU(2)\times U(d) \subset U(6d)$? Should we be including the $U(1)$ here or is the $U(1)$ an artifact of taking the direct sum over a bunch of Howe Dualities?}
+
+In general we would like to consider spinful electron shells with point group $H$ symmetric potential and $SU(2)$ spin symmetry. The previous discussion took $H= SO(3)$, but in a crystaline environment this is more likely to break to a finite subgroup $H \subset SO(3)$.
+
+\textcolor{blue}{Here we have a finite group so is it even possible to find a reductive dual pair/can Howe Duality be applied? If not then does that mean that what we are doing is more general than the Howe Duality, so whilst standard QPT might be a special case of the Howe Duality, not all generalised QPTs are Howe Dualities?}
+\subsection{With spin-orbit coupling: $U(1) \times H_D$}
+The spin and the point group potential are coupled to make a local $H_D$ symmetry. The standard example would be for spherical symmetry where $H_D$ would be $SU(2)$ which is the double cover of $SO(3)$. We could again consider a system of $p$ subshells, but this would now correspond to alternating sites with single particle representations of $\frac{1}{2}$ and $\frac{3}{2}$ irreps of $SU(2)$, as we have $1 \otimes \frac{1}{2} = \frac{1}{2}\oplus \frac{3}{2}$. \textcolor{blue}{As this has returned to the symmetry being just $U(1) \times SU(2)$ maybe this again neatly fits into the Howe Duality. I imagine there will be some issue caused by the fact that we have two different onsite Hilbert spaces so we have something like $\wedge \frac{3}{2} \otimes \wedge \frac{1}{2} \otimes \wedge \frac{3}{2} \otimes \cdots$ compared to the existing QPT which has all $\wedge \frac{1}{2}$.}
+\bibliography{references}
+
+\end{document}
