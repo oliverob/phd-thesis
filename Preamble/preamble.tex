@@ -139,7 +139,7 @@
 
 % ********************** TOC depth and numbering depth *************************
 
-\setcounter{secnumdepth}{3}
+\setcounter{secnumdepth}{4} % 4 = number down to \paragraph
 \setcounter{tocdepth}{2}
 
 
@@ -231,6 +231,7 @@
 \usepackage{ragged2e}
 \newtheorem{definition}{Definition}
 \newtheorem*{duplicate}{Theorem} % unnumbered restatement of an earlier theorem
+\newtheorem*{lemma*}{Lemma} % unnumbered restatement of an earlier lemma
 
 
 \newenvironment{mytabular}[1][1]{%
@@ -248,6 +249,7 @@
 % \newtheorem{definition}[theorem]{Definition}
 \newtheorem{fact}[theorem]{Fact}
 \newtheorem{notation}[theorem]{Notation}
+\usepackage{bbm} % \mathbbm{1} indicator functions (BSI-QPE)
 \newtheorem{observation}[theorem]{Observation}
 %
 \newtheoremstyle{note}{\topsep}{\topsep}{\slshape}{}{\scshape}{}{ }{}
@@ -281,9 +283,9 @@
 \usepackage[export]{adjustbox} % valign=c for inline IPE diagrams in PEPO section
 
 % Quantum circuits (yquant). Must be loaded before the custom shapes below, which build on yquant-circle.
-\usetikzlibrary{fit,quotes}
-% breqn makes | loop forever inside TikZ pictures (e.g. \ket in yquant circuits); restore the normal | there
-\tikzset{every picture/.append style={execute at begin picture={\mathcode`\|="026A\relax}}}
+\usetikzlibrary{fit,quotes,arrows,arrows.meta,positioning,backgrounds,calc,shapes.geometric}
+% breqn makes | and : loop forever inside TikZ pictures (e.g. \ket or $M:\ket{0}$ in yquant circuits); restore the normal | and : there
+\tikzset{every picture/.append style={execute at begin picture={\mathcode`\|="026A\relax\mathcode`\:="303A\relax}}}
 \usepackage[compat=0.6]{yquant}
 
 \pgfdeclareshape{yquant-multictrlshape}{
@@ -335,3 +337,50 @@
 
 \yquantset{plusctrl/.style={/yquant/every negative control/.style={/yquant/operators/every not}}}
 
+\pgfdeclareshape{yquant-multictrlshape}{
+   \inheritsavedanchors[from=yquant-circle]%
+   \foreach \anc in {center, north, north east, east, south east, south, south west, west, north west} {%
+      \inheritanchor[from=yquant-circle]{\anc}%
+   }%
+   \inheritanchorborder[from=yquant-circle]%
+   \backgroundpath{%
+      \pgfpathmoveto{\pgfqpoint{-0.707107\dimexpr\xradius\relax}{-0.707107\dimexpr\yradius\relax}}%
+      \pgfpathlineto{\pgfqpoint{0.707107\dimexpr\xradius\relax}{0.707107\dimexpr\yradius\relax}}%
+      \pgfpathellipse{\pgfpointorigin}%
+                     {\pgfqpoint{\xradius}{0pt}}%
+                     {\pgfqpoint{0pt}{\yradius}}%
+   }%
+   \inheritclippath[from=yquant-circle]%
+}
+
+\yquantset{multictrl/.style={every negative control/.style={draw, /yquant/default fill,shape=yquant-multictrlshape,radius=1.05mm}}}
+\pgfdeclareshape{yquant-bctrlshape}{
+   \inheritsavedanchors[from=yquant-circle]%
+   \foreach \anc in {center, north, north east, east, south east, south, south west, west, north west} {%
+      \inheritanchor[from=yquant-circle]{\anc}%
+   }%
+   \inheritanchorborder[from=yquant-circle]%
+   \backgroundpath{%
+      % Draw the circle
+      \pgfpathellipse{\pgfpointorigin}%
+                     {\pgfqpoint{\xradius}{0pt}}%
+                     {\pgfqpoint{0pt}{\yradius}}%
+   }%
+   % Add the "b" in the center
+   \foregroundpath{%
+      \pgftext[center]{\(\scriptstyle b\)}%
+   }%
+   \inheritclippath[from=yquant-circle]%
+}
+
+\yquantset{
+  bctrl/.style={
+    every control/.style={
+      draw,
+      /yquant/default fill,
+      shape=yquant-bctrlshape,
+      radius=1.05mm
+    }
+  }
+}
+\yquantdefinebox{dots}[inner sep=0pt]{$\dots$}

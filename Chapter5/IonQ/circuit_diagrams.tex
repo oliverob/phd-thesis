@@ -1,0 +1,173 @@
+% yquant circuit diagrams; \input by main.tex after \usepackage{yquant}.
+\usetikzlibrary{calc,decorations.pathreplacing}
+\yquantset{
+  register/minimum height=3.6mm,
+  register/separation=1.8mm,
+  operator/separation=0.9mm,
+  operator/minimum width=4mm,
+  operators/every barrier/.append style={thin, dashed, gray},
+}
+\tikzset{
+  stage/.style={decorate, decoration={brace, amplitude=3pt, raise=1pt},
+    gray!70!black},
+  stage label/.style={font=\footnotesize, gray!70!black, above=3pt, midway},
+}
+% Brace above the circuit from the west of node #1 to the east of node #2.
+\newcommand{\circstage}[3]{%
+  \draw[stage] (#1.west |- top) -- (#2.east |- top)
+    node[stage label] {#3};}
+\newcommand{\circphase}[1]{$\scriptstyle #1$}
+
+% Adapted-basis circuit in the field encoding, drawn for n=3 (p=5,7).
+\newcommand{\AdaptedCircuit}{%
+\begin{tikzpicture}
+\begin{yquant}
+qubit {$x_{\idx}$} x[3];
+qubit {$a_{\idx}$} a[3];
+qubit {$y_{\idx}$} w[3];
+
+[name=prep] box {$U_p$} (x);
+box {$V_q$} (a);
+box {$U_p$} (w);
+barrier (-);
+[name=o1] box {\circphase{\theta_0}} w[0] | x[0];
+box {\circphase{\theta_1}} w[1] | x[0];
+box {\circphase{\theta_2}} w[2] | x[0];
+box {\circphase{\theta_1}} w[0] | x[1];
+box {\circphase{\theta_2}} w[1] | x[1];
+box {\circphase{\theta_3}} w[2] | x[1];
+box {\circphase{\theta_2}} w[0] | x[2];
+box {\circphase{\theta_3}} w[1] | x[2];
+[name=o2] box {\circphase{\theta_4}} w[2] | x[2];
+[name=o3] box {\circphase{b\theta_0}} w[0] | a[0];
+box {\circphase{b\theta_1}} w[1] | a[0];
+box {\circphase{b\theta_2}} w[2] | a[0];
+box {\circphase{b\theta_1}} w[0] | a[1];
+box {\circphase{b\theta_2}} w[1] | a[1];
+box {\circphase{b\theta_3}} w[2] | a[1];
+box {\circphase{b\theta_2}} w[0] | a[2];
+box {\circphase{b\theta_3}} w[1] | a[2];
+[name=o4] box {\circphase{b\theta_4}} w[2] | a[2];
+barrier (-);
+[name=ft] box {$QFT_p$} (x);
+discard w;
+measure x;
+[name=fa] box {$QFT_p$} (a) | x;
+[name=m] measure a;
+output {$k$} (x);
+output {$l$} (a);
+\end{yquant}
+\node[font=\scriptsize, anchor=south west, inner sep=1pt]
+  at ($(fa.north)+(0.6mm,0.4mm)$) {$k\neq0$};
+\coordinate (top) at ($(current bounding box.north)+(0,1mm)$);
+\circstage{prep}{prep}{prepare}
+\circstage{o1}{o2}{oracle, $x$ on $y$}
+\circstage{o3}{o4}{oracle, $a$ on $y$}
+\circstage{ft}{m-0}{QFT, measure}
+\end{tikzpicture}}
+
+% Exponent-encoding circuit with registers drawn as bundles.
+\newcommand{\ExponentCircuit}{%
+\begin{tikzpicture}
+\begin{yquant}
+qubit {$x$} x;
+qubit {$t$} t;
+qubit {$y$} w;
+slash x; slash t; slash w;
+hspace {2mm} x; hspace {2mm} t; hspace {2mm} w;
+box {$U_p$} x;
+box {$U_q$} t;
+box {$U_p$} w;
+box {$\Theta$} w | x;
+box {$D_b$} (t, w);
+box {$QFT_p$} x;
+box {$M$} t;
+discard w;
+measure x;
+measure t;
+output {$k$} x;
+output {$s$} t;
+\end{yquant}
+\end{tikzpicture}}
+
+% One measurement variant M on t = (t_0, t_{>0}); #1 is the yquant body.
+\newcommand{\Variant}[2]{%
+\begin{tabular}[b]{@{}c@{}}
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\begin{yquant}
+qubit {$t_0$} t0;
+qubit {$t_{>0}$} t1;
+slash t1;
+hspace {2mm} t0; hspace {2mm} t1;
+#1
+hspace {1.5mm} -;
+\end{yquant}
+\end{tikzpicture}\\[1pt]
+\footnotesize #2
+\end{tabular}}
+
+\newcommand{\MeasurementVariants}{%
+\Variant{box {$T$} t0; box {$H$} t0;}{pairs}\hfill
+\Variant{box {$H$} t0;}{$H$ only}\hfill
+\Variant{box {$F_q$} (t0, t1);}{forgetful}\hfill
+\Variant{hspace {5mm} -;}{weak}}
+
+% ZNE folding of one native ZZ gate, as in forte.fold_zz.
+\newcommand{\FoldCircuit}{%
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\begin{yquant}
+qubit {} q[2];
+hspace {1mm} q;
+box {$Z\!Z(\theta)$} (q);
+hspace {1mm} q;
+\end{yquant}
+\end{tikzpicture}
+\;$\longrightarrow$\;
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\begin{yquant}
+qubit {} q[2];
+hspace {1mm} q;
+box {$Z\!Z(\theta)$} (q);
+box {$X$} q[0];
+box {$Z\!Z(\theta)$} (q);
+box {$X$} q[0];
+box {$Z\!Z(\theta)$} (q);
+hspace {1mm} q;
+\end{yquant}
+\end{tikzpicture}}
+
+
+% q=6: two strings per w_j cancelled; one CNOT walk through t_0 serves every w_j.
+\newcommand{\OracleDiagonalSix}{%
+\begin{tikzpicture}[baseline=(current bounding box.center), scale=0.8]
+\begin{yquant}
+qubit {$t_{\idx}$} t[3];
+qubit {$y_{\idx}$} w[3];
+[name=s1a] zz (t[0], w[0]);
+zz (t[0], w[1]);
+[name=s1b] zz (t[0], w[2]);
+box {$\scriptstyle R_Z$} t[0];
+[name=s2a] zz (t[1], w[0]);
+zz (t[1], w[1]);
+[name=s2b] zz (t[1], w[2]);
+[name=s3a] zz (t[2], w[0]);
+zz (t[2], w[1]);
+[name=s3b] zz (t[2], w[2]);
+cnot t[1] | t[0];
+[name=s4a] zz (t[1], w[0]);
+zz (t[1], w[1]);
+[name=s4b] zz (t[1], w[2]);
+cnot t[1] | t[0];
+cnot t[2] | t[0];
+[name=s5a] zz (t[2], w[0]);
+zz (t[2], w[1]);
+[name=s5b] zz (t[2], w[2]);
+cnot t[2] | t[0];
+\end{yquant}
+\coordinate (top) at ($(current bounding box.north)+(0,1mm)$);
+\draw[stage] (s1a.west |- top) -- (s1b.east |- top) node[stage label] {$t_0$};
+\draw[stage] (s2a.west |- top) -- (s2b.east |- top) node[stage label] {$t_1$};
+\draw[stage] (s3a.west |- top) -- (s3b.east |- top) node[stage label] {$t_2$};
+\draw[stage] (s4a.west |- top) -- (s4b.east |- top) node[stage label] {$t_0{\oplus}t_1$};
+\draw[stage] (s5a.west |- top) -- (s5b.east |- top) node[stage label] {$t_0{\oplus}t_2$};
+\end{tikzpicture}}

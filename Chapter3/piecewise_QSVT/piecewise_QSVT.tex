@@ -2,28 +2,182 @@
 %*******************************************************************************
 %****************************** Third Chapter **********************************
 %*******************************************************************************
-\chapter{Quantum Metropolis Sampling}
-
+\chapter{Coherently Boosting Quantum Phase Estimation with Window Functions}
 % **************************** Define Graphics Path **************************
 \ifpdf
     \graphicspath{{Chapter3/Figs/Raster/}{Chapter3/Figs/PDF/}{Chapter3/Figs/}{Chapter3/piecewise_QSVT/}}
 \else
     \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}{Chapter3/piecewise_QSVT/}}
 \fi
+\label{chapter:boosting_qpe}
 
-\section{Introduction}
-State preparation is a major bottleneck for numerous quantum algorithms with applications in many fields including quantum chemistry \cite{Aspuru_Guzik_2005,RevModPhys.92.015003, PRXQuantum.2.040332, Huggins:2024hpa}, quantum machine learning \cite{Aaronson:2015scy}, quantum finance \cite{Chakrabarti2021thresholdquantum, Gonzalez-Conde:2021zbv, PhysRevE.103.063302, Dalzell:2022ysw}, and quantum computational fluid dynamics \cite{Lapworth:2022rcw}. The exponentially large state space afforded by a quantum computer that lends so much power when performing computations becomes a hindrance when we must initialise a state. In order to specify a \textbf{generic} $n$-qubit state \textbf{exactly} one must load $2^n$ amplitudes into our quantum computer, and hence any algorithms with a sub-exponential cost in $n$ become subdominant to the cost of state preparation. 
+Perhaps the most commonly invoked transformation in quantum algorithms is the Fourier transform, which is implemented on a quantum computer by the quantum Fourier transform (QFT). One of its most important applications is Quantum Phase Estimation (QPE) \cite{kitaev1995quantum, Cleve_1998}. Given a unitary $U$ with eigenstate $\ket{\psi_j}$ such that $U\ket{\psi_j} = e^{iE_j}\ket{\psi_j}$, QPE allows one to prepare a register of ancilla qubits that approximates the phase $E_j$. QPE is in turn a key component of many quantum algorithms including Shor's algorithm \cite{shor1999polynomial}, ground state energy estimation in quantum chemistry \cite{Aspuru_Guzik_2005} and the HHL quantum linear system solver \cite{harrow2009quantum}.
 
-Luckily slight relaxations of these requirements provide us with efficient avenues for state preparation. For example, considering the preparation of only a subset of possible states or by attempting to prepare states approximately through some form of lossy compression. Multiple techniques utilising these approaches have been developed including: preparing Matrix Product States (MPS) \cite{Ran_2020, 9259933, Melnikov_2023, PhysRevA.101.010301, PhysRevResearch.4.043007, Iaconis:2023rna, PhysRevLett.132.040404}, sparse states \cite{Zhang2022}, truncated series expansions \cite{Welch_2014, Zylberman:2023knk, Moosa:2023ecz}, training variational circuits \cite{Zoufal_2019, Nakaji:2021dew, Marin-Sanchez:2021ast}, compressing repeated values \cite{Sunderhauf:2023xrz, PhysRevResearch.5.013200}, preparing states via coherent arithmetic \cite{Bhaskar:2015jjo, Haner:2018yea}, and QSVT polynomial approximation \cite{mcardleQuantumStatePreparation2022, Gonzalez-Conde:2023fjg}. In this work we extend the QSVT polynomial approximation techniques to allow for piecewise QSVT polynomial approximations.
+There are two quite different ways in which these algorithms utilise QPE. In Shor's algorithm and energy estimation the ancilla register is measured immediately, and hence the phase estimate is simply a classical output. However, in other algorithms we do not measure the ancilla register, but instead use the ancilla qubits as the input to further coherent quantum computations before uncomputing them. We refer to this as \emph{coherent} QPE. For example, HHL rotates a flag qubit by an angle dependent upon the eigenvalue stored in the ancilla register, and then uncomputes the register by running QPE in reverse. Similarly, the Quantum Metropolis algorithm (Chapter~\ref{chapter:quantum_metropolis}) uses coherent estimates of the energy to decide whether to accept or reject a proposed update, and must be able to ``rewind'' the update upon rejecting it.
 
-QSVT (Quantum Singular Value Transformation) \cite{Gilyen:2018khw} is a quantum algorithm that allows one to apply arbitrary polynomial transformations to block-encoded matrices. The flexibility of this algorithm allows it to approximate many other quantum processes, and hence has found numerous applications including amplitude amplification  \cite{Gilyen:2018khw}, Hamiltonian simulation  \cite{Gilyen:2018khw}, phase estimation \cite{Martyn:2021eaf}, and linear system solvers \cite{Gilyen:2018khw}. 
+Unfortunately, textbook QPE has slowly decaying ``fat tails'', leaving a non-negligible weight on estimates far from the true phase. If the ancilla register is measured this is easily dealt with, however, in coherent QPE these tails are carried through into all of the subsequent operations. These tails are a direct consequence of the Fourier transform at the heart of QPE. As we show below, the amplitudes that QPE leaves on the ancilla register are given by the discrete Fourier transform of the initial amplitudes on that register. Textbook QPE begins in a uniform superposition, i.e. a rectangle, and the Fourier transform of a rectangle decays only slowly. Suppressing these tails without measuring the ancilla register is known as \emph{coherently boosting} QPE, and the standard approach is to instead begin QPE with a specially chosen \emph{window state} whose Fourier transform is concentrated near zero. Hence, by harnessing the Fourier transform, the problem of boosting QPE is transformed into a problem of designing window functions, for which we can draw upon a wealth of techniques from classical signal processing.
 
-Previous work utilised QSVT for state preparation to apply a global polynomial that approximates the amplitudes of a desired state, avoiding the need for coherent arithmetic and hence significantly reducing both the ancilla and Toffoli cost. Applications were demonstrated for a number of useful states including the Gaussian state and Kaiser window state \cite{mcardleQuantumStatePreparation2022}. However, this technique falls down when trying to simulate functions with sharp discontinuities or non-differentiable points. We navigate around these issues by utilising piecewise polynomial approximations which simply deal with discontinuities by matching them to the boundaries of segments and cope with variability in approximation difficulty between regions by varying the length of segments used. As such, our techniques fair well where previous works failed, in particular we can efficiently load $\sqrt{x}$ which \cite{mcardleQuantumStatePreparation2022} explicitly noted was not possible with a single polynomial. Furthermore, we can load the B-spline window state with orders of magnitude lower cost than the Kaiser window state and we prove that this gives a similarly exponential performance boost to QPE. 
+In this chapter we show that choosing the right window function allows us to overcome two limitations of windowed QPE. Previous work has focused upon finding the window function whose Fourier transform is most concentrated, however, the best window in the Fourier domain is not necessarily the best window for a quantum computer. Instead, we look for window functions which both have rapidly decaying Fourier transforms and satisfy the constraints imposed by the rest of the quantum algorithm. We present two such contributions, each based upon a separate paper:
+\begin{enumerate}
+    \item \textbf{Loading window states efficiently} (Section~\ref{section:piecewise_qsvt_main}): A window state is a resource state that must be prepared afresh every time QPE is run. The quantum singular value transformation (QSVT) \cite{Gilyen:2018khw} applies a polynomial transformation to the singular values of a block encoded matrix, and hence can be used to load states whose amplitudes are given by a polynomial. Rather than loading the widely used Kaiser window, we choose a window function to suit this state preparation technique: the B-spline window, a well known classical window function \cite{bspline}. The B-spline window is built from polynomial pieces, and its Fourier transform is a power of the sinc function, so it boosts QPE with a similar number of extra ancillas as the Kaiser window. We introduce piecewise QSVT, which applies a different polynomial to each segment of the register, and use it to load the B-spline window state far more cheaply than the Kaiser window state.
+    \item \textbf{Boosting QPE without a window state} (Section~\ref{section:boostedphaseestimation}): Windowed QPE requires the ancilla register to begin in a freshly prepared window state, and hence the ancillas cannot be reused while they still hold a previous estimate. We introduce Boosted State-Independent QPE (BSI-QPE) which requires no window state and works regardless of the value already stored in the ancilla register, so the ancillas can be reused without being reset. BSI-QPE requires a pair of complementary window functions whose discrete Fourier transforms both decay exponentially. None of the standard window functions satisfy these requirements, and so we design a novel pair of window functions which do.
+\end{enumerate}
+Below we discuss the background to both of these contributions in more detail.
 
-In Section~\ref{section:piecewise_qsvt} we describe the technique for performing piecewise QSVT. First we present a new piecewise exact linear block encoding. Then, we demonstrate how to construct a QSVT circuit that implements piecewise polynomial transformations. We go on to discuss how to convert the transformed block encoding into a state and the resource costs of our quantum algorithm. In Section~\ref{section:applications} we explore various applications of our algorithm to loading states of interest exponentially faster than a naive approach. 
+\paragraph*{Textbook QPE and its tails.}
+Textbook QPE \cite{Nielsen_Chuang_2010} utilises a register of $\eta$ ancilla qubits, and here we assume that the system begins in an eigenstate $\ket{\psi_j}$ of $U$. By linearity, a general initial state $\sum_j c_j\ket{\psi_j}$ simply produces the corresponding superposition of the outputs for each eigenstate. Throughout this chapter we will write $N = 2^\eta$ and $\tilde E_j = \frac{N}{2\pi}E_j$ (i.e. the phase in units of the resolution of the ancilla register). QPE proceeds with the following steps (Fig.~\ref{fig:textbook_qpe_circuit}):
+\begin{enumerate}
+    \item Prepare a uniform superposition of the ancilla qubits by applying a Hadamard gate to each of them:
+    \begin{equation}
+        \frac{1}{\sqrt{N}}\sum_{k=0}^{N-1} \ket{k} \ket{\psi_j}
+    \end{equation}
+    \item Apply controlled-$U^{2^m}$ gates to the eigenstate $\ket{\psi_j}$, each controlled on the $m$-th ancilla qubit for $m=0,1,\ldots,\eta-1$. As $\ket{\psi_j}$ is an eigenstate of $U$ this kicks back a phase onto the ancilla register:
+    \begin{equation}
+        \frac{1}{\sqrt{N}}\sum_{k=0}^{N-1} e^{i E_j k} \ket{k} \ket{\psi_j}
+    \end{equation}
+    \item Perform an inverse quantum Fourier transform on the ancilla register:
+    \begin{equation}
+         \sum_{x=0}^{N-1} D(\tilde E_j - x) \ket{x}\ket{\psi_j}
+         \label{eq:textbook_qpe_output}
+    \end{equation}
+    where
+    \begin{equation}
+         D(y) = \frac{1}{N}\sum_{k=0}^{N-1} e^{\frac{2\pi i}{N}ky} = \frac{e^{\frac{i\pi(N-1)}{N}y}}{N}\,\frac{\sin(\pi y)}{\sin\left(\frac{\pi y}{N}\right)}
+         \label{eq:dirichlet}
+    \end{equation}
+\end{enumerate}
+Therefore if $\tilde E_j$ is an integer then $D(\tilde E_j - x)$ vanishes for all $x \neq \tilde E_j$, and so the final state will be exactly $\ket{\tilde E_j}\ket{\psi_j}$. However, if $\tilde E_j$ is not an integer then the amplitudes are spread across the whole ancilla register. Near the peak we can approximate $|D(y)| \approx \frac{|\sin(\pi y)|}{\pi |y|}$ (using $\sin x \approx x$ for small $x$), and hence the amplitudes only decay with $\frac{1}{|y|}$. These slowly decaying amplitudes are the ``fat tails'' of QPE.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{yquant}
+                qubit {$\ket{0}$} a[2];
+                qubit {$\vdots$} ell;
+                qubit {$\ket{0}$} aend;
+                qubit {$\ket{\psi_j}$} s;
+                discard ell;
+                slash s;
+                h a, aend;
+                box {$U^{2^0}$} s | a[0];
+                box {$U^{2^1}$} s | a[1];
+                align -;
+                [draw=none] box {$\cdots$} a, aend, s;
+                box {$U^{2^{\eta-1}}$} s | aend;
+                box {iQFT} (a, ell, aend);
+            \end{yquant}
+        \end{tikzpicture}
+        \caption{Textbook QPE.}
+        \label{fig:textbook_qpe_circuit}
+    \end{subfigure}
+
+    \vspace{1em}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{yquant}
+                qubit {$\ket{0}$} a[2];
+                qubit {$\vdots$} ell;
+                qubit {$\ket{0}$} aend;
+                qubit {$\ket{\psi_j}$} s;
+                discard ell;
+                slash s;
+                box {$\text{PREP}_\alpha$} (a, ell, aend);
+                box {$U^{2^0}$} s | a[0];
+                box {$U^{2^1}$} s | a[1];
+                align -;
+                [draw=none] box {$\cdots$} a, aend, s;
+                box {$U^{2^{\eta-1}}$} s | aend;
+                box {iQFT} (a, ell, aend);
+            \end{yquant}
+        \end{tikzpicture}
+        \caption{Windowed QPE.}
+        \label{fig:windowed_qpe_circuit}
+    \end{subfigure}
+    \caption{Circuits for (a) textbook QPE and (b) windowed QPE on a register of $\eta$ ancilla qubits. The two circuits differ only in their first step: textbook QPE prepares the uniform superposition with Hadamard gates, whereas windowed QPE prepares the window state $\frac{1}{\sqrt{N}}\sum_{k}\alpha(k)\ket{k}$ with the state preparation unitary $\text{PREP}_\alpha$.}
+    \label{fig:qpe_circuits}
+\end{figure}
+
+We quantify these tails using two quantities: the \emph{bandwidth} $\mu$, which is how far (in units of the ancilla register) we allow the estimate to be from $\tilde E_j$, and the \emph{tail weight} $\delta$, which is the probability that the ancilla register holds a value outside of this bandwidth:
+\begin{equation}
+    \delta = \sum_{x\,:\,|x - \tilde E_j|_N > \mu} \left|D(\tilde E_j - x)\right|^2
+\end{equation}
+where $|\cdot|_N$ is the distance modulo $N$. For textbook QPE we have $\delta \leq \frac{1}{2(\mu-1)}$ \cite{Nielsen_Chuang_2010}, and this bound is tight up to a constant factor. Therefore, to achieve a tail weight of $\delta$ we require a bandwidth of $\mu \approx \frac{1}{\delta}$.
+
+Increasing the bandwidth comes at the cost of additional qubits. If the estimate can be up to $\mu$ away from $\tilde E_j$ then we only learn the phase $E_j$ to within $\frac{2\pi\mu}{N}$. Hence, to retain the same precision in the phase we must make the ancilla register $\mu$ times larger, i.e. add $\log_2\mu$ ancilla qubits. We refer to these as \emph{extra ancillas}, as they are only included to suppress the tails and are discarded when the phase estimate is read. Therefore, textbook QPE requires $\log_2\frac{1}{\delta}$ extra ancillas. We refer to any technique which suppresses the tails beyond those of textbook QPE (i.e. any technique for which $\delta$ decays faster than $\frac{1}{\mu}$) as \emph{boosting} QPE. The best boosting techniques achieve a tail weight which decays exponentially with the bandwidth, $\delta = e^{-\Omega(\mu)}$, in which case a bandwidth of $\mu = O(\log\frac{1}{\delta})$ is sufficient, and so only $O(\log\log\frac{1}{\delta})$ extra ancillas are required. This comparison is summarised in Table~\ref{tab:boosting_summary}.
+\begin{table}[htbp]
+    \centering
+    \setlength{\tabcolsep}{8pt}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{lccc}
+        \hline
+        & Tail weight $\delta$ & Bandwidth $\mu$ needed & Extra ancillas $\log_2\mu$ \\
+        \hline
+        Textbook QPE & $\Theta(1/\mu)$ & $\Theta(1/\delta)$ & $O(\log\frac{1}{\delta})$ \\
+        Boosted QPE (exponential tails) & $e^{-\Omega(\mu)}$ & $O(\log\frac{1}{\delta})$ & $O(\log\log\frac{1}{\delta})$ \\
+        \hline
+    \end{tabular}
+    \caption{Comparison of the tails of textbook QPE and boosted QPE with exponentially decaying tails in terms of the bandwidth $\mu$ (in units of the ancilla register), the tail weight $\delta$ (the probability of an estimate outside of the bandwidth) and the number of extra ancillas $\log_2\mu$ required.}
+    \label{tab:boosting_summary}
+\end{table}
+
+\paragraph*{Why the tails matter for coherent QPE.}
+When the ancilla register is measured, the tails can often be dealt with without any boosting by simply repeating QPE several times and taking the median of the results. However, in coherent QPE we cannot measure the ancilla register, and so neither this nor iterative single-ancilla QPE \cite{kitaev1995quantum} can be used\footnote{Iterative QPE measures and resets ancillas part way through the protocol, whereas coherent QPE must preserve the full estimate in the ancilla register for later use.}. Instead, the tail amplitudes remain in the ancilla register, entangled with the system, and are passed on to all of the subsequent steps of the algorithm. In such instances we often require the value stored in the ancilla register to be within $\mu$ of $\tilde E_j$ for the analysis of the subsequent routines, and hence the tails introduce an error that grows with $\delta$. For example, in Quantum Metropolis the tails cause updates to be accepted or rejected with the wrong probability, and we show in Section~\ref{section:boostedphaseestimation} that unboosted QPE is insufficient for our proof of approximate detailed balance.
+
+\paragraph*{Boosting with window states.}
+To understand where these tails come from, and how we can suppress them, let us consider replacing the uniform superposition in step 1 with the following state (Fig.~\ref{fig:windowed_qpe_circuit}):
+\begin{equation}
+    \frac{1}{\sqrt{N}}\sum_{k=0}^{N-1}\alpha(k)\ket{k}\ket{\psi_j}
+\end{equation}
+where $\alpha(k)\in[0,1]$ is a \emph{window function}. Step 2 then multiplies each amplitude by the phase $e^{iE_jk} = e^{\frac{2\pi i}{N}k\tilde E_j}$:
+\begin{equation}
+    \frac{1}{\sqrt{N}}\sum_{k=0}^{N-1} \alpha(k)\, e^{\frac{2\pi i}{N}k\tilde E_j} \ket{k}\ket{\psi_j}
+\end{equation}
+The inverse quantum Fourier transform maps $\ket{k} \mapsto \frac{1}{\sqrt N}\sum_{x} e^{-\frac{2\pi i}{N}kx}\ket{x}$, and hence step 3 produces:
+\begin{equation}
+    \frac{1}{N}\sum_{x=0}^{N-1}\sum_{k=0}^{N-1} \alpha(k)\, e^{\frac{2\pi i}{N}k(\tilde E_j - x)}\ket{x}\ket{\psi_j}
+    = \sum_{x=0}^{N-1} \hat\alpha(\tilde E_j - x)\ket{x}\ket{\psi_j}
+    \label{eq:windowed_qpe}
+\end{equation}
+where $\hat\alpha$ is the discrete Fourier transform of the window function:
+\begin{equation}
+    \hat\alpha(y) = \frac{1}{N}\sum_{k=0}^{N-1} \alpha(k)\, e^{\frac{2\pi i}{N}ky}
+\end{equation}
+Hence, the phase kickback in step 2 modulates the window function with a frequency set by the energy, and the inverse quantum Fourier transform converts this modulation into a shift. Therefore, the output amplitudes are simply given by the Fourier transform of the window function centred on $\tilde E_j$ (sampled off-grid if $\tilde E_j$ is not an integer). Textbook QPE corresponds to the rectangular window function $\alpha(k) = 1$, for which $\hat\alpha = D$, and it is the sharp edges of this rectangle that cause the slow $\frac{1}{|y|}$ decay.
+
+As such, the tails of QPE are entirely determined by how quickly $\hat\alpha$ decays, and so boosting QPE reduces to a problem of design in the Fourier domain which is familiar from classical spectral analysis: finding a window function whose Fourier transform is concentrated near zero. Hence, many window functions from classical signal processing have been applied to QPE \cite{babbush2018encoding, rendon2022effects, Berry:2022ccu, greenaway2024case, patel2026optimal}. The sine window \cite{babbush2018encoding} and cosine tapering window \cite{rendon2022effects} both boost QPE by improving upon the rectangular window, however, their tails still only decay polynomially. The optimal choice is the discrete prolate spheroidal sequence (DPSS) window, which maximises the weight of its Fourier transform within a chosen bandwidth and has been shown to give optimal coherent QPE \cite{patel2026optimal}. However, the DPSS window has no closed form, and so the Kaiser window (a closed form approximation to the DPSS window) is often used instead \cite{Berry:2022ccu}. The Fourier transforms of both windows decay exponentially outside of the chosen bandwidth, and hence both produce QPE with exponentially decaying tails.
+
+There are also two other approaches to coherently boosting QPE which do not use window states. The original technique was to repeat QPE many times into separate ancilla registers and take a coherent median of the results \cite{nagaj2009fast}, as was done in the original Quantum Metropolis algorithm \cite{Temme_2011}. This technique is effective, with the failure probability decreasing exponentially with the number of repetitions, however, it requires $O(\log\frac{1}{\delta})$ copies of the ancilla register and an expensive coherent median circuit. Alternatively, one can utilise QSVT to directly apply an amplifying polynomial \cite{rall2021faster}. However, a detailed comparison by Greenaway et al. \cite{greenaway2024case} found that this approach compares unfavourably to windowed QPE, which achieves the same suppression of the tails at a lower cost, and hence windowing remains the standard approach to coherently boosting QPE.
+
+\paragraph*{Preparing window states.}
+The window functions above were designed for classical signal processing, where the only concern is their Fourier transform. However, on a quantum computer we must also prepare the window state, and this additional state preparation step is far from free. The window state is a resource state that must be loaded from $\ket{0}$ every time we run QPE. Preparing a generic state on $\eta$ qubits requires $O(2^\eta)$ gates, and so efficient state preparation relies upon exploiting some structure in the amplitudes. The DPSS window has no closed form at all, and the amplitudes of the Kaiser window are given by a modified Bessel function, for which there is no simple circuit. Instead, the best known method for preparing the Kaiser window harnesses QSVT \cite{mcardleQuantumStatePreparation2022, Greenaway:2024jzs}. This method block encodes the diagonal matrix $\text{diag}(x)$, applies a polynomial transformation $p$ to it via QSVT, and hence prepares a state with amplitudes proportional to $p(x)$. Therefore, the Kaiser window is loaded by approximating it with a single high degree polynomial. QSVT requires one query to the block encoding for each degree of the polynomial, and hence preparing the Kaiser window state is a significant overhead for every run of QPE.
+
+In Section~\ref{section:piecewise_qsvt_main} we reduce this overhead by choosing a window function to suit the state preparation technique, rather than the other way around. QSVT state preparation with a single polynomial performs well for smooth functions, but struggles with functions that have kinks or are defined piecewise. We extend this technique to piecewise QSVT, which applies a different polynomial to each segment of the register. The B-spline window is a natural fit for our technique, as the $m$-th B-spline is made up of $m$ polynomial pieces of degree $m-1$. We prove that B-spline windowed QPE also has exponentially decaying tails, requiring the same $O(\log\log\frac{1}{\delta})$ extra ancillas as the Kaiser window, and demonstrate numerically that the B-spline window requires 50 times fewer Toffoli gates to prepare. Furthermore, piecewise QSVT is a general state preparation technique, and we also utilise it to load states that cannot be efficiently approximated by a single polynomial, such as $\sqrt{x}$ and $\log x$.
+
+\paragraph*{Reusing the ancilla register.}
+Window-based boosting (as well as the coherent median and QSVT approaches) requires the ancilla register to begin in a fixed state: for windowed QPE this is the window state prepared from $\ket{0}$. Therefore, every run of QPE uses up a freshly prepared ancilla register, which cannot be used for another estimate until the first estimate has been uncomputed and the window state has been prepared again. This is acceptable when QPE is run once, used and then uncomputed (e.g. HHL). However, it is a significant restriction for algorithms which must estimate the same quantity many times. For example, the rewinding procedure of Quantum Metropolis \cite{Temme_2011} estimates the energy of the system again and again, reusing an ancilla register that still holds the previous estimate rather than resetting it.
+
+Such algorithms require a \emph{state-independent} QPE protocol, which works regardless of the value already stored in the ancilla register by simply adding an estimate of $\tilde E_j$ to this value. This allows the ancillas to be reused freely without having to prepare a window state. It is possible to make unboosted QPE work in this way by simply replacing the initial Hadamard gates with a quantum Fourier transform, producing a circuit that adds $\tilde E_j$ to the value stored in the ancilla register (Fig.~\ref{fig:standard_qpe}). However, it is not obvious how to also boost this protocol. In windowed QPE the window function is introduced via the initial state of the ancilla register, but here the ancilla register already holds a previous value, so there is no initial state in which to place the window. In fact, Chen et al. \cite{chen2023quantumthermalstatepreparation} proved that this is impossible: no protocol can add an estimate of $\tilde E_j$ to the value $q$ stored in the ancilla register in the same way for every $q$, while leaving only a negligible weight on estimates outside of the bandwidth (which they refer to as ``boosted shift-invariant'' QPE).
+
+Luckily, we can navigate around this no-go theorem with Boosted State-Independent QPE (BSI-QPE) (Section~\ref{section:boostedphaseestimation}). Instead of preparing the window function as a state, BSI-QPE introduces it via a single qubit rotation on a flag qubit controlled by the ancilla register. Our circuit either adds or subtracts approximately $\tilde E_j$ from the value stored in the ancilla register, and records which in the flag qubit. Crucially, the tails decay exponentially regardless of the initial state of the ancilla register and flag qubit, and hence no window state needs to be prepared and the ancillas can be reused without being reset. It is the ability to subtract as well as add the estimate that allows BSI-QPE to avoid the no-go theorem. Our construction requires a complementary pair of window functions satisfying $\alpha(x)^2 + \beta(x)^2 = 1$ which both have exponentially decaying Fourier transforms. None of the standard window functions satisfy these requirements, and so we design a novel pair, $\alpha(x) = \text{sech}(r\cos^{2b}\frac{\pi x}{N})$ and $\beta(x) = \text{tanh}(r\cos^{2b}\frac{\pi x}{N})$, and prove that both of their Fourier transforms decay exponentially. BSI-QPE is the key component of our revived Quantum Metropolis algorithm in Chapter~\ref{chapter:quantum_metropolis}.
+
+\section{Efficiently Preparing Window States via Piecewise QSVT}
+\label{section:piecewise_qsvt_main}
+\subsection{Introduction} 
+Window states are just one example of a much broader problem, as state preparation is a major bottleneck for numerous quantum algorithms with applications in many fields including quantum chemistry \cite{Aspuru_Guzik_2005,RevModPhys.92.015003, PRXQuantum.2.040332, Huggins:2024hpa}, quantum machine learning \cite{Aaronson:2015scy}, quantum finance \cite{Chakrabarti2021thresholdquantum, Gonzalez-Conde:2021zbv, PhysRevE.103.063302, Dalzell:2022ysw}, and quantum computational fluid dynamics \cite{Lapworth:2022rcw}. The exponentially large state space afforded by a quantum computer that lends so much power when performing computations becomes a hindrance when we must initialise a state. In order to specify a \textbf{generic} $n$-qubit state \textbf{exactly} one must load $2^n$ amplitudes into our quantum computer, and hence any algorithms with a sub-exponential cost in $n$ become subdominant to the cost of state preparation. 
+
+Luckily slight relaxations of these requirements provide us with efficient avenues for state preparation. For example, considering the preparation of only a subset of possible states or by attempting to prepare states approximately through some form of lossy compression. Multiple techniques utilising these approaches have been developed including: preparing Matrix Product States (MPS) \cite{Ran_2020, 9259933, Melnikov_2023, PhysRevA.101.010301, PhysRevResearch.4.043007, Iaconis:2023rna, PhysRevLett.132.040404}, sparse states \cite{Zhang2022}, truncated series expansions \cite{Welch_2014, Zylberman:2023knk, Moosa:2023ecz}, training variational circuits \cite{Zoufal_2019, Nakaji:2021dew, Marin-Sanchez:2021ast}, compressing repeated values \cite{Sunderhauf:2023xrz, PhysRevResearch.5.013200}, preparing states via coherent arithmetic \cite{Bhaskar:2015jjo, Haner:2018yea}, and QSVT polynomial approximation \cite{mcardleQuantumStatePreparation2022, Gonzalez-Conde:2023fjg}. In this section we extend the QSVT polynomial approximation techniques to allow for piecewise QSVT polynomial approximations, and utilise this to efficiently load the B-spline window state.
+
+QSVT \cite{Gilyen:2018khw} is a quantum algorithm that allows one to apply arbitrary polynomial transformations to block-encoded matrices. The flexibility of this algorithm allows it to approximate many other quantum processes, and hence has found numerous applications including amplitude amplification  \cite{Gilyen:2018khw}, Hamiltonian simulation  \cite{Gilyen:2018khw}, phase estimation \cite{Martyn:2021eaf}, and linear system solvers \cite{Gilyen:2018khw}. 
+
+Previous work utilised QSVT for state preparation to apply a global polynomial that approximates the amplitudes of a desired state, avoiding the need for coherent arithmetic and hence significantly reducing both the ancilla and Toffoli cost. Applications were demonstrated for a number of useful states including the Gaussian state and Kaiser window state \cite{mcardleQuantumStatePreparation2022}. However, this technique falls down when trying to simulate functions with sharp discontinuities or non-differentiable points. We navigate around these issues by utilising piecewise polynomial approximations which simply deal with discontinuities by matching them to the boundaries of segments and cope with variability in approximation difficulty between regions by varying the length of segments used. As such, our techniques fare well where previous works failed. In particular, we can load the B-spline window state with orders of magnitude lower cost than the Kaiser window state and we prove that this gives a similarly exponential performance boost to QPE. Furthermore, we can efficiently load $\sqrt{x}$ which \cite{mcardleQuantumStatePreparation2022} explicitly noted was not possible with a single polynomial. 
+
+In Section~\ref{section:piecewise_qsvt} we describe the technique for performing piecewise QSVT. First we present a new piecewise exact linear block encoding. Then, we demonstrate how to construct a QSVT circuit that implements piecewise polynomial transformations. We go on to discuss how to convert the transformed block encoding into a state and the resource costs of our quantum algorithm. In Section~\ref{section:applications} we explore various applications of our algorithm to loading states of interest exponentially faster than a naive approach. In particular, in Section~\ref{section:b_spline} we load the B-spline window and prove that it gives QPE with exponentially decaying tails. 
 
 
-\section{Piecewise QSVT}
+\subsection{Piecewise QSVT}
 \label{section:piecewise_qsvt}
 The aim of piecewise QSVT is to load a state with amplitudes described by different polynomials for different segments of computational basis elements:
 \begin{equation}
@@ -44,7 +198,7 @@ There are some conditions upon this process:
 
 Condition (1) is inherited from QSVT, whereas conditions (2) and (3) are necessary for the pieces to be described by ignoring bits of $x$ which is key to allowing an efficient piecewise algorithm.
 
-\subsection{Piecewise exact linear block encoding}
+\subsubsection{Piecewise exact linear block encoding}
 \label{section:linear_block}
 The singular values of our diagonal block encoding will become the $x$ values we wish to fit our polynomials at. As such it is desirable that our piecewise polynomials are each applied to singular values that span the whole range of possible values from 1 to $-1$. This makes it easier to ensure that the fitted polynomials satisfy condition (1) without rescaling. It also enables us to outperform the coherent inequality test based piecewise polynomial technique suggested in \cite{mcardleQuantumStatePreparation2022} which uses polynomials over disjoint domains between 0 and 1. In this case the polynomials may grow large outside the domains they approximate and hence could require large rescaling to satisfy condition (1) on the whole domain $[-1, 1]$.
 
@@ -69,7 +223,7 @@ To achieve this we define a piecewise linear diagonal block encoding $U$ such th
                               &   &   &   &   &   &   &   &   &  & \\
 \end{array}\right)
 \end{equation}
-In this block encoding our desired matrix occupies the top-left block which corresponds to the flag qubits mapping from $\ket{\bm 0}$ to $\ket{\bm 0}$. All other initial or final values for the flag qubits correspond to the junk blocks $j_1$, $j_2$ or $j_3$.
+In this block encoding our desired matrix occupies the top-left block which corresponds to the flag qubits mapping from $\ket{\mathbf{0}}$ to $\ket{\mathbf{0}}$. All other initial or final values for the flag qubits correspond to the junk blocks $j_1$, $j_2$ or $j_3$.
 
 Fig.~\ref{fig:be_circuit} shows the circuit that efficiently performs a controlled version of such a block encoding. The ``compute carry" computes the carry bit from adding the first $l$ bits of $x$ ($x_l = x \bmod 2^{l}$) and $k$ ($k_l = k \bmod 2^{l}$) where the value of $l$ is given by $l_{s_x}$ of the current segment. Fig.~\ref{fig:compute_carry} demonstrates how this can be performed for the example $l_{max} =4$ using variable unary iteration and a quantum adder. First the carry bits are computed for all $l$ via a slightly modified version of the adder circuit for adding classical bits to quantum registers described in \cite{Sanders_2020} (and illustrated in Fig.~\ref{fig:adder}); we have removed the final addition layer and made the uncompute symmetrical to ensure the block encoding is Hermitian. Then variable unary iteration \cite{Sanders_2020} controls a copy from the carry bits into the flag register, so the correct carry bit is copied depending on the size of the segment $l_{s_x}$. 
 
@@ -285,7 +439,7 @@ cnot carry3 | carry2;
 \end{figure*}
 
 The adder costs $l_{max}$ compute/uncompute Toffoli pairs, the controlled variable unary iteration costs $S-1$ compute/uncompute Toffoli pairs, and the copy operations cost $S$ Toffolis.  Therefore, the total cost for an $l_{max}$-compute carry, and hence the whole block encoding, is $l_{max} + 2S - 1$ Toffolis. As usual, we don't count uncomputation Toffolis, for which measurement based uncomputation can be used.
-\subsection{Piecewise QSVT circuit}
+\subsubsection{Piecewise QSVT circuit}
 \label{section:circuit}
 Standard QSVT applies a single polynomial to all the singular values of a block encoding. Here we wish to instead apply a different polynomial to each segment of our block encoding:
 \begin{equation}
@@ -428,7 +582,7 @@ box {$R_X(\phi_{4,s_{x}})$} flag1 ~ n;
 \label{fig:circuit}
 \end{figure*}
 
-\subsection{State preparation}
+\subsubsection{State preparation}
 \label{section:state_prep}
 Implementing the piecewise QSVT circuit produces the block encoding described by \eqref{eq:qsvt_blockencoding}. The state produced by applying this block encoding (piecewise QSVT circuit) to the uniform superposition is: 
 \begin{equation}
@@ -443,8 +597,7 @@ We always want to use polynomials that are as large as possible (under the restr
 For desired states with amplitudes given by samples from fixed functions, increasing $N$ corresponds to taking finer grained sampling of the function. As such the normalisation of such amplitudes will increase with $O(\sqrt{N})$. Hence if the maximum of the unnormalised polynomial approximation remains approximately the same with the finer sampling, the normalised maximum $\tilde{p}_{max}$ will scale with $O(\frac{1}{\sqrt{N}})$, and hence the number of amplitude amplification steps will scale with $O(1)$. This conclusion can similarly be reached by considering $\tilde{p}_{max} \sqrt{N}$ as the inverse ``discretized L2-norm filling fraction" of $\tilde{p}_i$.
 
 One caveat is that as $\tilde{p}_{max}$ is taken over the continuous region it may be larger than $1$ even though all the normalised amplitudes are always less than 1. So for polynomials that oscillate wildly away from the sampled amplitudes this process is inefficient. It should be noted that fitting piecewise polynomials reduces the impact of the Runge Phenomena and hence polynomials produced by our approximations are less prone to this wild oscillation than in prior work. 
-
-\subsection{Resource costs}
+\subsubsection{Resource costs}
 \label{section:resource}
 The total cost of running a piecewise QSVT circuit to implement $S$ indefinite parity polynomials of degree $d$ with maximum segment size $2^{l_{max}}$ is $(2d+1)(\log\frac{1}{\epsilon}-1) + 2(S-2) + 2d(l_{max}+1) + 2d(l_{max} + 2S -1)$ Toffolis. 
 
@@ -460,11 +613,11 @@ The algorithm acts on: $n$ qubits to store the desired state, $l_{max} + 1$ bloc
 
 
 Above we assumed the use of clean ancillas to minimise the Toffoli count; space-time tradeoffs using conditionally clean or dirty qubits are possible \cite{Khattar:2024pqa, Nie:2024key}.
-\section{Applications}
+\subsection{Applications}
 \label{section:applications}
 Our algorithm allows more states to be prepared efficiently. Existing QSVT state preparation techniques required the desired state to be approximated by a single global polynomial. Our approach relaxes this restriction to allow approximation by piecewise polynomials. In Section~\ref{section:nearly_analytic} we will explore amplitudes sampled from functions which are hard to approximate with the former, but efficiently approximated by the later. In Section~\ref{section:b_spline} we discuss loading the piecewise polynomial B-spline window function and the exponential performance boost it lends to Quantum Phase Estimation. Then in Section~\ref{section:algorithm} we illustrate a classical algorithm for finding the optimal piecewise polynomial to approximately load a given generic state. 
 
-\subsection{Approximating nearly-analytic functions}
+\subsubsection{Approximating nearly-analytic functions}
 \label{section:nearly_analytic}
 It is well known that analytic functions admit a $d$-degree polynomial approximation with approximation error $O(\exp(-d))$ \cite{Trefethen}. Hence for such functions a single global polynomial will be sufficiently efficient. However, for functions with singularities on the interval we wish to approximate (e.g. $x^\alpha$ on $x,\alpha\in(0,1)$) it is not possible to find a single global polynomial that efficiently approximates the function. However, by utilising our technique with piecewise polynomials we can efficiently approximate some such functions with approximation error $O\left(\exp(-d)\right)$ as demonstrated in Sections~\ref{section:sqrt} and \ref{section:inverse}.
 
@@ -476,7 +629,7 @@ We now illustrate 2 explicit examples of how our technique produces exponential 
 Whilst we are unaware of specific quantum algorithms requiring these states, the examples effectively illustrate the increased capability of our approach compared to employing a single polynomial approximation.
 
 
-\subsubsection{$x^{\alpha}$}
+\paragraph{$x^{\alpha}$}
 \label{section:sqrt}
 In prior work \cite{mcardleQuantumStatePreparation2022} on QSVT state preparation it was explicitly stated that ``one current drawback of our method is that it cannot efficiently prepare the state representing $\sqrt{x}$ for $x \in [0, 1]$".
 Here we demonstrate that we can even approximately load the state $\frac{1}{\mathcal{N}} \sum_{x=0}^{2^n-1} (2^{-n}x)^{\alpha} \ket{x}$ for $\alpha \in (0,1)$ using our technique.
@@ -502,7 +655,7 @@ The normalisation $\mathcal{N}$ is given by:
 Hence, $\tilde{p}_{max} = O\left(\sqrt{\frac{2\alpha+1}{N}
 }\right)$. Therefore, our technique can efficiently prepare $x^{\alpha}$ for $\alpha \in (0,1)$ on $n$-qubits with accuracy $\epsilon$ in $O(\sqrt{2\alpha} \log \frac{1}{\epsilon}\max(n, \log\frac{1}{\epsilon}))$ Toffolis --- providing exponential speed-up on naive state preparation. We note that a faster technique \cite{PhysRevLett.122.020502} exists for preparing the special case $\sqrt{x}$, however, that approach does not generalise efficiently to $x^{\alpha}$.
 
-\subsubsection{$\log x$}
+\paragraph{$\log x$}
 \label{section:inverse} To approximately load the state $\frac{1}{\mathcal{N}}\sum_{x=1}^{2^n-1} \log{2^{-n}x}\ket{x}$, we need to approximate the function $f(x) = \frac{1}{\mathcal{N}}\log{2^{-n}x}$ for $x \in [1, 2^n-1]$, or equivalently $\tilde f(x) =\frac{1}{\mathcal{N}}\log{x}$ for $x \in [2^{-n}, 1-2^{-n}]$. 
 
 Here, we will use a Taylor rather than Chebyshev approximation. The Taylor series expansion of $\tilde f$ around $x=a$ is given by:
@@ -538,7 +691,7 @@ The normalisation $\mathcal{N}$ is given by:
 \end{equation}
 Hence, $\tilde{p}_{max} = O\left(\frac{n}{\sqrt{N}}\right)$. Therefore, preparing $\log{x}$ on $n$-qubits with accuracy $\epsilon$ costs $O(n \log \frac{1}{\epsilon}\max(n, \log\frac{1}{\epsilon}))$ Toffolis. 
 
-\subsection{B-spline window}
+\subsubsection{B-spline window}
 \label{section:b_spline}
   The B-spline window function \cite{bspline} is a family of classical windowing functions constructed out of piecewise polynomials. The $m$-th B-spline $w_m(x)$ is obtained by $m$-fold self-convolution of the rectangular function:
   \begin{equation}
@@ -552,9 +705,9 @@ Hence, $\tilde{p}_{max} = O\left(\frac{n}{\sqrt{N}}\right)$. Therefore, preparin
       \end{cases}
   \end{equation}
   Hence the $m$-th B-spline is an $m$-piecewise polynomial of degree $m-1$. As such it is immediately obvious that our technique can prepare the following state (with accuracy $\epsilon$) in $O(m^{\frac{5}{4}}\max(n,m, \log \frac{1}{\epsilon}))$ Toffolis:
-  \begin{multline}
-      \frac{1}{\mathcal{\tilde N}}\sum_{x=2^{n-1}}^{2^{n-1} -1} w_m(x)\ket{x} \approx \frac{m^{m+1}}{2^{n(m-\frac{1}{2})}}\left(\frac{\pi}{3m}\right)^{\frac{1}{4}}\sum_{x=2^{n-1}}^{2^{n -1}-1}\sum_{p=0}^m\\   \frac{(-1)^p \max\left(0,x - \left(p-\frac{m}{2}\right)\frac{2^n}{m}\right)^{m-1}}{p!(m-p)!}\ket{x}
-  \end{multline}
+  \begin{equation}
+      \frac{1}{\mathcal{\tilde N}}\sum_{x=2^{n-1}}^{2^{n-1} -1} w_m(x)\ket{x} \approx \frac{m^{m+1}}{2^{n(m-\frac{1}{2})}}\left(\frac{\pi}{3m}\right)^{\frac{1}{4}}\sum_{x=2^{n-1}}^{2^{n -1}-1}\sum_{p=0}^m  \frac{(-1)^p \max\left(0,x - \left(p-\frac{m}{2}\right)\frac{2^n}{m}\right)^{m-1}}{p!(m-p)!}\ket{x}
+  \end{equation}
   
   Crucially, the $m$-fold self-convolution \eqref{eq:self_conv} corresponds to self-multiplying in the Fourier domain, and hence the Fourier transform of the $m$-th B-spline window function is:
 \begin{equation}
@@ -563,12 +716,74 @@ Hence, $\tilde{p}_{max} = O\left(\frac{n}{\sqrt{N}}\right)$. Therefore, preparin
 which has the useful property of being sharply peaked near $x=0$.
 
 
-Efficiently preparing the B-spline window function will be immensely useful for improving quantum algorithms. One of the main subroutines of quantum algorithms is Quantum Phase Estimation (QPE) which is used for finding the eigenvalues of a given unitary. The biggest problem with QPE is its fat tails; the probability of measuring an inaccurate eigenvalue is non-negligible if the eigenvalue is not guaranteed to be exactly specified in binary at the resolution used. This is typically countered through preparing a window function in the ancillas before applying QPE and increasing the resolution of the phase estimation beyond the precision desired. The window function has a narrow profile in the Fourier domain and hence narrows the profile of the probability distribution output by the QPE algorithm. One method for measuring the effectiveness of the window functions is by how much the resolution of the phase estimation must be increased by (or equivalently the number of extra ancillas required) to reduce the probability of measuring an energy outside the confidence interval to below a given value $\delta$ \cite{Greenaway:2024jzs}. Extra ancilla qubits are included in the final prepared state, but unlike the base ancillas—which increase the resolution of the QPE—they serve instead to reduce the value of $\delta$. The current state of the art is the Kaiser window function \cite{Berry:2022ccu} which reduces the number of extra ancillas required to $O(\log \log \frac{1}{\delta})$. Thereom~\ref{theroem:b_spline} (proof in Appendix \ref{section:appendix_a}) demonstrates that the B-spline window achieves the same asymptotic complexity and hence provides a viable alternative to the Kaiser window: 
+Efficiently preparing the B-spline window function will be immensely useful for boosting QPE. As discussed in the introduction to this chapter, one method for measuring the effectiveness of the window functions is by how much the resolution of the phase estimation must be increased by (or equivalently the number of extra ancillas required) to reduce the probability of measuring an energy outside the confidence interval to below a given value $\delta$ \cite{Greenaway:2024jzs}. The widely used Kaiser window function \cite{Berry:2022ccu} reduces the number of extra ancillas required to $O(\log \log \frac{1}{\delta})$. Theorem~\ref{theroem:b_spline} demonstrates that the B-spline window achieves the same asymptotic complexity and hence provides a viable alternative to the Kaiser window: 
 
 \begin{theorem}
 \label{theroem:b_spline}
 To achieve a given probability $\delta$ of measuring energy outside of a given confidence interval $\epsilon$ (when using $O(\log \frac{1}{\delta})$-th B-spline boosted QPE), one must use $O(\log \frac{1}{\epsilon} + \log \log \frac{1}{\delta})$ ancillary qubits.
 \end{theorem}
+
+From Eq.~\eqref{eq:windowed_qpe}, the output of windowed QPE is given by the Fourier transform of the window function. As the Fourier transform of the $m$-th B-spline $w_m$ is given by \cite{bspline}, with $l$ ancilla qubits we have:
+\begin{equation}
+\label{eq:ftb-spline}
+        \frac{1}{\mathcal{N}} \sum_{k=-2^{l-1}+1}^{2^{l-1}} \left(\frac{\sin \frac{(k-\tilde E_j)\pi}{m}}{ \frac{(k-\tilde E_j)\pi}{m}}\right)^m \ket{k}\ket{\psi_j}
+\end{equation}
+As this distribution is sharply spiked near $k=\tilde E_j$, if we measure the ancilla register we are highly likely to get a value close to $\tilde E_j$.
+
+We can prove this by bounding the tail probabilities, which first requires that we approximate $\mathcal{N}$.
+\begin{lemma}
+    Let $\mathcal{N}$ by defined as:
+    \begin{equation}
+       \mathcal{N} := \sqrt{\sum_{k=-2^{l-1}+1}^{2^{l-1}} \left|\frac{\sin \frac{(k-\tilde E_j)\pi}{m}}{ \frac{(k-\tilde E_j)\pi}{m}}\right|^{2m}}
+    \end{equation} 
+    Then, 
+    \begin{equation}
+        \mathcal{N} \approx \left(\frac{3m}{\pi}\right)^{\frac{1}{4}}
+    \end{equation}
+    \label{lemma:bspline_norm}
+\end{lemma}
+\begin{proof}
+    We utilise the same technique as \cite{Berry:2022ccu} used to approximate the normalisation of the Kaiser window, whereby we approximate the centre of the distribution by a Gaussian. This Gaussian is found by Taylor expanding the logarithm of the distribution:
+    \begin{align}
+                \log \left(\frac{\sin \frac{(k-\tilde E_j)\pi}{m}}{ \frac{(k-\tilde E_j)\pi}{m}}\right)^m &= m \log \frac{\sin \frac{(k-\tilde E_j)\pi}{m}}{ \frac{(k-\tilde E_j)\pi}{m}}\\
+                &= - \frac{(k-\tilde E_j)^2 \pi^2}{6m} + O\left((k-\tilde E_j)^4\right)
+    \end{align}
+    Therefore, we can approximate the centre of the distribution by $e^{ - \frac{x^2 \pi^2}{6m}}$ and so we can utilise the normalisation for the Gaussian $\int_{-\infty}^{\infty}\left|e^{ - \frac{x^2 \pi^2}{6m}}\right|^2 dx = \sqrt{\frac{3m}{\pi}}$ to approximate the normalisation for our distribution.
+
+\end{proof}
+Now we must prove that the tail probability decreases exponentially as we increase $m$.
+\begin{lemma}
+    Let $\delta$ be the probability of measuring an energy $x$ outside of the confidence interval of $\tilde E_j\pm m$ when performing $m$-th B-spline boosted QPE. Then,
+    \begin{equation}
+        \delta = O\left(\exp (-m)\right)
+    \end{equation}
+    \label{lemma:bspline_prob}
+\end{lemma}
+\begin{proof}
+We define $\delta$ to be:
+\begin{equation}
+     \delta := \sum_{|x - \tilde E_j| > m} \left| \frac{1}{\mathcal{N}}\left(\frac{\sin \frac{(x-\tilde E_j)\pi}{m}}{ \frac{(x-\tilde E_j)\pi}{m}}\right)^m \right|^2
+\end{equation}
+Therefore, we can bound $\delta$ as follows:
+    \begin{align}
+        \delta &= \sum_{|x - \tilde E_j| > m} \left|\frac{1}{\mathcal{N}}\left(\frac{\sin \frac{(x-\tilde E_j)\pi}{m}}{ \frac{(x-\tilde E_j)\pi}{m}}\right)^m \right|^2 \\
+        &\leq \sum_{|x - \tilde E_j| > m} \frac{1}{\mathcal{N}^2}\left(\frac{1}{ \frac{(x-\tilde E_j)\pi}{m}}\right)^{2m} \\
+        &\leq \frac{2}{\mathcal{N}^2}\int_{m}^{\infty} \left(\frac{1}{ \frac{x\pi}{m}}\right)^{2m} dx\\
+        & \leq  \frac{2}{\mathcal{N}^2} \frac{m}{2m-1}\pi^{-2m}\\
+    \end{align}
+    Therefore, using Lemma~\ref{lemma:bspline_norm} we get:
+    \begin{equation}
+        \delta = O(\exp(-m))
+    \end{equation}
+\end{proof}
+Finally, we are ready to prove that the B-spline window function can boost QPE with the same asymptotic number of extra ancilla qubits as the Kaiser window function: $O\left(\log \log \frac{1}{\delta}\right)$.
+\begin{proof}[Proof of Theorem~\ref{theroem:b_spline}]
+Let $\eta$ be the number of ancilla qubits used by B-spline boosted QPE, and $N = 2^\eta$. Using Lemma \ref{lemma:bspline_prob}, the $m$-th B-spline window achieves a tail weight of $\delta = O(\exp(-m))$ with a bandwidth of $\mu = m$. Hence, a bandwidth of $\mu = O(\log \frac{1}{\delta})$ is sufficient. An estimate within $\mu$ of $\tilde E_j$ determines the phase $E_j$ to within $\frac{2\pi\mu}{N}$, and so to achieve a confidence interval of $\epsilon$ we require $N = \frac{2\pi\mu}{\epsilon}$ (rounded up to a power of 2). Therefore,
+\begin{equation}
+    \eta = \log_2 \frac{2\pi}{\epsilon} + \log_2 \mu = O\left(\log \frac{1}{\epsilon} + \log \log \frac{1}{\delta}\right)
+\end{equation}
+where the $\log_2 \mu = O(\log \log \frac{1}{\delta})$ extra ancillas match those required by the Kaiser window (Table~\ref{tab:boosting_summary}).
+\end{proof}
 
 Fig.~\ref{fig:bspline-ancilla} numerically demonstrates this doubly exponential decay. The exponent for the Kaiser window is larger than the B-Spline window, however, even with a very small number of extra ancillas both windows achieve such a small $\delta$ that it will likely be outweighed by other considerations such as logical error floor \cite{Acharya:2024btg}.
 
@@ -579,14 +794,14 @@ It should be noted that in order to successfully prepare the B-spline window usi
 The B-Spline function is an example of finding a piecewise polynomial that produces a desired property (being sharply peaked in the Fourier domain). Therefore, our technique offers a general framework by which one can efficiently prepare states with desired properties through careful choice of piecewise polynomials. This is potentially more powerful than simply approximating existing states known to have the desired property.
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{delta_vs_additional_ancilla.pdf}
+    \includegraphics[width=0.5\linewidth]{delta_vs_additional_ancilla.pdf}
     \caption{Numerical results demonstrating $O(\log \log \frac{1}{\delta})$ dependence of extra ancilla qubits for QPE when using both the best Kaiser Window and the best B-Spline window \protect\footnotemark[2]. Comparison with the rectangular window demonstrates the improvement over ``unboosted" QPE. Both the Kaiser Window and B-Spline window demonstrate an exponential improvement, though the Kaiser window has a slightly larger exponent. The green regions indicate target error rates of $\delta$ for which the same number of extra ancillas are required for both the Kaiser window and the B-Spline window. In these regions it is optimal to use the B-Spline window due to its lower preparation cost. This figure includes calculations for fractional qubit counts as it is possible to calculate $\delta$ as if we used a confidence interval not equal to a power of 2.}
     \label{fig:bspline-ancilla}
 \end{figure}
 \footnotetext[2]{The tail probability depends only very weakly on the number of base qubits which correspond to how finely the window function is sampled. Hence, this figure is expected to be very similar for all choices of number of base qubits. This particular figure was generated for 10 base qubits.}
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{cost_vs_ancillas.pdf}
+    \includegraphics[width=0.5\linewidth]{cost_vs_ancillas.pdf}
     \caption{Numerical results demonstrating Toffoli cost of preparing the ``best" $\beta$-Kaiser and $m$-th B-Spline windows for a given number of extra ancilla qubits. The parameters ($\beta$ and $m$) of the windows are chosen to minimise the probability of measuring the wrong energy when performing QPE with 25 base qubits. Kaiser window is costed using the state-of-the-art approach from Appendix E of \cite{Greenaway:2024jzs} (derived from \cite{mcardleQuantumStatePreparation2022}), whereas the B-spline window is costed using our piecewise QSVT according the formulas given in \ref{section:resource} incorporating the improvements from \ref{section:improve-be}. These results demonstrate up to 50x lower cost for the B-spline window.}
     \label{fig:bspline-cost}
 \end{figure}
@@ -605,7 +820,7 @@ The B-Spline function is an example of finding a piecewise polynomial that produ
             \caption{\label{tab:resource_costs}Asymptotic Toffoli costs for loading these functions into the amplitudes of states on $n$ qubits with an error tolerance of $\epsilon$. The tail probability $\delta$ when utilising the $m$-th B-spline window in QPE is given by $O(\exp (-m))$ as shown by Lemma~\ref{lemma:bspline_prob}.}
         \end{table}
 
-\subsection{Generic optimal algorithm}
+\subsubsection{Generic optimal algorithm}
 \label{section:algorithm}
 We present Algorithm~\ref{alg:piecewise_classical_approx} for finding the optimal splitting of the amplitudes into segments to be approximated that runs in $O(N \log_2 N)$ time. It takes a fixed degree $d$ and maximum error tolerance $\epsilon$ and greedily finds the largest segment that a polynomial can approximate sequentially. This produces the smallest possible number of segments that satisfy the constraints, as for any given data point all the possible larger segments it lies in will have been considered and rejected by the algorithm. 
 
@@ -632,16 +847,16 @@ Our algorithm utilises an \textsc{\footnotesize ErrPolyApprox} subroutine which 
 \State \Return cuts
 \end{algorithmic}
 \end{algorithm}
-\section{Further improvements}
-\subsection{Block Encoding}
+\subsection{Further improvements}
+\subsubsection{Block Encoding}
 \label{section:improve-be}We can make our piecewise linear block encoding more efficient in some scenarios depending upon the sizes of segments we desire. If all the segments have the same size then no variable unary iteration is needed and a single Toffoli from the relevant carry to the flag qubit will suffice. This is also true if there is only one segment in which case our technique reproduces the prior work \cite{mcardleQuantumStatePreparation2022} with a new inner block encoding. In both these cases the cost of our inner block encoding is just $l_{max} + 1$ Tofollis. This is significantly cheaper than inner block encodings introduced by previous work such as the sin \cite{mcardleQuantumStatePreparation2022} and approximate linear \cite{Gonzalez-Conde:2023fjg} blocking encodings as it avoids any compilation into Clifford+T of rotation gates\footnotemark[3]\footnotetext[3]{To compare like for like we must slightly modify our block encoding to range from 0 to 1. This can be simply achieved by removing both Hadamard gates and the leftmost $X$ gate from the flag qubit in Fig.~\ref{fig:be_circuit}.}. Our block encoding does require more ancillas than the sin block encoding, but these ancillas will likely be required anyway by the subsequent algorithm so are well worth the $\approx 15$ times reduction in Toffolis.
 
 
 Another efficiency saving can be made to the block encoding if there are only a small $k$ number of unique segment sizes. Here we could utilise variable unary iteration to load a label for each segment size into an ancilla register before performing QSVT and then control off this register (instead of the block register) when copying the carries in compute carry. This would reduce the cost of the block encoding in each step of QSVT to $l_{max} + 2 k - 1$.
 
-\subsection{Priors} We can reduce the number of amplitude amplification steps by applying our block encoding to an efficiently loaded prior distribution as in \cite{Lemieux:2024pmt, Babbush_2019}. By applying our QSVT circuit to the uniform superposition we are implicitly choosing a uniform prior. If we instead applied our circuit to the state $\sum_x c_x \ket{x}$, then we would use polynomial approximations to $a_x/c_x$ (where $a_x$ are the amplitudes of the state we wish to approximate). If $c_x$ is a good approximation then $a_x/c_x$ will be closer to the uniform distribution than $a_x$, so $\tilde{p}_{max}$ will be smaller and hence the number of amplitude amplification rounds will be reduced. This allows us to incorporate all the improvements demonstrated in \cite{Lemieux:2024pmt} achieved by utilising efficiently preparable reference states as priors.
+\subsubsection{Priors} We can reduce the number of amplitude amplification steps by applying our block encoding to an efficiently loaded prior distribution as in \cite{Lemieux:2024pmt, Babbush_2019}. By applying our QSVT circuit to the uniform superposition we are implicitly choosing a uniform prior. If we instead applied our circuit to the state $\sum_x c_x \ket{x}$, then we would use polynomial approximations to $a_x/c_x$ (where $a_x$ are the amplitudes of the state we wish to approximate). If $c_x$ is a good approximation then $a_x/c_x$ will be closer to the uniform distribution than $a_x$, so $\tilde{p}_{max}$ will be smaller and hence the number of amplitude amplification rounds will be reduced. This allows us to incorporate all the improvements demonstrated in \cite{Lemieux:2024pmt} achieved by utilising efficiently preparable reference states as priors.
 
-\section{Conclusion}
+\subsection{Conclusion}
 We have presented a new algorithm for preparing states that, in some explicit instances, demonstrates an exponential speedup over naive state preparation. In particular, our approach can handle nearly-analytic functions with cusps and singularities. Furthermore, we have demonstrated that the B-spline window function provides a viable alternative to the state-of-the-art Kaiser window for boosting QPE. We also present numerical results demonstrating that the B-spline function (implemented via our algorithm) is 50 times cheaper to prepare than the Kaiser window (implemented via existing state-of-the-art methods).
 
 We expect that our algorithm in combination with the B-spline window will be adopted by early fault tolerant quantum phase estimation protocols when it will be crucial to reduce the Toffoli cost of circuits. QPE is a prolific component of numerous quantum algorithms and hence the impact of this improvement will be very widespread.
@@ -657,75 +872,3 @@ The downside of our approach is that our block encoding requires more flag and a
 Additionally, it is relevant to note that in the regime of small quantum states (fewer than 9 base qubits), the method of Low, Kliuchnikov, and Schaeffer (LKS) for arbitrary state preparation \cite{lowTradingTgatesDirty2018} would be more efficient than our approach and that of McArdle et al. \cite{mcardleQuantumStatePreparation2022}. However, the cost of the LKS method increases rapidly with system size, making it less efficient than QSVT-based techniques even for moderately large states.
 
 It is important to note that we do not apply QSVT piecewise to different segments of eigenvalues, but rather to different segments of Hilbert space enumerated by the computational basis elements. Here the later acts as the former because the eigenspaces of our block encoding align with the computational basis and the relationship between the eigenvalues and computational basis is known. In general this is not true and to perform different QSVT polynomial transformations to different sections of eigenvalues of an arbitrary block encoding would be much more costly and rely on some eigenvalue thresholding or windowing technique.
-
-\section{B-Spline Boosted Quantum Phase Estimation}
-\label{section:appendix_a}
-Here we present a more detailed explanation of how the B-spline window function can be utilised to improve Quantum Phase Estimation.
-
-Given an initial state $\ket{\psi_i}$ that is an eigenstate of $U$ with eigenvalue $E_i$. Standard QPE progresses by applying $U$ to the initial state conditional upon the value of $l$ ancilla qubits initialised in a uniform superposition. If instead the $l$ ancilla qubits are initialised with the B-spline window function then after this step we would have:
-\begin{equation}
-    \frac{1}{\tilde{\mathcal{N}}}\sum_{x=-2^{l-1}+1}^{2^{l-1}} w_{m}(x) \ket{x} e^{iE_i x} \ket{\psi_i}
-\end{equation}
-The next step of QPE is to apply the inverse Quantum Fourier Transform. The effect of this can be easily evaluated as multiplying by $e^{iE_ix}$ before a Fourier transform is equivalent to shifting by $E_i$ after a Fourier transform. As the Fourier transform of the $m$-th B-spline $w_m$ is given by \cite{bspline}, we have:
-\begin{equation}
-\label{eq:ftb-spline}
-        \frac{1}{\mathcal{N}} \sum_{k=-2^{l-1}+1}^{2^{l-1}} \left(\frac{\sin \frac{(k-E_i)\pi}{m}}{ \frac{(k-E_i)\pi}{m}}\right)^m \ket{k}\ket{\psi_i}
-\end{equation}
-As this distribution is sharply spiked near $k=E_i$, if we measure the ancilla register we are highly likely to get a value close to $E_i$.
-
-We can prove this by bounding the tail probabilities, which first requires that we approximate $\mathcal{N}$.
-\begin{lemma}
-    Let $\mathcal{N}$ by defined as:
-    \begin{equation}
-       \mathcal{N} := \sqrt{\sum_{k=-2^{l-1}+1}^{2^{l-1}} \left|\frac{\sin \frac{(k-E_i)\pi}{m}}{ \frac{(k-E_i)\pi}{m}}\right|^{2m}}
-    \end{equation} 
-    Then, 
-    \begin{equation}
-        \mathcal{N} \approx \left(\frac{3m}{\pi}\right)^{\frac{1}{4}}
-    \end{equation}
-    \label{lemma:bspline_norm}
-\end{lemma}
-\begin{proof}
-    We utilise the same technique as \cite{Berry:2022ccu} used to approximate the normalisation of the Kaiser window, whereby we approximate the centre of the distribution by a Gaussian. This Gaussian is found by Taylor expanding the logarithm of the distribution:
-    \begin{align}
-                \log \left(\frac{\sin \frac{(k-E_i)\pi}{m}}{ \frac{(k-E_i)\pi}{m}}\right)^m &= m \log \frac{\sin \frac{(k-E_i)\pi}{m}}{ \frac{(k-E_i)\pi}{m}}\\
-                &= - \frac{(k-E_i)^2 \pi^2}{6m} + O\left((k-E_i)^4\right)
-    \end{align}
-    Therefore, we can approximate the centre of the distribution by $e^{ - \frac{x^2 \pi^2}{6m}}$ and so we can utilise the normalisation for the Gaussian $\int_{-\infty}^{\infty}\left|e^{ - \frac{x^2 \pi^2}{6m}}\right|^2 dx = \sqrt{\frac{3m}{\pi}}$ to approximate the normalisation for our distribution.
-
-\end{proof}
-Now we must prove that the tail probability decreases exponentially as we increase $m$.
-\begin{lemma}
-    Let $\delta$ be the probability of measuring an energy $x$ outside of the confidence interval of $E_i\pm m$ when performing $m$-th B-spline boosted QPE. Then,
-    \begin{equation}
-        \delta = O\left(\exp (-m)\right)
-    \end{equation}
-    \label{lemma:bspline_prob}
-\end{lemma}
-\begin{proof}
-We define $\delta$ to be:
-\begin{equation}
-     \delta := \sum_{|x - E_i| > m} \left| \frac{1}{\mathcal{N}}\left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m \right|^2
-\end{equation}
-Therefore, we can bound $\delta$ as follows:
-    \begin{align}
-        \delta &= \sum_{|x - E_i| > m} \left|\frac{1}{\mathcal{N}}\left(\frac{\sin \frac{(x-E_i)\pi}{m}}{ \frac{(x-E_i)\pi}{m}}\right)^m \right|^2 \\
-        &\leq \sum_{|x - E_i| > m} \frac{1}{\mathcal{N}^2}\left(\frac{1}{ \frac{(x-E_i)\pi}{m}}\right)^{2m} \\
-        &\leq \frac{2}{\mathcal{N}^2}\int_{m}^{\infty} \left(\frac{1}{ \frac{x\pi}{m}}\right)^{2m} dx\\
-        & \leq  \frac{2}{\mathcal{N}^2} \frac{m}{2m-1}\pi^{-2m}\\
-    \end{align}
-    Therefore, using Lemma~\ref{lemma:bspline_norm} we get:
-    \begin{equation}
-        \delta = O(\exp(-m))
-    \end{equation}
-\end{proof}
-Finally, we are ready to prove that the B-spline window function can boost QPE with the same asymptotic number of extra ancilla qubits as the Kaiser window function: $O\left(\log \log \frac{1}{\delta}\right)$.
-\begin{duplicate}
-To achieve a given probability $\delta$ of measuring energy outside of a given confidence interval $\epsilon$ (when using $O(\log \frac{1}{\delta})$-th B-spline boosted QPE), one must use $O(\log \frac{1}{\epsilon} + \log \log \frac{1}{\delta})$ ancillary qubits.
-\end{duplicate}
-\begin{proof}
-Let $l$ be the number of ancilla qubits used by B-spline boosted QPE. Using Lemma \ref{lemma:bspline_prob}, we can achieve a normalised confidence interval of $\frac{2m}{2^l}$ where $m = O(\log \frac{1}{\delta})$. Hence, $\epsilon = \frac{O(\log \frac{1}{\delta})}{2^{l-1}}$. Therefore,
-\begin{equation}
-    l = O\left(\log \left(\frac{1}{\epsilon}\log \frac{1}{\delta}\right)\right)
-\end{equation}
-\end{proof}

@@ -1,0 +1,220 @@
+% Quantum Metropolis update: portrait, algorithm-at-a-glance flowchart.
+% Required in the parent document:
+%   \usepackage{amsmath,amssymb,tikz}
+%   \usetikzlibrary{arrows.meta,backgrounds,fit,shapes.geometric}
+%
+% When a referenced label exists, \qmsectionref prints its section number.
+% In a standalone build it falls back to the subsection title.
+\makeatletter
+\providecommand{\qmsectionref}[2]{%
+  \ifcsname r@#1\endcsname Sec.~\ref{#1}\else\S~#2\fi}
+\makeatother
+
+\definecolor{qmNavy}{HTML}{17324D}
+\definecolor{qmBlue}{HTML}{2F6B9A}
+\definecolor{qmBlueFill}{HTML}{EAF3F8}
+\definecolor{qmOrange}{HTML}{C66A1B}
+\definecolor{qmOrangeFill}{HTML}{FFF2E6}
+\definecolor{qmPurple}{HTML}{725A9A}
+\definecolor{qmPurpleFill}{HTML}{F1EDF7}
+\definecolor{qmGreen}{HTML}{2F7D5C}
+\definecolor{qmGreenFill}{HTML}{E8F4EE}
+\definecolor{qmRed}{HTML}{A33A3A}
+\definecolor{qmRedFill}{HTML}{F9EAEA}
+\definecolor{qmGray}{HTML}{52606D}
+\definecolor{qmGrayFill}{HTML}{F4F6F8}
+
+\begin{tikzpicture}[scale=.94,transform shape,
+  font=\sffamily\footnotesize,
+  line cap=round,
+  line join=round,
+  >={Stealth[length=2.4mm,width=1.7mm]},
+  flow/.style={->,draw=qmNavy,line width=.9pt},
+  process/.style={
+    draw=qmNavy,fill=white,rounded corners=2.5pt,
+    line width=.8pt,minimum height=10.5mm,minimum width=23mm,
+    align=center,inner xsep=5pt,inner ysep=3.5pt
+  },
+  quantum/.style={process,draw=qmPurple,fill=qmPurpleFill},
+  update/.style={process,draw=qmBlue,fill=qmBlueFill},
+  test/.style={
+    diamond,aspect=1.8,draw=qmNavy,fill=white,
+    line width=.85pt,minimum width=20mm,minimum height=13mm,
+    align=center,inner sep=1.5pt
+  },
+  state/.style={
+    ellipse,draw=qmNavy,fill=qmGrayFill,line width=.85pt,
+    minimum width=21mm,minimum height=10mm,align=center
+  },
+  accepted/.style={state,draw=qmGreen,fill=qmGreenFill},
+  failed/.style={state,draw=qmRed,fill=qmRedFill},
+  branchlabel/.style={
+    font=\sffamily\scriptsize,fill=white,inner sep=1.5pt
+  },
+  stepref/.style={font=\sffamily\tiny,text=qmGray},
+  note/.style={font=\sffamily\scriptsize,text=qmGray,align=center},
+  legend/.style={
+    draw=qmGray!55,fill=qmGrayFill,rounded corners=3pt,
+    line width=.65pt,align=left,inner sep=6pt,
+    text width=55mm,font=\sffamily\scriptsize
+  }
+]
+
+% Main vertical spine -------------------------------------------------------
+\node[state] (rho) at (0,0) {$\rho$};
+
+\node[quantum] (energy) at (0,-1.65) {
+  $E_{ae}$\\[-1pt]
+  \scriptsize measure energy; record $(a,e)$\\[-1pt]
+  \tiny\color{qmGray}\qmsectionref{section:energymeasurement}{Measure the energy}
+};
+
+\node[update] (chooseC) at (0,-3.35) {
+  pick $C\sim\mathrm d\mu(C)$ and apply $C$\\[-1pt]
+  \tiny\color{qmGray}\qmsectionref{section:update}{Update}
+};
+
+\node[quantum] (qpe) at (0,-5.05) {
+  BSI--QPE\\[-1pt]
+  \scriptsize prepare $(b,d)$ in the persistent $R,F$ register\\[-1pt]
+  \tiny\color{qmGray}\qmsectionref{section:boostedphaseestimation}{Boosted phase estimation}
+};
+
+\node[quantum] (rotate) at (0,-6.75) {
+  $W_{abde}$ on $M$\\[-1pt]
+  \scriptsize acceptance rotation\\[-1pt]
+  \tiny\color{qmGray}\qmsectionref{section:acceptprob}{Accept or Reject}
+};
+
+\node[test] (sdecision) at (0,-8.55) {
+  measure $M$\\[-1pt]$s\ ?$
+};
+
+\draw[flow] (rho) -- (energy);
+\draw[flow] (energy) -- (chooseC);
+\draw[flow] (chooseC) -- (qpe);
+\draw[flow] (qpe) -- (rotate);
+\draw[flow] (rotate) -- (sdecision);
+
+% Accept branch: spacious right-hand column --------------------------------
+\node[quantum] (measurebd) at (4.25,-8.55) {
+  measure $R,F$\\[-1pt]
+  \scriptsize record final $(b,d)$\\[-1pt]
+  \tiny\color{qmGray}\qmsectionref{section:acceptprob}{Accept or Reject}
+};
+\node[quantum] (unqpeA) at (4.25,-10.25) {BSI--QPE$^{\dagger}$};
+\node[accepted] (rhoA) at (4.25,-11.80) {$\rho_{\mathrm{accept}}$};
+
+\draw[flow,draw=qmGreen]
+  (sdecision.east) -- node[branchlabel,above] {$s=1$} (measurebd.west);
+\draw[flow,draw=qmGreen] (measurebd) -- (unqpeA);
+\draw[flow,draw=qmGreen] (unqpeA) -- (rhoA);
+
+% Reject branch: spacious left-hand column ---------------------------------
+\node[quantum] (unrotate) at (-4.25,-8.55) {
+  $W_{abde}$ on $M$\\[-1pt]
+  \scriptsize uncompute rotation
+};
+\node[quantum] (unqpeR) at (-4.25,-10.25) {BSI--QPE$^{\dagger}$};
+\node[update] (undoc) at (-4.25,-11.80) {
+  apply $C^{\dagger}$\\[-1pt]
+  \tiny\color{qmGray}\qmsectionref{section:acceptprob}{Accept or Reject}
+};
+
+\draw[flow,draw=qmOrange]
+  (sdecision.west) -- node[branchlabel,above] {$s=0$} (unrotate.east);
+\draw[flow,draw=qmOrange] (unrotate) -- (unqpeR);
+\draw[flow,draw=qmOrange] (unqpeR) -- (undoc);
+
+% Overlapping boxes explicitly identify the two maps. Their line patterns
+% remain distinct when the paper is printed in grayscale.
+\begin{pgfonlayer}{background}
+  \node[
+    draw=qmBlue,fill=qmBlueFill,fill opacity=.20,
+    densely dashed,line width=1.05pt,rounded corners=5pt,
+    fit={(chooseC) (qpe) (rotate) (sdecision) (measurebd) (unqpeA) (rhoA)},
+    inner sep=8pt
+  ] (lbox) {};
+  \node[
+    draw=qmOrange,fill=qmOrangeFill,fill opacity=.18,
+    dash pattern=on 5pt off 2pt on 1pt off 2pt,
+    line width=1.05pt,rounded corners=5pt,
+    fit={(chooseC) (qpe) (rotate) (sdecision) (unrotate) (unqpeR) (undoc)},
+    inner sep=8pt
+  ] (qbox) {};
+\end{pgfonlayer}
+
+\node[
+  anchor=north east,font=\sffamily\bfseries\small,text=qmBlue,
+  fill=white,inner sep=1.5pt
+] at (5.18,-12.70) {$L^{ade}_{b}$: accepted-update map};
+\node[
+  anchor=south west,font=\sffamily\bfseries\small,text=qmOrange,
+  fill=white,inner sep=1.5pt
+] at (qbox.north west) {$Q^{ae}_{0}$: initial reject projector};
+
+% Rejection / Marriott--Watrous rewind routine ------------------------------
+\node[process,fill=qmGrayFill,minimum width=14mm] (init) at (-5.90,-15.05)
+  {$k\leftarrow0$};
+\node[quantum] (ptest) at (-3.40,-15.05) {
+  measure $P^{ae}_{s}$\\[-1pt]
+  \scriptsize initial-energy test
+};
+\node[test] (pdecision) at (-.35,-15.05) {$s\ ?$};
+\node[test] (limit) at (2.45,-15.05) {$k<n^{\star}$?};
+\node[quantum] (qtest) at (5.30,-15.05) {
+  measure $Q^{ae}_{s}$\\[-1pt]
+  \scriptsize $k\leftarrow k+1$
+};
+\node[failed] (rhozero) at (2.45,-17.15) {$\rho_{0}$};
+\node[accepted] (rhostar) at (-.35,-17.15)
+  {$\rho_{\mathrm{reject}}$};
+
+\draw[flow,draw=qmOrange]
+  (undoc.south) -- ++(0,-1.02) -| (init.north);
+\draw[flow] (init) -- (ptest);
+\draw[flow] (ptest) -- (pdecision);
+\draw[flow] (pdecision.east) -- node[branchlabel,above,yshift=5pt] {$s=0$} (limit.west);
+\draw[flow] (limit.east) -- node[branchlabel,above,yshift=5pt] {yes} (qtest.west);
+\draw[flow,draw=qmGreen]
+  (pdecision.south) -- node[branchlabel,right] {$s=1$} (rhostar.north);
+\draw[flow,draw=qmRed]
+  (limit.south) -- node[branchlabel,right] {no} (rhozero.north);
+\draw[flow]
+  (qtest.north) -- ++(0,.85) -|
+  node[branchlabel,pos=.32,above] {repeat}
+  (ptest.north);
+
+\begin{pgfonlayer}{background}
+  \node[
+    draw=qmNavy!65,fill=qmGrayFill,fill opacity=.35,
+    rounded corners=5pt,line width=.85pt,
+    fit={(-6.85,-13.92) (6.70,-18.35)},inner sep=0pt
+  ] (rewindbox) {};
+\end{pgfonlayer}
+% \node[
+%   anchor=south west,font=\sffamily\bfseries\small,text=qmNavy,
+%   fill=white,inner sep=1.5pt
+% ] at (rewindbox.north west) {Marriott--Watrous rejection routine};
+\node[
+  anchor=south east,stepref,fill=white,inner sep=1.5pt
+] at (rewindbox.north east)
+  {\qmsectionref{section:rejection}{Rejection process}};
+\node[note,anchor=north] at (2.45,-17.70)
+  {rewind timed out;\\restart algorithm};
+\node[note,anchor=north] at (-.35,-17.70)
+  {original energy restored};
+
+% Quick notation key occupies otherwise empty space in the portrait layout.
+\node[legend,anchor=north west] at (2.65,.65) {
+  \textbf{Circuit notation}\par\smallskip
+  $E_{ae}$ \; initial energy measurement; records $(a,e)$\par
+  $L^{ade}_{b}$ \; accepted branch; records final $(b,d)$\par
+  $Q^{ae}_{s}$ \; projective accept/reject measurement\par
+  $P^{ae}_{s}$ \; tests whether the initial energy is restored\par\smallskip
+  \textbf{Persistent work space}\par
+  $R,F$ are reused throughout. $M$ is initialized once and reused by every
+  $Q^{ae}_{s}$.
+};
+
+\end{tikzpicture}
