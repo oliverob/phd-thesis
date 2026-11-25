@@ -2,9 +2,9 @@
 
 % **************************** Define Graphics Path **************************
 \ifpdf
-    \graphicspath{{Chapter4/Figs/Raster/}{Chapter4/Figs/PDF/}{Chapter4/Figs/}{Chapter4/Quantinuum/}{Chapter4/Quantinuum/figs/}}
+    \graphicspath{{Chapter5/Figs/Raster/}{Chapter5/Figs/PDF/}{Chapter5/Figs/}{Chapter5/Quantinuum/}{Chapter5/Quantinuum/figs/}}
 \else
-    \graphicspath{{Chapter4/Figs/Vector/}{Chapter4/Figs/}{Chapter4/Quantinuum/}{Chapter4/Quantinuum/figs/}}
+    \graphicspath{{Chapter5/Figs/Vector/}{Chapter5/Figs/}{Chapter5/Quantinuum/}{Chapter5/Quantinuum/figs/}}
 \fi
 
 \section{Monopoles, Scattering and Generalized Symmetries on a Quantum Computer}
@@ -56,7 +56,7 @@ Measuring the ancilla register to be $k$ conditions the system on the applicatio
 \begin{figure}[tb]
     \centering
 %See /figs/fig1_wavepacket.tex for the tikz source code
-\includegraphics[width=\linewidth]{figs/fig1_alt.pdf}
+\includegraphics[width=0.8\linewidth]{figs/fig1_alt.pdf}
     \caption{Momentum-resolved wavepacket preparation by ancilla post-classification. The measured ancilla outcome $k$ labels the conditional system state $|\psi_{k_0+k}\rangle_S$. All valid outcomes are retained without feed-forward.}
     \label{fig:qcircuit}
 \end{figure}
@@ -71,10 +71,9 @@ The circuit (shown in Fig.~\ref{fig:qcircuit}) is closely related to linear comb
     $
     \item \textsc{QFT}: Apply the quantum Fourier transform to the ancilla register, giving the final state
 \end{enumerate}
-\begin{align}
-       \frac{1}{\sqrt{M}} &\sum_{x,k=0}^{M-1} a_xe^{\frac{2\pi i}{M}(k_0+k)x} \ket{k}_A\otimes \phi^{\dagger}_x\ket{\Omega}_S \\
-       &=\frac{1}{\sqrt{M}}\sum_{k=0}^{M-1}  \ket{k}_A\otimes \ket{\psi_{k_0+k}}_S\,.
-\end{align}
+\begin{equation}
+       \frac{1}{\sqrt{M}} \sum_{x,k=0}^{M-1} a_xe^{\frac{2\pi i}{M}(k_0+k)x} \ket{k}_A\otimes \phi^{\dagger}_x\ket{\Omega}_S =\frac{1}{\sqrt{M}}\sum_{k=0}^{M-1}  \ket{k}_A\otimes \ket{\psi_{k_0+k}}_S\,.
+\end{equation}
 
 Many alternative approaches to preparing localised wavepackets exist. These include (but are not limited to): adiabatically evolving a wavepacket of a free theory into one in an interacting theory \cite{jordan2012quantum, jordan2011quantum, jordan2014quantum, brennen2014multi, barata2021single}, performing symmetry constrained variational optimization on a state with definite momentum \cite{van2021real,farrell2026digital} or straight-forward variational optimization \cite{farrell2024quantum, davoudi2024scattering, zemlevskiy2025scalable}. We do not claim to outperform the state-of-the-art in wavepacket preparation, but believe our methodology may prove a valuable additional tool in particular circumstances. For example, for large systems that prove resistant to variational quantum eigensolver techniques but for which we can efficiently prepare an approximation to the ground state, our approach of applying the wavepacket on top of a prepared ground state may be the most appropriate choice.
 \subsection{Scattering through duality defects}
@@ -196,7 +195,7 @@ Each step is adapted to reduce the circuit depth and measurement cost on current
 %%%%%%%%%%%%%%% FIG 3 %%%%%%%%%%%%%%%
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{figs/fig3.png}
+    \includegraphics[width=0.8\linewidth]{figs/fig3.png}
     \caption{Hardware data for the Ising model at $\tilde k = 0.44\pi$, $g=0.7$: mean $Z$-basis outcome $\braket{Z_i}$ versus site and time. The wavepacket is perfectly transmitted through both Kramers--Wannier defects. All momentum sectors are shown in Fig.~\ref{fig:isingmodel}. The star indicates the initial location of the wave packet.}
     \label{fig:ising_single_panel}
 \end{figure}
@@ -205,7 +204,7 @@ Each step is adapted to reduce the circuit depth and measurement cost on current
 %%%%%%%%%%%%%%% FIG 3 %%%%%%%%%%%%%%%
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{figs/fig4.png}
+    \includegraphics[width=0.8\linewidth]{figs/fig4.png}
     \caption{Hardware data for the cluster model at $\tilde k = 0.44\pi$, $g=0.7$: (a) mean $Z$-basis outcome $\braket{Z_i}$ and (b) string order $\braket{S_i}$. Past $I_R$ the wavepacket is not visible in (a) but carries on in (b). All momentum sectors are shown in Fig.~\ref{fig:clustermodel}.}
     \label{fig:cluster_single_panel}
 \end{figure}
@@ -235,7 +234,7 @@ Each step is adapted to reduce the circuit depth and measurement cost on current
 Matrix-product-state (MPS) representations of the ground states can be found efficiently and to high precision using DMRG \cite{PhysRevLett.69.2863,schollwock2011density}. We then use AQCtensor \cite{robertson2025approximate} to obtain low-depth circuits that approximate these states. The method begins with a parameterised hardware-efficient ansatz, compresses it into an MPS using tensor-network simulation, and evaluates its fidelity with the target ground-state MPS. Standard numerical optimisation, such as L-BFGS-B, then converges to a low-depth approximation. We use a low-depth ansatz circuit tailored to the connectivity of the model of interest. For the Ising model, we use pairwise rZZ interactions interspersed with rX rotations. For the Cluster model, we use a tailored ansatz of two separate chains of next-nearest neighbour rZZ interactions until $I_R$ when we transition into a single chain of pairwise rZZ interactions, again interspersed with rX rotations. Figure~\ref{fig:groundstateprep} shows the dependence of the ground-state preparation error on circuit depth. Based on this data, we use an ansatz with a two-qubit depth of 8 for the Ising model and 9 for the cluster model. 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{figs/gs_fid.png}
+    \includegraphics[width=0.4\linewidth]{figs/gs_fid.png}
     \caption{Ground-state preparation error for the Ising model and Cluster model on a 36-qubit system at $g=0.7$ as a function of the two-qubit depth of the optimised hardware-efficient ansatz $V(\theta)$. The vertical axis shows the infidelity between the variationally prepared state $V(\theta)\ket{0}$ and the target DMRG/MPS ground state $\ket{\psi}$. We also show the estimated error due to hardware noise introduced by including one additional layer in the ansatz.}
     \label{fig:groundstateprep}
 \end{figure}
@@ -302,29 +301,30 @@ The central momentum of these wavepackets is therefore $\tilde k =\frac{4\pi}{M}
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-        \multicolumn{4}{|c|}{\textsc{Ising Model}} \\\hline
-         \textbf{Time}& \textbf{Trotter steps}&\textbf{2 qubit gate count}&\textbf{Post-selection}  \\\hline
-         0.00&0&193&96.7\%\\\hline
-         1.70&3&355&75.7\%\\\hline
-         3.40&6&460&78.3\%\\\hline
-         5.10&9&577&88.7\%\\\hline
-         6.80&12&688&86.7\%\\\hline
-         8.50&15&799&91.3\%\\\hline
-    \end{tabular}\vspace{1cm}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-     \multicolumn{4}{|c|}{\textsc{Cluster Model}} \\\hline
-         \textbf{Time}& \textbf{Trotter steps}&\textbf{2 qubit gate count}&\textbf{Post-selection}  \\\hline
-         0.00&0&156&97.4\%\\\hline
-         1.67&4&368&92.6\%\\\hline
-         3.33& 7&476&90.1\%\\\hline
-         5.00&10&585&91.9\%\\\hline
-         6.67&14&729&91.4\%\\\hline
-         8.33&17&837&90.2\%\\\hline
+    \setlength{\tabcolsep}{10pt}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{@{}cccc@{}}
+    \toprule
+         Time & Trotter steps & Two-qubit gate count & Post-selection \\
+    \midrule
+         \multicolumn{4}{@{}l}{\textsc{Ising Model}} \\
+         0.00&0&193&96.7\%\\
+         1.70&3&355&75.7\%\\
+         3.40&6&460&78.3\%\\
+         5.10&9&577&88.7\%\\
+         6.80&12&688&86.7\%\\
+         8.50&15&799&91.3\%\\
+    \midrule
+         \multicolumn{4}{@{}l}{\textsc{Cluster Model}} \\
+         0.00&0&156&97.4\%\\
+         1.67&4&368&92.6\%\\
+         3.33&7&476&90.1\%\\
+         5.00&10&585&91.9\%\\
+         6.67&14&729&91.4\%\\
+         8.33&17&837&90.2\%\\
+    \bottomrule
     \end{tabular}
-    \caption{Tables illustrating the various time steps evaluated in the quantum time evolution of each model along with the number of trotter steps and 2 qubit gates used in such evaluation. The post-selection proportion corresponds to the proportion of samples that are measured with hamming weight 1 and hence are retained into the plots. This is an effective error mitigation strategy for detecting bit flip errors in the ancillas.}
+    \caption{Table illustrating the various time steps evaluated in the quantum time evolution of each model along with the number of Trotter steps and two-qubit gates used in such evaluation. The post-selection proportion corresponds to the proportion of samples that are measured with Hamming weight 1 and hence are retained into the plots. This is an effective error mitigation strategy for detecting bit flip errors in the ancillas.}
     \label{tab:trotter_steps}
 \end{table}
 

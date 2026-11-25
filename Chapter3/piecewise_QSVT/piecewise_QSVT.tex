@@ -615,7 +615,7 @@ The algorithm acts on: $n$ qubits to store the desired state, $l_{max} + 1$ bloc
 Above we assumed the use of clean ancillas to minimise the Toffoli count; space-time tradeoffs using conditionally clean or dirty qubits are possible \cite{Khattar:2024pqa, Nie:2024key}.
 \subsection{Applications}
 \label{section:applications}
-Our algorithm allows more states to be prepared efficiently. Existing QSVT state preparation techniques required the desired state to be approximated by a single global polynomial. Our approach relaxes this restriction to allow approximation by piecewise polynomials. In Section~\ref{section:nearly_analytic} we will explore amplitudes sampled from functions which are hard to approximate with the former, but efficiently approximated by the later. In Section~\ref{section:b_spline} we discuss loading the piecewise polynomial B-spline window function and the exponential performance boost it lends to Quantum Phase Estimation. Then in Section~\ref{section:algorithm} we illustrate a classical algorithm for finding the optimal piecewise polynomial to approximately load a given generic state. 
+Our algorithm allows more states to be prepared efficiently. Existing QSVT state preparation techniques required the desired state to be approximated by a single global polynomial. Our approach relaxes this restriction to allow approximation by piecewise polynomials. In Section~\ref{section:nearly_analytic} we will explore amplitudes sampled from functions which are hard to approximate with the former, but efficiently approximated by the later. In Section~\ref{section:b_spline} we discuss loading the piecewise polynomial B-spline window function and the exponential performance boost it lends to Quantum Phase Estimation. Then in Section~\ref{section:piecewise_algorithm} we illustrate a classical algorithm for finding the optimal piecewise polynomial to approximately load a given generic state. 
 
 \subsubsection{Approximating nearly-analytic functions}
 \label{section:nearly_analytic}
@@ -821,7 +821,7 @@ The B-Spline function is an example of finding a piecewise polynomial that produ
         \end{table}
 
 \subsubsection{Generic optimal algorithm}
-\label{section:algorithm}
+\label{section:piecewise_algorithm}
 We present Algorithm~\ref{alg:piecewise_classical_approx} for finding the optimal splitting of the amplitudes into segments to be approximated that runs in $O(N \log_2 N)$ time. It takes a fixed degree $d$ and maximum error tolerance $\epsilon$ and greedily finds the largest segment that a polynomial can approximate sequentially. This produces the smallest possible number of segments that satisfy the constraints, as for any given data point all the possible larger segments it lies in will have been considered and rejected by the algorithm. 
 
 Section~\ref{section:nearly_analytic} demonstrated upper bounds on the cost of approximating certain states by piecewise polynomials. In reality the chosen segment sizes are sub-optimal and we should instead run the algorithm presented here upon these states to find the optimal divisions into segments. The resulting approximation will improve upon the results demonstrated in Section~\ref{section:nearly_analytic}. 

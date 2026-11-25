@@ -2,41 +2,34 @@
 
 % **************************** Define Graphics Path **************************
 \ifpdf
-    \graphicspath{{Chapter3/Figs/Raster/}{Chapter3/Figs/PDF/}{Chapter3/Figs/}{Chapter3/Quantum_Metropolis/}}
+    \graphicspath{{Chapter4/Figs/Raster/}{Chapter4/Figs/PDF/}{Chapter4/Figs/}{Chapter4/}}
 \else
-    \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}{Chapter3/Quantum_Metropolis/}}
+    \graphicspath{{Chapter4/Figs/Vector/}{Chapter4/Figs/}{Chapter4/}}
 \fi
 
 
 \chapter{Quantum Metropolis Sampling Revived}
 \label{chapter:quantum_metropolis}
-\subsection{Introduction}
+\section{Introduction}
 Sampling thermal (Gibbs) states of physical systems is one of the most credible applications for future fault-tolerant quantum computers. Thermal expectation values are of interest across quantum chemistry, condensed matter physics and high energy physics, and classically they are almost all computed by Markov chain Monte Carlo. For many fermionic or frustrated spin systems this approach runs into the sign problem as the weights are not all positive. As the average sign decays exponentially with system size and inverse temperature, the number of samples necessary to resolve the observable grows exponentially \cite{Troyer_2005}. A quantum computer can directly interact with the state rather than only with a signed decomposition, so it does not encounter the sign problem. The classical computer is attempting to replicate the interference that physics gives for free on a quantum computer.
 
 The original quantum algorithm invented for performing this sampling was the Quantum Metropolis algorithm of Temme et. al. \cite{Temme_2011}. This was a direct quantum analogue of Metropolis-Hastings: propose a random unitary move then accept or reject the move based upon the energy before and after the move. The principal challenge of creating a quantum analogue of the Metropolis-Hastings algorithm was rejecting a move. In the classical setting one can either copy the state before the move or simply undo the move after rejecting, however, in the quantum setting copying the initial state is forbidden by the no-cloning principle and simply reversing the proposed unitary does not undo the disturbance caused by the accept/reject measurement. Temme et. al. \cite{Temme_2011} navigated around these challenges by using a Marriott-Watrous \cite{MarriottWatrous} inspired rewinding procedure to approximately return the system to its previous energy upon rejecting a move.
 
-The rewinding procedure requires a modified quantum phase estimation (QPE) protocol, which coherently encodes an estimate of the system’s energy in an ancilla register. This register is reused without resetting it during rewinding, hence the protocol must work even when the register is not initialised to $\ket{0}$. The original construction therefore required QPE to be ``shift-invariant": starting from a register value $p$ rather than zero simply translates the output by $p$. It also required ``boosting" to suppress the tails of the energy-estimation amplitudes, reducing the weight of estimates far from the true energy. Thus, the original Quantum Metropolis algorithm depended upon a  ``boosted shift-invariant" quantum phase estimation protocol that applied a shift to an ancilla register within a given bound of the true energy (with $\tilde E_j = \frac{N}{2\pi}E_j$ with $N=2^{\eta}$ for an $\eta$ ancilla energy register):
-\begin{multline}
+The rewinding procedure requires a modified quantum phase estimation (QPE) protocol, which harnesses the Fourier transform to coherently encode an estimate of the system’s energy in an ancilla register (Chapter~\ref{chapter:boosting_qpe}). This register is reused without resetting it during rewinding, hence the protocol must work even when the register is not initialised to $\ket{0}$. The original construction therefore required QPE to be ``shift-invariant": starting from a register value $p$ rather than zero simply translates the output by $p$. It also required ``boosting" to suppress the tails of the energy-estimation amplitudes that arise from this Fourier transform, reducing the weight of estimates far from the true energy. Thus, the original Quantum Metropolis algorithm depended upon a  ``boosted shift-invariant" quantum phase estimation protocol that applied a shift to an ancilla register within a given bound of the true energy (with $\tilde E_j = \frac{N}{2\pi}E_j$ with $N=2^{\eta}$ for an $\eta$ ancilla energy register):
+\begin{equation}
   \ket{\psi_j}\ket{p} \;\mapsto\; \sum_{s} \alpha(E_j,s)\,\ket{\psi_j}\ket{p+s},
-  \\\alpha(E_j,s) = 0 \ \text{ for } |s-\tilde E_j|_{N} > \mu .
+  \qquad\alpha(E_j,s) = 0 \ \text{ for } |s-\tilde E_j|_{N} > \mu .
   \label{eq:Boostedshiftinvariantqpe}
-\end{multline}
+\end{equation}
 where $\ket{\psi_j}$ is an energy eigenstates with energy $E_j$, $\mu$ is the allowed error in register units, and $|\cdot|_{N}$ measures distance accounting for the register’s wraparound.
 
 Recently the field has been reshaped by a new paradigm based on Davies-generator Lindbladian evolution \cite{chen2023quantumthermalstatepreparation,Kastoryano2014QuantumGS,shtanko2021preparing,chen2021fast,chen2023efficient,rall2023thermal,gilyen2024quantum,ding2025efficient,ding2025end,guo2025designing,chen2025efficient, hahn2026efficient, scandi2026thermalization,leng2026accelerating,rouze2026optimal,lloyd2026quantum,Rouz__2026} which has largely displaced the Metropolis approach in the literature. This current dominance of Lindbaldian samplers is in no small part due to the no-go theorem contained in Appendix H of \cite{chen2023quantumthermalstatepreparation}. This proved it is impossible to implement the ``boosted shift-invariant" quantum phase estimation protocol \eqref{eq:Boostedshiftinvariantqpe} that the original Quantum Metropolis algorithm required.  The original implementation \cite{Temme_2011} suggested taking the median of multiple QPE runs which fails to be ``shift-invariant" as the difference of medians is not necessarily close to the median of the differences. This no-go theorem is widely regarded as closing the book on Quantum Metropolis sampling. 
 
-In this work we restore the Quantum Metropolis algorithm by navigating around this no-go theorem. We introduce a Boosted State-Independent Quantum Phase Estimation (BSI-QPE) protocol which ensures the magnitude of the shift in the ancilla register is close to the true energy with the sign of this shift recorded in an additional flag qubit:
-\begin{multline}
-  \ket{\psi_j}\ket{p}\ket{f} \;\mapsto\; \sum_{s,f'} \alpha_{f'f}(E_j,s)\,
-  \ket{\psi_j}\ket{p+(-1)^{f'}s}\ket{f'},\\
-  \qquad \sum_{|s-\tilde E_j|_{N} > \mu} \big|\alpha_{f'f}(E_j,s)\big| = O(e^{-\nu\mu}).
-\end{multline}
-This protocol is implementable and can fulfill the same role as the previous impossible protocol, with the modification that whenever we previously controlled off the value of the energy register we now must also control off the flag qubit. We carefully account for the non-zero but exponentially suppressed tails of this protocol in our proof work.
+In this chapter we restore the Quantum Metropolis algorithm by harnessing the Boosted State-Independent Quantum Phase Estimation (BSI-QPE) protocol of Section~\ref{section:boostedphaseestimation} to navigate around this no-go theorem. In Chapter~\ref{chapter:boosting_qpe} the Fourier transform turned the problem of boosting QPE into a problem of designing window functions, and by designing a novel complementary pair of window functions we obtained a protocol which ensures the magnitude of the shift in the ancilla register is close to the true energy with the sign of this shift recorded in an additional flag qubit (Eq.~\eqref{eq:bsi_qpe}). This protocol is implementable and can fulfill the same role as the previous impossible protocol, with the modification that whenever we previously controlled off the value of the energy register we now must also control off the flag qubit. We carefully account for the non-zero but exponentially suppressed tails of this protocol in our proof work.
 
 Our main contributions are as follows:
 \begin{enumerate}
-    \item \textbf{Circuit level construction of BSI-QPE} (Section~\ref{section:boostedphaseestimation}): Standard methods  \cite{babbush2018encoding, rendon2022effects, berry2024analyzing, greenaway2024case, patel2026optimal} for boosting QPE require a input ancilla state specially prepared to have amplitudes given by a window function. Here we propose a novel construction which boosts QPE independent of the input ancilla state with the window functions instead being introduced by a controlled single qubit $R_Y$ rotation. We show that unboosted QPE is insufficient for our later proof of approximate quantum detailed balance without a promise that energies are exactly representable in $\eta$ bits. Our novel BSI-QPE protocol is an important invention in its own right, and should have far reaching applications in other quantum algorithms which require coherent phase estimation (e.g. HHL \cite{harrow2009quantum}).
-    \item \textbf{Complementary window functions} (Appendix~\ref{section:appendix}): Our construction of BSI-QPE requires a complementary pair of window functions that satisfy $\alpha(x)^2 + \beta(x)^2 =1$ and both have exponentially decaying fourier coefficients. None of the standard  window functions (e.g. DPSS, Kaiser window, Gaussian) are close to satisfying this form. We have found a novel pair of window functions that satisfy these requirements which we demonstrate numerically and prove analytically.
+    \item \textbf{Harnessing BSI-QPE} (Sections~\ref{section:band_limited_bsiqpe} and~\ref{section:algorithm}): We modify the Quantum Metropolis algorithm to utilise BSI-QPE, controlling off the flag qubit wherever we previously controlled off the energy register. We show that BSI-QPE is close in operator norm to a fully band-limited protocol, and that unboosted QPE is insufficient for our later proof of approximate quantum detailed balance without a promise that energies are exactly representable in $\eta$ bits.
     \item \textbf{Elementary analysis of rewinding} (Section~\ref{section:rejection}): We provide an alternative explanation of the rewinding procedure to the Jordan's-lemma treatment of \cite{Temme_2011} which we find more transparent.
     \item \textbf{Approximate Quantum Detailed Balance Condition} (Section~\ref{section:detailedbalancedef}): We introduce a new branch-wise KMS-inspired detailed balance criteria. This allows us to consider the additive errors introduced by the exponentially suppressed (but non-zero) tails of our BSI-QPE protocol that were neglected in the original treatment \cite{Temme_2011}. We later use this condition to establish that the algorithm approximately preserves the Gibbs state.
     \item \textbf{Approximate Quantum Detailed Balance Proof} (Section~\ref{section:proofmain}): We introduce a novel \textbf{truncate} step to the proof which bounds the additive error due to the non-zero tails of BSI-QPE. We carefully convert the modular norm of the energy approximations to a standard norm \eqref{eq:condJ}-\eqref{eq:kappaclose}. We provide a novel and elegant proof (Lemma~\ref{lemma:summed-history-reversal}) that the measurement outcomes during the rejection procedure can be reversed. Further, we derive an error term \eqref{eq:Wdrifterror} overlooked in \cite{Temme_2011} that is due to the QPE energy register not being exactly returned to $\ket{0}$.
@@ -50,11 +43,12 @@ Theorem~\ref{theorem:main} restores the approximate Gibbs-invariance result of t
 
 Three other routes to Metropolis-type dynamics sidestep shift-invariant phase estimation entirely. Jiang and Irani \cite{jiang2024quantummetropolissamplingweak} replace rewinding with weak measurement and prove that the Gibbs state is an approximate fixed point. Because each iteration moves the state only by $O(\tau^2)$ for a small weak-measurement parameter $\tau$, the number of iterations grows by a polynomial factor. Zhang, Bosse and Cubitt \cite{zhang2023dissipative} instead weakly measure the local terms of the Hamiltonian in sequence with the Gibbs state reached at the stopping time of a conditionally stopped process rather than as the fixed point of a Markov chain. Gilyén et al. \cite{gilyen2024quantum} construct efficiently implementable discrete-time channels that are exactly detailed balanced. They also show how Metropolis-style samplers that estimate energies before and after a jump can be made exactly detailed balanced, implementing rejection with an additional Kraus operator rather than by Marriott–Watrous rewinding. Our guarantees are weaker than those of \cite{gilyen2024quantum}: we obtain approximate rather than exact Gibbs stationarity, and we prove no mixing-time bounds. Our contribution is of a different kind. We show that the original accept/reject-with-rewinding architecture of \cite{Temme_2011}, widely regarded as ruled out, is sound, because it requires a weaker phase-estimation primitive than the one the no-go theorem \cite{chen2023quantumthermalstatepreparation} forbids. We regard these frameworks as complementary, and which is most efficient in practice remains open.
 
-The remainder of the paper is organised as follows. Section~\ref{section:boostedphaseestimation} presents the detailed construction of our Boosted State-Independent Quantum Phase Estimation (BSI-QPE) protocol, including a detailed circuit-level description and error analysis based on window functions (extended by Appendix~\ref{section:appendix}). Section \ref{section:algorithm} describes our modified Quantum Metropolis algorithm incorporating our improved quantum phase estimation; Fig.~\ref{fig:quantum-metropolis-flowchart} provides an complete overview to help guide the reader. Section~\ref{section:why} presents the main theorem of the paper, defines our approximate quantum detailed balance framework, and outlines the four-step proof strategy applied to each branch; the full proofs are given in Appendices~\ref{appendix:Aproof} and \ref{appendix:Bproof}. Finally, Section \ref{section:discussion} discusses the broader implications of our results, the assumptions made, and the outlook for implementing these techniques on near-term or fault-tolerant quantum hardware.
+The remainder of this chapter is organised as follows. Section~\ref{section:band_limited_bsiqpe} bounds the error from truncating the tails of BSI-QPE and explains why boosting is necessary. Section \ref{section:algorithm} describes our modified Quantum Metropolis algorithm incorporating BSI-QPE; Fig.~\ref{fig:quantum-metropolis-flowchart} provides an complete overview to help guide the reader. Section~\ref{section:why} presents the main theorem of this chapter, defines our approximate quantum detailed balance framework, and outlines the four-step proof strategy applied to each branch; the full proofs are given in Appendices~\ref{appendix:Aproof} and \ref{appendix:Bproof}. Finally, Section \ref{section:discussion} discusses the broader implications of our results, the assumptions made, and the outlook for implementing these techniques on near-term or fault-tolerant quantum hardware.
 
 
 
-\subsection{Band-limited BSI-QPE}
+\section{Band-limited BSI-QPE}
+\label{section:band_limited_bsiqpe}
 The window functions $\alpha(x) = \text{sech}( r\cos^{2b} \frac{\pi x}{N})$ and $\beta(x) = \text{tanh}(r \cos^{2b} \frac{\pi x}{N})$ of Section~\ref{section:appendix} both have discrete Fourier transforms which decay exponentially fast:
 \begin{equation}
     |\hat \alpha(k)|,|\hat \beta(k)| = O\left( \frac{1}{\nu}e^{-\nu |k|}\right)
@@ -108,7 +102,7 @@ Quantum metropolis is heavily inspired by the classical metropolis-hastings algo
 Throughout one full update, let $R$ denote the $\eta$-qubit BSI-QPE energy-index register and qubit $F$ the additional qubit on which the $G_j^{pq}$ act. At the start of the update, $R$ is initialised to $\ket{0}$ whilst $F$ is in the maximally mixed state (by classically choosing a random initial state $\ket{0}$ or $\ket{1}$) and the qubit $M$ on which the acceptance rotation $W_{abde}$ acts is initialized in $\ket{0}$. 
 \begin{figure*}[t]
   \centering
-  \input{Chapter3/Quantum_Metropolis/quantum_metropolis_flowchart.tikz}
+  \input{Chapter4/quantum_metropolis_flowchart.tikz}
   \caption{Quantum Metropolis update at a glance.  After the initial energy
   measurement $E_{ae}$, an update $C$ is proposed and the binary projective
   measurement $Q^{ae}_{s}$ decides whether it is accepted.  The $s=1$ branch
@@ -122,16 +116,16 @@ Throughout one full update, let $R$ denote the $\eta$-qubit BSI-QPE energy-index
 \end{figure*}
 
 % The same register $R$ and $F$ are used by $E_{ae}$ and by every subsequent $P_s^{ae}$ and $Q_s^{ae}$ measurement; it is never reset during the update. Likewise, $M$ is reused by every $Q_s^{ae}$ and is left untouched by $P_s^{ae}$. Fresh pointer qubits may be used to record measurement outcomes and are not part of the persistent work register.
-\subsubsection{Measure the energy}
+\subsection{Measure the energy}
 \label{section:energymeasurement}
 To measure the energy we use the boosted state-independent quantum phase estimation protocol set out in Section~\ref{section:boostedphaseestimation}. We simply apply BSI-QPE, measure the ancilla qubits and then apply inverse BSI-QPE, as shown in Fig.~\ref{fig:Ecircuit} and outlined below:
-\begin{multline}
-    E_{ae} = \sum_j\sum_{p_1,p_2,p_3,p_4} \ket{\psi_j}\bra{\psi_j} \otimes \ket{p_4}\braket{p_3|a}\braket{a|p_2}\bra{p_1} \otimes \\G_j^{p_3p_4 \dagger}\ket{e}\bra{e}G_j^{p_2p_1}
-\end{multline}
-\begin{multline}
-        E_{ae} = \sum_j\sum_{p_1,p_4} \ket{\psi_j}\bra{\psi_j}\otimes\ket{p_4}\bra{p_1}\otimes\\
+\begin{equation}
+    E_{ae} = \sum_j\sum_{p_1,p_2,p_3,p_4} \ket{\psi_j}\bra{\psi_j} \otimes \ket{p_4}\braket{p_3|a}\braket{a|p_2}\bra{p_1} \otimes G_j^{p_3p_4 \dagger}\ket{e}\bra{e}G_j^{p_2p_1}
+\end{equation}
+\begin{equation}
+        E_{ae} = \sum_j\sum_{p_1,p_4} \ket{\psi_j}\bra{\psi_j}\otimes\ket{p_4}\bra{p_1}\otimes
         G_j^{ap_4 \dagger}\ket{e}\bra{e}G_j^{ap_1}
-\end{multline}
+\end{equation}
 \begin{figure}[htbp]
     \centering
 \begin{tikzpicture}
@@ -181,13 +175,13 @@ Then, using the known initial energy estimate results $a$ and $e$, we perform a 
 Therefore, upon measuring this ancilla qubit the probability of measuring $s=1$ is given by $f_{abde}$, which we choose to approximate $\tilde f_{E_aE_b}$. This alone is insufficient to prove that quantum Metropolis converges to a Gibbs state, but it highlights the similarity with classical Metropolis. In Section~\ref{section:why} we analyse convergence rigorously.
 
 If we measure $s=0$ (reject), then we proceed by applying $W_{abde}^{\dagger}$ ($=W_{abde}$) again after the measurement before applying inverse phase estimation and $C^{\dagger}$, to make the whole sequence ($Q_s^{ae}$) a projective binary measurement:
-\begin{multline} 
-    Q_s^{ae} = \sum_{j,p,q,b,d}  C^{\dagger}\ket{\psi_j}\bra{\psi_j}C \otimes \ket{q}\bra{p} \otimes\\ G_j^{bq\dagger}\ket{d}\bra{d}G_j^{bp}\otimes R^{abde}_s
-\end{multline}
+\begin{equation} 
+    Q_s^{ae} = \sum_{j,p,q,b,d}  C^{\dagger}\ket{\psi_j}\bra{\psi_j}C \otimes \ket{q}\bra{p} \otimes G_j^{bq\dagger}\ket{d}\bra{d}G_j^{bp}\otimes R^{abde}_s
+\end{equation}
 where $R^{abde}_s = W_{abde}\ket{s}\bra{s}W_{abde}$. If instead we measure $s=1$ (accept) we simply measure the energy register and then apply inverse BSI-QPE. We represent this accept process as $L^{ade}_b$ as defined in Fig.~\ref{fig:LQ_circuit} and gives the following operator:
-\begin{multline}
-    L^{ade}_b =\sum_{j,p,q}\ket{\psi_j}\bra{\psi_j}C \otimes \ket{q}\bra{p} \otimes\\ G^{bq\dagger}_j \ket{d}\bra{d}G^{bp}_j \otimes \ket{1}\bra{1}W_{abde}
-\end{multline}
+\begin{equation}
+    L^{ade}_b =\sum_{j,p,q}\ket{\psi_j}\bra{\psi_j}C \otimes \ket{q}\bra{p} \otimes G^{bq\dagger}_j \ket{d}\bra{d}G^{bp}_j \otimes \ket{1}\bra{1}W_{abde}
+\end{equation}
 
 The $R,F$ registers in the first $Q_s^{ae}$ measurement are the same registers used in $E_{ae}$, not separately initialized registers. Every later $P_s^{ae}$ and $Q_s^{ae}$ measurement in the update reuses these registers without resetting them. The acceptance-rotation qubit $M$ is initialized to $\ket{0}$ once and is similarly reused in every $Q_s^{ae}$. This common-register structure is shown in Fig.~\ref{fig:fullcircuit} and is required for the Marriott--Watrous rewinding argument below.
 \begin{figure}[htbp]
@@ -257,7 +251,7 @@ box {BSI-\\QPE$^{\dagger}$} (a,system);
 \caption{Quantum circuit for implementing accept process $L_b^{ade}$.}
 \label{fig:LQ_circuit}
 \end{figure}
-\subsubsection{Rejection process}
+\subsection{Rejection process}
 Upon rejection in the classical algorithm we can simply revert back to an earlier copy we made of the initial state or we may be able to reverse the update applied. However, in the quantum setting the no-cloning principle rules out the former and the irreversibility of measurement rules out the latter. Therefore, we need a new technique to return to our initial state.
 
 We use an iterative sequence of binary projective measurements similar to the QMA verification amplification of Marriott and Watrous \cite{MarriottWatrous}. The first measurement $Q_s^{ae}$ has already been introduced, whilst the second $P_s^{ae}$ simply reports whether the state has returned to the initial energy:
@@ -266,9 +260,9 @@ We use an iterative sequence of binary projective measurements similar to the QM
 \begin{equation}
     P^{ae}_1 = \sum_{j,p,q} \left( \ket{\psi_j}\bra{\psi_j} \otimes \ket{q}\bra{p} \otimes G_j^{aq\dagger}\ket{e}\bra{e}G_j^{ap} \right)
 \end{equation}
-\begin{multline}
-    P^{ae}_0 = \sum_{j,p,q} \sum_{b}\bigg( \ket{\psi_j}\bra{\psi_j} \otimes \ket{q}\bra{p} \otimes \\G_j^{bq\dagger}(\mathbb{I} - \delta_{ab}\ket{e}\bra{e})G_j^{bp}  \bigg)
-\end{multline}
+\begin{equation}
+    P^{ae}_0 = \sum_{j,p,q} \sum_{b}\bigg( \ket{\psi_j}\bra{\psi_j} \otimes \ket{q}\bra{p} \otimes G_j^{bq\dagger}(\mathbb{I} - \delta_{ab}\ket{e}\bra{e})G_j^{bp}  \bigg)
+\end{equation}
 This measurement is conducted as demonstrated by Fig.~\ref{fig:Pcircuit}. The register on which $P_s^{ae}$ acts is the same persistent register $R$ used by $E_{ae}$ and $Q_s^{ae}$, as shown in Fig.~\ref{fig:fullcircuit}; $P_s^{ae}$ acts trivially on the rotation qubit $M$.
 \begin{figure}[htbp]
     \centering
@@ -452,7 +446,7 @@ If the rejection process fails then the whole algorithm fails irrecoverably and 
 We have chosen to present the rewinding mechanism through this lens of projective measurements and invariant subspaces in an attempt to make the procedure more intuitive. We refer the reader to the treatment via Jordan's Lemma in the original Quantum Metropolis paper \cite{Temme_2011} for an alternative approach to reach the same conclusions.
 \label{section:rejection}
 
-\subsection{Why it works}
+\section{Why it works}
 \label{section:why}
 The classical Metropolis-Hastings algorithm works by constructing a Markov Chain through proposing and accepting/rejecting moves with probabilities determined by the energy difference between the initial and modified states. The transition matrix of this Markov chain is in detailed balance with respect to the Gibbs state, implying that the Gibbs state is a fixed point of the Markov chain. As Markov chain is also ergodic, it is known that it must have a single unique fixed point and converge towards it. Therefore, the Markov chain converges to the Gibbs state.
 
@@ -471,7 +465,7 @@ If, in addition, $\mathcal{E}^{\ell}$ is strictly trace-norm contracting with fa
 The two terms in Eq.~\eqref{eq:theoremmain} have quite different origins, and it is worth separating them before the proof. The first, $n^{*\frac{7}{2}}\sqrt{\beta\|H\|2^{-\eta}}\mu^{\frac{3}{2}}$, is the residual \emph{bias} left by an imperfect energy estimate: the acceptance probability is computed from a readout that is only accurate to within the bandwidth $\mu$, so detailed balance holds only up to a multiplicative error, and every extra rewinding attempt gives that error another chance to act. It shrinks exponentially in the number of ancilla qubits $\eta$. The second, $1/n^*$, is the probability that the rewind never terminates and the whole run must be discarded (Eq.~\eqref{eq:probabilty_of_rejection}); it shrinks as the cap $n^*$ is raised.
 
 The proof of this theorem occupies the remainder of this section and is broken down into a number of steps. First, in Section~\ref{section:detailedbalancedef} we define our approximate detailed balance criteria which allow us to consider each branch of the original $\mathcal{E}$ CP-map separately. We then proceed in Section~\ref{section:proofbranchwisebalance} to prove the acceptance and rejection branches of our update step satisfy our branch-wise approximate detailed balance criteria. Finally, in Section~\ref{sec:combine} use Lemma~\ref{theorem:quantumapproximatedeatildedbalance} to combine these error terms to demonstrate that the Gibbs state is approximately stationary. We go further and show that by taking certain assumptions we can show the Gibbs state is close to the fixed point of the map, and that the map converges exponentially quickly towards this fixed point.
-\subsubsection{Approximate Quantum Detailed Balance}
+\section{Approximate Quantum Detailed Balance}
 \label{section:detailedbalancedef}
 In the classical setting, detailed balance can be verified by comparing each transition with its reverse, weighted by the Gibbs probabilities. Our attempts to replicate this methodology in the quantum setting are frustrated by two obstacles. First, due to inexact quantum phase estimation, we cannot exactly resolve the energies of our states and hence cannot implement the exact transition amplitudes that would lead to quantum detailed balance. Second, some branches of the weighted adjoint map agree closely not with the corresponding branch of the original map, but with a differently labelled one. In this section we therefore present a formulation of approximate quantum detailed balance that is verified branch by branch, allows branches to be paired with differently labelled partners, and accommodates the additive errors introduced by the truncation step.
 
@@ -496,12 +490,12 @@ Our strategy is to establish the $X=\mathbb{I}$ instance of Definition~\ref{def:
 \begin{lemma}[Branch-wise Approximate Detailed Balance Criterion]
 \label{lemma:1}
 Let $\mathcal{M}$ and $\mathcal{M'}$ be completely positive maps on $d$-dimensional density matrices admitting the same decomposition $\mathcal{M} = \sum_{c\in\mathcal{X}} \mathcal{M}_c$, $\mathcal{M'} = \sum_{c\in\mathcal{X}} \mathcal{M'}_c$ into completely positive maps $\mathcal{M}_c$ and $\mathcal{M}'_c$, and let $\sigma = \sum_j \sigma_j \ket{\psi_j}\bra{\psi_j}$ be a density matrix diagonal in the orthonormal basis $\{\ket{\psi_j}\}$. Suppose there exists a bijection $c \mapsto c'$ of $\mathcal{X}$ such that, for every $j,k,c,l,m$,
-\begin{multline}
+\begin{equation}
     \bra{\psi_m}\mathcal{M}^{\prime *}_{c'\sigma}[\ket{\psi_j}\bra{\psi_k}]\ket{\psi_l}
-    =\\(1+u^{c}_{jm})(1+ u^{c}_{kl})
+    =(1+u^{c}_{jm})(1+ u^{c}_{kl})
     \bra{\psi_m}\mathcal{M}_{c\sigma}[\ket{\psi_j}\bra{\psi_k}]\ket{\psi_l}
     \label{eq:approximate_quantum_detailed_balance_condition}
-\end{multline}
+\end{equation}
 where the $u^{c}_{jl}$ are real and satisfy $|u^{c}_{jl}| \leq \epsilon_m$. Then, for every operator $X$,
  \begin{equation}
     \|\mathcal{M}^{\prime *}_{\sigma}[X]-\mathcal{M}_{\sigma}[X] \|_* \leq (2\epsilon_m+\epsilon_m^2)\|\mathcal{M}[\sigma]\|_*\|X\| \label{eq:lemma2output}
@@ -519,13 +513,13 @@ where $\|\cdot\|_*$ is trace-norm.
         \mathcal{M}^{\prime *}_{c'\sigma}[X]=\sum_i\tilde K^c_iX\tilde K^{c\dagger}_i
     \end{equation}
     Moreover, $\mathcal{M}_{\sigma}[X] = \sum_{i,c}K^c_iXK^{c\dagger}_i$, so we have:
-    \begin{multline}
-        \|\mathcal{M}^{\prime *}_{\sigma}[X]-\mathcal{M}_\sigma[X]\|_* \leq \\\sum_{i,c}\Big\|\left(\tilde K^c_iX\tilde K^{c\dagger}_i-K^c_iXK^{c\dagger}_i\right)\Big\|_*
-    \end{multline}
+    \begin{equation}
+        \|\mathcal{M}^{\prime *}_{\sigma}[X]-\mathcal{M}_\sigma[X]\|_* \leq \sum_{i,c}\Big\|\left(\tilde K^c_iX\tilde K^{c\dagger}_i-K^c_iXK^{c\dagger}_i\right)\Big\|_*
+    \end{equation}
     Writing $W^c_i=\tilde K^c_i-K^c_i$, we have:
-    \begin{multline}
-        \tilde K^c_iX\tilde K^{c\dagger}_i-K^c_iXK^{c\dagger}_i = W^c_iXK^{c\dagger}_i + K^c_iXW^{c\dagger}_i \\+ W^c_iXW^{c\dagger}_i
-    \end{multline}
+    \begin{equation}
+        \tilde K^c_iX\tilde K^{c\dagger}_i-K^c_iXK^{c\dagger}_i = W^c_iXK^{c\dagger}_i + K^c_iXW^{c\dagger}_i + W^c_iXW^{c\dagger}_i
+    \end{equation}
     By the generalised H\"older's inequality for Schatten norms we have:
     \begin{equation}
         \Big\|W^c_iXK^{c\dagger}_i\Big\|_* \leq \|W^c_i\|_2\|X\| \|K^{c\dagger}_i\|_2
@@ -599,23 +593,23 @@ $\mathcal{M}_j[\sigma]$ are positive semidefinite:
 \end{proof}
 
 % \begin{widetext}
-\subsubsection{Proof of Theorem~\ref{theorem:main}}
+\subsection{Proof of Theorem~\ref{theorem:main}}
 \label{section:proofmain}
 We must first express $\mathcal{E}$ as a completely positive trace preserving map:
 \begin{equation}
     \mathcal{E}[\rho] = \mathcal{A}[\rho] + \sum_{n=0}^{n^*} \mathcal{B}(n)[\rho] + \mathcal{C}[\rho]
 \end{equation}
 where $\mathcal{A}$ corresponds to acceptance, $\mathcal{B}(n)$ to successful rejection after $n$ iterations and $\mathcal{C}$ to failing to reject after $n^*$ iterations. Let $\Omega_{RFM} =\ket{0}\bra{0}_R\otimes \frac{\mathbb{I}_F}{2}\otimes\ket{0}\bra{0}_M$ denote the initial state of the persistent ancillas. All occurrences of $E_{ae}$, $P_s^{ae}$, $Q_s^{ae}$ and $L_b^{ade}$ below act on this common ancillary space, with identities on any register on which a given operator acts trivially. Then
-\begin{multline}
-    \mathcal{A}[\rho] = \int  Tr_{RFM}\bigg[\sum_{a,b,d,e}L_b^{ade} E_{ae} \\( \rho\otimes \Omega_{RFM}) 
+\begin{equation}
+    \mathcal{A}[\rho] = \int  Tr_{RFM}\bigg[\sum_{a,b,d,e}L_b^{ade} E_{ae} ( \rho\otimes \Omega_{RFM}) 
      E_{ae}L^{ade\dagger}_b\bigg]d\mu(C)
-\end{multline}
-\begin{multline}
-    \mathcal{B}(n)[\rho] = \int Tr_{RFM}\bigg[\sum_{a,e,\{s\}}P^{ae}_1Q^{ae}_{s_n}\ldots P^{ae}_0Q^{ae}_{s_1}P^{ae}_0Q^{ae}_0E_{ae}\\ ( \rho\otimes \Omega_{RFM})E_{ae}Q^{ae}_0P^{ae}_0Q^{ae}_{s_1}P^{ae}_0\ldots Q^{ae}_{s_n}P^{ae}_1\bigg]d\mu(C)
-\end{multline}
-\begin{multline}
-    \mathcal{C}[\rho] = \rho_0 \int Tr\bigg[\sum_{a,e,\{s\}}P^{ae}_0Q^{ae}_{s_{n^*}}\ldots P^{ae}_0Q^{ae}_{s_1}P^{ae}_0Q^{ae}_0E_{ae}\\ ( \rho\otimes \Omega_{RFM})\\E_{ae}Q^{ae}_0P^{ae}_0Q^{ae}_{s_1}P^{ae}_0\ldots Q^{ae}_{s_{n^*}}P^{ae}_0\bigg]d\mu(C) 
-\end{multline}
+\end{equation}
+\begin{equation}
+    \mathcal{B}(n)[\rho] = \int Tr_{RFM}\bigg[\sum_{a,e,\{s\}}P^{ae}_1Q^{ae}_{s_n}\ldots P^{ae}_0Q^{ae}_{s_1}P^{ae}_0Q^{ae}_0E_{ae} ( \rho\otimes \Omega_{RFM})E_{ae}Q^{ae}_0P^{ae}_0Q^{ae}_{s_1}P^{ae}_0\ldots Q^{ae}_{s_n}P^{ae}_1\bigg]d\mu(C)
+\end{equation}
+\begin{equation}
+    \mathcal{C}[\rho] = \rho_0 \int Tr\bigg[\sum_{a,e,\{s\}}P^{ae}_0Q^{ae}_{s_{n^*}}\ldots P^{ae}_0Q^{ae}_{s_1}P^{ae}_0Q^{ae}_0E_{ae} ( \rho\otimes \Omega_{RFM})E_{ae}Q^{ae}_0P^{ae}_0Q^{ae}_{s_1}P^{ae}_0\ldots Q^{ae}_{s_{n^*}}P^{ae}_0\bigg]d\mu(C) 
+\end{equation}
 where $\rho_0$ is the initial state the overall Metropolis algorithm was started from. 
 \paragraph{Approximate quantum detailed balance of $\mathcal{A}$ and $\mathcal{B}$}
 \label{section:proofbranchwisebalance}
@@ -645,16 +639,16 @@ We demonstrate that $\mathcal{A}$ and $\mathcal{B}$ are in approximate detailed 
    =\\(1+u_{jm}^{abdez})(1+u_{kl}^{abdez})\bra{\psi_m}\tilde{\mathcal{A}}_{abdez,\sigma_G}[\ket{\psi_j}\bra{\psi_k}]\ket{\psi_l}
    \label{eq:Aconditioneq}
 \end{multline}
-\begin{multline}
-    \bra{\psi_m}\tilde{\mathcal{T}}^*_{N -z,\sigma_G}(n)[\ket{\psi_j}\bra{\psi_k}]\ket{\psi_l}\\
+\begin{equation}
+    \bra{\psi_m}\tilde{\mathcal{T}}^*_{N -z,\sigma_G}(n)[\ket{\psi_j}\bra{\psi_k}]\ket{\psi_l}
     =(1+v_{kl})(1+v_{jm})\bra{\psi_m}\tilde{\mathcal{B}}_{z,\sigma_G}(n)[\ket{\psi_j}\bra{\psi_k}]\ket{\psi_l}
     \label{eq:Bconditioneq}
-\end{multline}
+\end{equation}
     where $|u_{jr}^{abde}| \leq \epsilon_{\mathcal{A}} = O(\frac{\beta \mu}{Nt})$ and $|v_{jr}| \leq \epsilon_{\mathcal{B}} = O(\frac{n\beta \mu}{Nt})$. For the rejection branch we additionally must demonstrate the perturbed map we introduced in \textbf{Reverse Histories} is indeed close to the original map:
-\begin{multline}
-    \|\tilde{\mathcal{T}}(n) - \tilde{\mathcal{B}}(n)\|_{\diamond} \leq 36e(n+1)\sqrt{\beta\frac{6\pi}{Nt}}((4n+6)\mu)^{\frac{3}{2}}+\\72e(n+1)(4n+6)\mu\epsilon_{\Delta}
+\begin{equation}
+    \|\tilde{\mathcal{T}}(n) - \tilde{\mathcal{B}}(n)\|_{\diamond} \leq 36e(n+1)\sqrt{\beta\frac{6\pi}{Nt}}((4n+6)\mu)^{\frac{3}{2}}+72e(n+1)(4n+6)\mu\epsilon_{\Delta}
     \label{eq:Wdrifterrormain}
-\end{multline}
+\end{equation}
 \end{enumerate}
 By applying Lemma~\ref{lemma:1} to \eqref{eq:Aconditioneq} and \eqref{eq:Bconditioneq} we are able to see that:
 \begin{equation}
@@ -676,39 +670,41 @@ Thus, we demonstrate the $X=\mathbb{I}$ instance of approximate quantum detailed
 \paragraph{Combining error contributions}
 \label{sec:combine}
 Using Lemma~\ref{theorem:quantumapproximatedeatildedbalance} we can combine these results, taking for each map the $\epsilon^j$ established above. Table~\ref{tab:contributions} highlights the origin of all the error terms.
-\begin{table*}
-\begin{tabular}{llll}
-\hline\hline
+\begin{table}[htbp]
+\centering
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
 Contribution & Bound & Established in \\
-\hline
-$\mathcal{A}$: truncation & $O(\epsilon_{\Delta})$ &
-Equation~\eqref{eq:AAtildeclose2} \\
-$\mathcal{A}$: reweighting &  $O(\frac{\beta\mu}{Nt})\|\mathcal{A}[\sigma_G]\|_*$ & Equation~\eqref{eq:Aoutput} \\
-$\mathcal{B}(n)$: truncation  & $O((2n+3)\epsilon_{\Delta})$ & Equation~\eqref{eq:Bsrelation} \\
-$\mathcal{B}(n)$: reweighting & $O(\frac{(n+2)\beta\mu}{Nt})\|\mathcal{B}(n)[\sigma_G]\|_*$ &  Equation~\eqref{eq:Boutput}\\
-$\mathcal{B}(n)$: $W$-drift  & $O\left(\max\left((n+2)^2\mu\epsilon_{\Delta},(n+2)^{\frac{5}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}}\right)\right) $ & Equation~\eqref{eq:Wdrifterror}\\
-$\mathcal{C}$: failure mass & $2\|\mathcal{C}[\sigma_G]\|_* \leq \frac{1}{n^*}$ &  Eq.~\eqref{eq:probabilty_of_rejection} \\
-\hline\hline
+\midrule
+$\mathcal{A}$: truncation & $O(\epsilon_{\Delta})$ & Eq.~\eqref{eq:AAtildeclose2} \\
+$\mathcal{A}$: reweighting & $O(\beta\mu/Nt)\,\|\mathcal{A}[\sigma_G]\|_*$ & Eq.~\eqref{eq:Aoutput} \\
+$\mathcal{B}(n)$: truncation & $O((2n+3)\epsilon_{\Delta})$ & Eq.~\eqref{eq:Bsrelation} \\
+$\mathcal{B}(n)$: reweighting & $O((n+2)\beta\mu/Nt)\,\|\mathcal{B}(n)[\sigma_G]\|_*$ & Eq.~\eqref{eq:Boutput} \\
+$\mathcal{B}(n)$: $W$-drift & $O\big(\max\big((n+2)^2\mu\epsilon_{\Delta},\,(n+2)^{5/2}\sqrt{\beta/Nt}\,\mu^{3/2}\big)\big)$ & Eq.~\eqref{eq:Wdrifterror} \\
+$\mathcal{C}$: failure mass & $2\|\mathcal{C}[\sigma_G]\|_* \leq 1/n^*$ & Eq.~\eqref{eq:probabilty_of_rejection} \\
+\bottomrule
 \end{tabular}
-\caption{\label{tab:contributions} Origins of error terms contributing to Eq.~\eqref{eq:combinedtotalerror}}
-\end{table*}
+\caption{\label{tab:contributions} Origins of error terms contributing to Eq.~\eqref{eq:combinedtotalerror}.}
+\end{table}
 
 
 From $\mathcal{A}$, as $\|\mathcal{A}[\sigma_G]\|_* \leq 1$, the contribution to the total error is given by $O(\max(\frac{8\pi}{Nt}\beta\mu,\epsilon_{\Delta}))$. From $\sum_n\mathcal{B}(n)$ the contribution to the total error is given by:
-\begin{multline}
-    O\!\bigg(\max\!\bigg(\sum_{n=0}^{n^*}\|\mathcal B(n)[\sigma_G]\|_* (n+2)\frac{8\pi}{Nt}\beta \mu,\\
+\begin{equation}
+    O\!\bigg(\max\!\bigg(\sum_{n=0}^{n^*}\|\mathcal B(n)[\sigma_G]\|_* (n+2)\frac{8\pi}{Nt}\beta \mu,
     \sum_{n=0}^{n^*}(n+2)^2\mu\epsilon_{\Delta}, \sum_{n=0}^{n^*}(n+2)^{\frac{5}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}}\bigg)\bigg)
-\end{multline}
+\end{equation}
 By following a similar logic to the derivation of Eq.~\eqref{eq:probabilty_of_rejection}, we have $\|\mathcal B(n)[\sigma_G]\|_* = O(n^{-2})$ for $n\geq1$. Therefore, the total contribution from $\mathcal{B}$ is $O(\!\max(\frac{8\pi}{Nt}\beta \mu \log n^*,n^{*3}\mu\epsilon_{\Delta},n^{*\frac{7}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}}))$. From $\mathcal{C}$ the contribution is simply $2\|\mathcal{C}[\sigma_G]\|_* = O(\frac{1}{n^*})$. Therefore,
- \begin{multline}
-   \epsilon_c = \|\mathcal{E}[\sigma_G] - \sigma_G\|_* = O\bigg(\max\bigg( \frac{8\pi}{Nt}\beta\mu \log n^* ,\frac{1}{n^*},\\ n^{*3}\mu\epsilon_{\Delta},n^{*\frac{7}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}}\bigg)\bigg)
+ \begin{equation}
+   \epsilon_c = \|\mathcal{E}[\sigma_G] - \sigma_G\|_* = O\bigg(\max\bigg( \frac{8\pi}{Nt}\beta\mu \log n^* ,\frac{1}{n^*}, n^{*3}\mu\epsilon_{\Delta},n^{*\frac{7}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}}\bigg)\bigg)
    \label{eq:combinedtotalerror}
-\end{multline}
+\end{equation}
 with $\epsilon_{\Delta}=O(\frac{1}{\nu}e^{-\nu\mu})$. We can choose $\mu = \Omega(\frac{1}{\nu}\log n^*)$ so that the error is dominated by:
- \begin{multline}
-   \epsilon_c = \|\mathcal{E}[\sigma_G] - \sigma_G\|_* =\\ O\left(\max\left( n^{*\frac{7}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}} ,\frac{1}{n^*}\right)\right)
+ \begin{equation}
+   \epsilon_c = \|\mathcal{E}[\sigma_G] - \sigma_G\|_* = O\left(\max\left( n^{*\frac{7}{2}}\sqrt{\frac{\beta }{Nt}}\mu^{\frac{3}{2}} ,\frac{1}{n^*}\right)\right)
     \label{eq:error_bound}
-\end{multline}
+\end{equation}
 This completes the proof of the first part of Theorem~\ref{theorem:main}. We can consider $\mu$ to be the width of the effective energy bins needed to make our QPE protocol exact, and hence $c=\log\mu$ is the number of additional ancilla qubits required by BSI-QPE to compensate for the inexactness of QPE. Thus $c=\Omega(\log(\frac{1}{\nu}\log n^*))$.
 %  \begin{equation}
 %    \epsilon_c = \|\mathcal{E}[\sigma_G] - \sigma_G\|_* = O(\max(\epsilon_r,n^*\epsilon_{\Delta},2^{-\eta}\beta\mu\|H\|,2^{-\eta}\mu\|H\|))
@@ -767,9 +763,9 @@ This establishes the second part of Theorem~\ref{theorem:main}.
 As for classical Markov chain Monte Carlo and Lindbladian Gibbs samplers, the cost of preparing $\sigma_G$ necessarily depends on the mixing time of the chain, which cannot be bounded in general without collapsing QMA into BQP. Rapid mixing alone, however, says nothing about \emph{which} state $\sigma^*$ the chain converges to. The content of Theorem~\ref{theorem:main} is that this state $\sigma^*$ is close to $\sigma_G$, and the following corollary shows that making it $\epsilon'$-close requires only polynomial resources whenever the mixing time is bounded uniformly in the algorithm's precision parameters.
 
 For a channel $\mathcal{E}$ we define its mixing time
-\begin{multline}
-    t_{\mathrm{mix}}(\mathcal{E})=\min\Big\{n\geq1:\ \\\|\mathcal{E}^n[\rho]-\mathcal{E}^n[\sigma]\|_*\leq\tfrac12\ \text{for all states }\rho,\sigma\Big\}.
-\end{multline}
+\begin{equation}
+    t_{\mathrm{mix}}(\mathcal{E})=\min\Big\{n\geq1:\ \|\mathcal{E}^n[\rho]-\mathcal{E}^n[\sigma]\|_*\leq\tfrac12\ \text{for all states }\rho,\sigma\Big\}.
+\end{equation}
 
 \begin{corollary}[Efficient Gibbs state preparation]
 \label{corollary:polycost}
@@ -832,7 +828,7 @@ which proves (i).
 
 Corollary~\ref{corollary:polycost} shows that, provided the mixing time is bounded uniformly in the algorithm's precision parameters, the Quantum Metropolis algorithm with BSI-QPE is an efficient Gibbs sampler: the number of rounds is $O(\tau_{\mathrm{mix}}\log\frac{1}{\epsilon'})$, as for a classical Markov chain with mixing time $\tau_{\mathrm{mix}}$, and the energy register needs only logarithmically many ancillas. Its purpose is to establish polynomial cost, not to give a competitive resource estimate. 
 
-\subsection{Discussion}
+\section{Discussion}
 \label{section:discussion}
 The Quantum Metropolis algorithm was set aside as it depended on a phase
 estimation primitive that was subsequently proved impossible. The no-go theorem \cite{chen2023quantumthermalstatepreparation} forbids a boosted phase estimation protocol that shifted the energy register in a definite direction, but it says nothing about one that shifts in both directions at once. BSI-QPE does exactly that, recording which direction was taken in a single additional qubit, which turns out to be sufficient. Moreover, BSI-QPE has exponentially suppressed tails rather than the zero tails assumed by the no-go theorem. The no-go theorem is not contradicted, rather the protocol it rules out is stronger than the algorithm actually requires. Hence the rewinding route of \cite{Temme_2011} is again available, alongside weak measurement \cite{jiang2024quantummetropolissamplingweak}, Lindbladian samplers and exactly detailed-balanced discrete-time constructions \cite{gilyen2024quantum}; how their costs and mixing times compare remains open.
