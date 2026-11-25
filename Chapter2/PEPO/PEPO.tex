@@ -10,15 +10,13 @@
 
 \section{Local Jordan-Wigner transformations and topological sectors on the torus} 
 \label{section:local_jw_torus}
-Quantum wavefunctions are described on a projective space, and this allows a system of indistinguishable particles to be described by anti-symmetric wavefunctions, a.k.a. fermions. By imposing a 1-dimensional ordering to a collection of fermions,  Jordan and Wigner \cite{jordan1993paulische} demonstrated how to endow the fermions with a tensor product structure. This was done by introducing a duality mapping between the fermions and a system of spin $1/2$ particles (i.e. qubits). However, this original mapping only preserves locality for 1-D systems. The concept of flux attachment \cite{Jain,Lopez,Halperin,PhysRevLett.71.3622,PhysRevLett.63.322} suggested the existence of higher-dimensional analogues of this Jordan-Wigner transformation preserving locality in arbitrary dimensions and in the thermodynamic limit;  the first explicit constructions of such a mapping in 2 spatial dimensions was obtained in \cite{bravyi_fermionic_2002,Verstraete_2005,Ball_gauge}. A system of fermions located on the vertices of a square lattice was mapped to a system of qubits living on the edges of that graph. The fact that this construction yields twice as many qubits as fermionic modes was compensated by the fact that the new system exhibits gauge conditions on every plaquette. This work was followed by many other papers ~\cite{seeley_bravyi-kitaev_2012,Tranter:2015nri,hastings2015, Whitfield:2016lhw,Havl_ek_2017,Setia_2019, steudtner_quantum_2019,jiang2019,Backens_2019,Jiang_2020, Derby_2021, Chiew_2023,Miller_2023,chen_equivalence_2023, PhysRevB.109.115149} that improved the qubit-to-fermion ratio and/or the maximum support in the spin representation of a single fermionic hopping term. The modern point of view is that the fermion to qubit mapping is a duality transformation obtained by gauging the global $Z_2$ parity symmetry of the fermions \cite{Chen_2018}; in such a mapping, the fermion matter can then be disentangled by a local fermionic quantum circuit \cite{Zohar_2018}. However, many questions remained open: it was not clear how to modify the mappings when dealing with odd charge sectors especially when dealing with periodic and twisted boundary conditions on a torus. In this paper, we show how those problems can be solved by making use of the formalism of graded tensor networks \cite{Bultinck_2017,Cirac_2021} and more specifically of projected entangled pair operators which explicitly encode the  gauge transformations \cite{Haegeman_2015,Shukla_2020}.
+Fermion-to-qubit mappings can be understood as duality transformations obtained by gauging the global $Z_2$ parity symmetry of the fermions \cite{Chen_2018}. However, this viewpoint leaves many questions open: it is not clear how to modify the mappings when dealing with odd charge sectors, especially when dealing with periodic and twisted boundary conditions on a torus. In this section, we show how those problems can be solved by making use of the formalism of graded tensor networks \cite{Bultinck_2017,Cirac_2021} and more specifically of projected entangled pair operators which explicitly encode the  gauge transformations \cite{Haegeman_2015,Shukla_2020}.
 
 
 This section is organized as follows. We start by defining the graded projected entangled  pair operator (PEPO) for the fermion to qubit mapping on arbitrary graphs. Subsequently, we revisit the 1-D Jordan-Wigner transformation for a (anti-)periodic ring of fermions in the even and odd charge sectors in terms of matrix product operators (MPOs). Next, we show how this mapping can readily be extended to the 2-dimensional torus, and pay special attention to the intriguing interplay between charge sectors and boundary conditions. Controlling the possible boundary conditions turns out to be important for state of the art simulations of e.g. the Hubbard model \cite{xu2023coexistence}. Hence our results can be utilised to improve fermionic quantum simulation by reducing the finite size effect through the introduction of (anti-)periodic boundary conditions. 
 
-The larger motivation behind our work is to reduce the entanglement of fermionic ground states by mapping them to a spin setting, following recent work \cite{Lootens:2024gfp}. Our PEPO introduces an extensive number of symmetries on the spin side, resulting in a highly degenerate spin ground state corresponding to a unique fermionic ground state. Within this degenerate space, a state might exist with significantly lower entanglement that breaks all the introduced symmetries. This lower-entanglement state is more amenable to tensor network methods, enabling efficient simulation of highly entangled fermionic systems through our construction.
-
-
-\textit{Construction}---Given an arbitrary graph $G = (V,E)$, we construct our PEPO by placing  fermionic $Z_2$ graded  $(d+1)$-degree vertex tensors  \cite{Bultinck_2017} at every $d$-degree vertex of $G$ and a graded GHZ tensor on every edge of $G$.
+\subsection{Construction}
+Given an arbitrary graph $G = (V,E)$, we construct our PEPO by placing  fermionic $Z_2$ graded  $(d+1)$-degree vertex tensors  \cite{Bultinck_2017} at every $d$-degree vertex of $G$ and a graded GHZ tensor on every edge of $G$.
 
 The GHZ tensor is defined as:
 \begin{equation}
@@ -69,13 +67,12 @@ The symmetries of our tensors reveal that the theory at the side of the spins is
 
 To admit a mapping of odd fermionic states we add a single odd tensor defect (fermionic $\invbreve{X}$ operator) to a virtual leg of the PEPO. This fermionic charge defect can be placed anywhere, and its presence can be understood as a boundary condition for the dual spin theory: a manifestation of the effect that dualities switch boundary conditions with charge sectors. 
 
-A single fermionic creation/annihilation operator will be mapped to a string of spins terminating at the odd defect. If strings of two different operators converge at any point before reaching the defect they will anticommute. If two strings never converge but instead approach the defect from opposite directions, then they will necessarily anticommute on the closest spin to the defect. 
+A single fermionic creation/annihilation operator will be mapped to a string of spins terminating at the odd defect. If strings of two different operators converge at any point before reaching the defect they will anticommute. If two strings never converge but instead approach the defect from opposite directions, then they will necessarily anticommute on the closest spin to the defect. Hence, we produce the correct anti-commutation relations for the fermionic algebra.
 
-Hence, we produce the correct anti-commutation relations for the fermionic algebra.
+It can be seen from the symmetries of our tensors that our construction on a general graph without a defect is an explicit PEPO representation of the BKSF mapping \cite{bravyi_fermionic_2002}.  Therefore, due to the equivalence of 2D fermionic encodings shown by \cite{chen_equivalence_2023} it is possible to reconstruct any existing 2D fermion-to-qubit mapping through a particular choice of $G$, internal orderings, single qubit gates and majorana repairing. Further the inclusion of the $\invbreve X$ defect allows for the representation of tree-based mappings such as the Bravyi-Kitaev Fast Mapping \cite{bravyi_fermionic_2002}. 
 
-It can be seen from the symmetries of our tensors that our construction on a general graph without a defect is an explicit PEPO representation of the BKSF mapping \cite{bravyi_fermionic_2002}.  Therefore, due to the equivalence of 2D fermionic encodings shown by \cite{chen_equivalence_2023} it is possible to reconstruct any existing 2D fermion-to-qubit mapping through a particular choice of $G$, internal orderings, single qubit gates and majorana repairing. Further the inclusion of the $\invbreve X$ defect allows for the representation of tree-based mappings such as the Bravyi-Kitaev Fast Mapping \cite{bravyi_fermionic_2002}. We will expand on this equivalence in future work.
-
-\textit{1D Construction}---On a 1D cycle graph, our construction turns out to be equivalent to the Jordan-Wigner mapping composed with the Kramers–Wannier duality. We will use this as an example to illustrate our formalism. Further insight into how 1D boundary conditions map charge sectors can be found in Appendix D of \cite{Shukla_2020}.
+\subsection{1D Construction}
+On a 1D cycle graph, our construction turns out to be equivalent to the Jordan-Wigner mapping composed with the Kramers–Wannier duality. We will use this as an example to illustrate our formalism. Further insight into how 1D boundary conditions map charge sectors can be found in Appendix D of \cite{Shukla_2020}.
 
 The 1D PEPO is an MPO formed of interleaved GHZ tensors and 3-degree vertex tensors. The mappings of fermionic $\invbreve{Z}$ and $\invbreve{X}\invbreve{X}$ operations can be inferred from the invariance of the MPO under the following operations:
 \begin{equation}
@@ -107,16 +104,19 @@ The twist produced by a boundary condition under a translation is calculated by 
 Table~\ref{tab:cycle_mapping} illustrates how the topological sectors of the 1D cyclical graph are determined and mapped by different boundary conditions. By treating these boundary conditions as additional quantum degrees of freedom, we are able to recover a completely unitary transformation from fermions to spins. If we did not consider boundary conditions we would only have an isometry between the periodic even fermionic space and the periodic $-1$ spin eigenspace of $\prod_i X_i$, rather than mapping the entire fermionic Hilbert space to the entire spin Hilbert space.
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{|c c| c|c c |c| c c |c|}
-    \hline
-    \multicolumn{2}{|c|}{Fermions}& & \multicolumn{2}{|c|}{Spins} & &\multicolumn{2}{|c|}{Dual Spins}& Unified  \\
-    $\prod_i \invbreve{Z}_i$ & Twist & BC 1& $\prod_i X_i$ & Twist & BC 2 & $\prod_i Z_i$ & Twist & BC\\
-    \hline
-    $+1$ & $I$ & $I$&$- 1$ & $I$ &$Z$ &$+1$ & $Z$ & $\invbreve{Z}$\\
-    $+1$ & $\invbreve{Z}$ &$\invbreve Z$ &$+ 1$ & $I$ & $I$&$+1$  & $I$& $\invbreve{Z}$\\
-    $- 1$ & $I$&$\invbreve X$& $+1$ & $X$  &$X$ &$-1$ & $I$& $\invbreve{Z}\invbreve{X}$\\
-    $-1$ & $\invbreve{Z}$ &$\invbreve{Z}\invbreve X$&$- 1$ & $X$ &$ZX$&$-1$ & $Z$ & $\invbreve{Z}\invbreve{X}$\\
-    \hline
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{@{}cc c cc c cc c@{}}
+    \toprule
+    \multicolumn{2}{c}{Fermions} & & \multicolumn{2}{c}{Spins} & & \multicolumn{2}{c}{Dual spins} & Unified \\
+    \cmidrule(lr){1-2} \cmidrule(lr){4-5} \cmidrule(lr){7-8}
+    $\prod_i \invbreve{Z}_i$ & Twist & BC 1 & $\prod_i X_i$ & Twist & BC 2 & $\prod_i Z_i$ & Twist & BC \\
+    \midrule
+    $+1$ & $I$ & $I$ & $-1$ & $I$ & $Z$ & $+1$ & $Z$ & $\invbreve{Z}$ \\
+    $+1$ & $\invbreve{Z}$ & $\invbreve{Z}$ & $+1$ & $I$ & $I$ & $+1$ & $I$ & $\invbreve{Z}$ \\
+    $-1$ & $I$ & $\invbreve{X}$ & $+1$ & $X$ & $X$ & $-1$ & $I$ & $\invbreve{Z}\invbreve{X}$ \\
+    $-1$ & $\invbreve{Z}$ & $\invbreve{Z}\invbreve{X}$ & $-1$ & $X$ & $ZX$ & $-1$ & $Z$ & $\invbreve{Z}\invbreve{X}$ \\
+    \bottomrule
     \end{tabular}
     \caption{Mapping of topological sectors of fermions to spins on the chain dependent on the choice of boundary condition (BC 1) for the duality MPO. These sectors can then be mapped again to the dual spins by the application of a Kramers-Wannier MPO with a suitable choice of boundary condition (BC 2). The composed mapping from fermions to dual spins is equivalent to the canonical Jordan-Wigner mapping with one single boundary condition (Unified BC). \label{tab:cycle_mapping}}
 \end{table}
@@ -129,7 +129,8 @@ Hence, the $\invbreve Z$ and $\invbreve Z\invbreve X$ boundary conditions map bo
 
 We note that using our formalism the boundary conditions are sensitive to their placement in the MPO. For example, in 1D the $\invbreve{Y}$ boundary condition to the right of a 3-degree vertex tensor is similar to a $\invbreve{X}$ boundary condition to the left of a 3-degree vertex tensor. For consistency we always refer to the boundary condition as acting to the left of the 3-degree vertex tensor.
 
-\textit{2D Construction}---For any planar graph $G$ on an orientable manifold, there will be a natural choice for the orientations of the vertex tensors. In this section we exemplify our mapping using the square lattice. In the bulk, our PEPO is similar to the one constructed in \cite{Shukla_2020} and consists out of two simple tensors, a GHZ tensor and a 5-degree vertex tensor, arranged on the edges and vertices of a square lattice. On every plaquette, the symmetries impose a gauge condition upon the spin system:
+\subsection{2D Construction}
+For any planar graph $G$ on an orientable manifold, there will be a natural choice for the orientations of the vertex tensors. In this section we exemplify our mapping using the square lattice. In the bulk, our PEPO is similar to the one constructed in \cite{Shukla_2020} and consists out of two simple tensors, a GHZ tensor and a 5-degree vertex tensor, arranged on the edges and vertices of a square lattice. On every plaquette, the symmetries impose a gauge condition upon the spin system:
 \begin{equation}
     \includegraphics[valign=c,page=22]{IPE_figs.pdf} = \includegraphics[valign=c,page=43]{IPE_figs.pdf}.
 \end{equation}
@@ -146,38 +147,34 @@ Below is an example of a PEPO with a $\invbreve Z_H$ boundary condition and an $
      \includegraphics[valign=c,page=25]{IPE_figs.pdf}.
 \end{equation}
 
-\begin{table}
+\begin{table}[htbp]
     \centering
-    \begin{tabular}{|c c c| c| c c c |}
-    \hline
-    \multicolumn{3}{|c|}{Fermions} && \multicolumn{3}{|c|}{Spins}  \\
-    $\prod_i \invbreve{Z}_i$ & H. Twist& V. Twist & BC & $X_H$ & $X_V$&H./V. Twist\\
-    \hline
-    $+1$ & $I$&$I$ &$I$ &$-1$ &$-1$&$I$\\
-    $+1$ & $I$&$\invbreve{Z}_{p_H}$  &$\invbreve{Z}_H$ &$-1$ & $+1$&$I$\\
-    $+1$ & $\invbreve{Z}_{p_V}$&$I$ &$\invbreve{Z}_V$ &$+1$ &$-1$&$I$\\
-    $+1$ & $\invbreve{Z}_{p_V}$&$\invbreve{Z}_{p_H}$ &$\invbreve{Z}_V\invbreve{Z}_H$ &$+1$ &$+1$&$I$\\
-    $-1$ &$I$ & $I$&$\invbreve{X}$ &$+1$ & $+1$&$Z_vX_h/Z_hX_v$\\
-    $-1$ &$I$ &$\invbreve{Z}_{p_H}$ &$\invbreve{Z}_H\invbreve X$ &$+1$ &$-1$&$Z_vX_h/Z_hX_v$\\
-    $-1$ & $\invbreve{Z}_{p_V}$&$I$&$\invbreve{Z}_V\invbreve X$ &$-1$ &$+1$&$Z_vX_h/Z_hX_v$\\
-    $-1$ & $\invbreve{Z}_{p_V}$& $\invbreve{Z}_{p_H}$&$\invbreve{Z}_H\invbreve{Z}_V\invbreve X$ &$-1$ &$-1$&$Z_vX_h/Z_hX_v$\\
-    \hline
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{@{}ccc c ccc@{}}
+    \toprule
+    \multicolumn{3}{c}{Fermions} & & \multicolumn{3}{c}{Spins} \\
+    \cmidrule(lr){1-3} \cmidrule(lr){5-7}
+    $\prod_i \invbreve{Z}_i$ & H.\ twist & V.\ twist & BC & $X_H$ & $X_V$ & H./V.\ twist \\
+    \midrule
+    $+1$ & $I$ & $I$ & $I$ & $-1$ & $-1$ & $I$ \\
+    $+1$ & $I$ & $\invbreve{Z}_{p_H}$ & $\invbreve{Z}_H$ & $-1$ & $+1$ & $I$ \\
+    $+1$ & $\invbreve{Z}_{p_V}$ & $I$ & $\invbreve{Z}_V$ & $+1$ & $-1$ & $I$ \\
+    $+1$ & $\invbreve{Z}_{p_V}$ & $\invbreve{Z}_{p_H}$ & $\invbreve{Z}_V\invbreve{Z}_H$ & $+1$ & $+1$ & $I$ \\
+    \midrule
+    $-1$ & $I$ & $I$ & $\invbreve{X}$ & $+1$ & $+1$ & $Z_vX_h/Z_hX_v$ \\
+    $-1$ & $I$ & $\invbreve{Z}_{p_H}$ & $\invbreve{Z}_H\invbreve{X}$ & $+1$ & $-1$ & $Z_vX_h/Z_hX_v$ \\
+    $-1$ & $\invbreve{Z}_{p_V}$ & $I$ & $\invbreve{Z}_V\invbreve{X}$ & $-1$ & $+1$ & $Z_vX_h/Z_hX_v$ \\
+    $-1$ & $\invbreve{Z}_{p_V}$ & $\invbreve{Z}_{p_H}$ & $\invbreve{Z}_H\invbreve{Z}_V\invbreve{X}$ & $-1$ & $-1$ & $Z_vX_h/Z_hX_v$ \\
+    \bottomrule
     \end{tabular}
     \caption{Table illustrating how different boundary conditions of the PEPO on the torus map different charge sectors and produce different twists. The $\invbreve Z_{p_V}$ and $\invbreve Z_{p_H}$ twists are vertical and horizontal loops of $\invbreve Z$ operators on the physical fermions. The $Z_vX_h/Z_hX_v$ twist (with subscript $v/h$ indicating whether the operator is applied on a vertical or horizontal leg) constitutes a single unit cell of $X_H$ or $X_V$ depending on whether the twist was taken in the horizontal or vertical direction respectively.  \label{tab:torus_mapping}
 }
 \end{table}
 We have made the choice of a square lattice to illustrate the mapping of topological sectors. This choice is not necessary to reproduce the results of Table \ref{tab:torus_mapping}, and suitable definitions of boundary conditions/charge sectors/twists on other 2D lattices (e.g. Kagome or honeycomb) will produce identical results.
 
-
-\textit{Conclusion}---We have shown how boundary conditions on a torus relate to various topological charge sectors. By treating those boundary degrees of freedom as extra quantum degrees of freedom, this allows us to construct a unitary operator (as opposed to an isometry) 
-implementing the duality transform, demonstrating that the higher dimensional JW transformation completely preserves the spectrum of this bigger theory. This is completely in line with the results in \cite{lootens2023lowdepth, Lootens_2023, Lootens:2022avn} for all possible dualities defined in terms of categorical symmetries. 
-
-Further, we have demonstrated a tensor network approach to constructing arbitrary fermion to qubit encodings. The resulting spin system is a gauge theory with a very particular type of gauge constraints. We conjecture that such gauge theories in two dimensions can only be ``ungauged''  with graded tensor network intertwiners such as the PEPO we have described. This highlights the difference between the 1- and the 2-D case, as fermions seem to be indispenable in the latter whereas in the 1D case we can easily bosonise the virtual legs of the MPO. 
-
-We expect our methodology could be extended to higher dimensions in line with other systematic generalisations \cite{threeboson, arbboson}. Higher dimensions would lead to even more possible boundary conditions. For example, in 3D we would expect our mapping between charge sectors and boundary conditions to be between sheets of Paulis and lines of Paulis. 
-
-
-\textit{End Matter on Unitarity}---In this section we discuss how our mappings are made unitary by treating the defect boundary condition as an additional degree of freedom.
+\subsection{Unitarity}
+In this section we discuss how our mappings are made unitary by treating the defect boundary condition as an additional degree of freedom.
 
 The 1D MPO is unitary as the Fock basis is mapped one-to-one onto a spin basis. We can represent the fermionic state $|f_0f_1\ldots f_n)$ in the stabiliser formalism:
 \begin{equation}
@@ -203,4 +200,12 @@ We can easily extend these ideas to 2D. For a square lattice on a torus each $\i
 where there are $p$ plaquettes and $n$ fermionic modes (vertices). The $(-1)^{\sum_{i}^{n-1}f_i}ZZZZ_n$ generator can be constructed from a product of the first $n-1$ vertices so it is necessary to take $d = \sum_{i}^{n}f_i$ to stabilise a non-empty set. As there are the same number of plaquettes as vertices, there are $2n$ independent generators, and hence a unique $2n$ spin state is specified. This unique state is again parameterised by $(\sum_{i}^{n}f_i+1, f_0,\ldots, f_{n-1})$, and hence each element in $n$-mode Fock space is mapped to a unique $2n$ spin state. Therefore, this is a unitary mapping between the $n$-mode Fock space and a gauge constrained subspace of $2n$ spins.
 
 In the above discussion it is crucial that we were able to chose our boundary condition $d$ dependant on the state we were mapping, or else half of the Fock space would have been mapped to nothing. Therefore, it is essential to include this boundary condition as a degree of freedom on the spin side of the mapping in order to achieve unitarity. 
+
+\subsection{Conclusion}
+We have shown how boundary conditions on a torus relate to various topological charge sectors. By treating those boundary degrees of freedom as extra quantum degrees of freedom, this allows us to construct a unitary operator (as opposed to an isometry) 
+implementing the duality transform, demonstrating that the higher dimensional JW transformation completely preserves the spectrum of this bigger theory. This is completely in line with the results in \cite{lootens2023lowdepth, Lootens_2023, Lootens:2022avn} for all possible dualities defined in terms of categorical symmetries. 
+
+Further, we have demonstrated a tensor network approach to constructing arbitrary fermion to qubit encodings. The resulting spin system is a gauge theory with a very particular type of gauge constraints. We conjecture that such gauge theories in two dimensions can only be ``ungauged''  with graded tensor network intertwiners such as the PEPO we have described. This highlights the difference between the 1- and the 2-D case, as fermions seem to be indispenable in the latter whereas in the 1D case we can easily bosonise the virtual legs of the MPO. 
+
+We expect our methodology could be extended to higher dimensions in line with other systematic generalisations \cite{threeboson, arbboson}. Higher dimensions would lead to even more possible boundary conditions. For example, in 3D we would expect our mapping between charge sectors and boundary conditions to be between sheets of Paulis and lines of Paulis. 
 
