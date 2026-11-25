@@ -384,3 +384,13 @@
   }
 }
 \yquantdefinebox{dots}[inner sep=0pt]{$\dots$}
+
+% ************************* AI-text highlighting *******************************
+% Sentences written or modified by AI (i.e. not in source_material/ or the
+% original template) are wrapped in \aitext{...}.
+% To switch the highlighting off, comment out the first \DeclareRobustCommand
+% line and uncomment the second.
+\definecolor{aicolor}{RGB}{200,0,120}
+\DeclareRobustCommand{\aitext}[1]{\textcolor{aicolor}{#1}}
+%\DeclareRobustCommand{\aitext}[1]{#1}
+\pdfstringdefDisableCommands{\def\aitext#1{#1}}
