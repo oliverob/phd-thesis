@@ -8,10 +8,10 @@
     \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}{Chapter3/BSIQPE/}}
 \fi
 
-\section{\aitext{Boosting Quantum Phase Estimation with arbitary ancilla states}}
+\chapter{\aitext{Boosting Quantum Phase Estimation with arbitary ancilla states}}
 \label{section:boostedphaseestimation}
 
-\subsection{Introduction}
+\section{Introduction}
 \aitext{Standard methods \cite{babbush2018encoding, rendon2022effects, berry2024analyzing, greenaway2024case, patel2026optimal} for coherently boosting QPE rely upon choosing specific input ancillary states.} \aitext{They perform QPE using ancillas initialised to the state $\frac{1}{\sqrt{N}}\sum_x \alpha(x) \ket{x}$ for some window function $\alpha(x)$ instead of the standard uniform superposition, such that the output amplitudes are given by $\hat\alpha$, the discrete Fourier transform of $\alpha(x)$ (Eq.~\eqref{eq:windowed_qpe}).} By choosing $\alpha$ to be a window function one can ensure that $\hat \alpha$ is narrowly peaked, thus QPE is boosted. \aitext{Unfortunately, this is not sufficient for algorithms which coherently encode an energy estimate in an ancilla register and then reuse this register without resetting it, as the protocol must work even when the register is not initialised to $\ket{0}$.} \aitext{For example, the rewinding procedure of the quantum Metropolis algorithm (Chapter~\ref{chapter:quantum_metropolis}) requires exactly this.} \aitext{In addition to being boosted, such algorithms require QPE to be ``shift-invariant": starting from a register value $p$ rather than zero simply translates the output by $p$.} \aitext{Thus, such algorithms depend upon a ``boosted shift-invariant" quantum phase estimation protocol that applies a shift to an ancilla register within a given bound of the true energy (with $\tilde E_j = \frac{N}{2\pi}E_j$ with $N=2^{\eta}$ for an $\eta$ ancilla energy register):}
 \begin{equation}
   \ket{\psi_j}\ket{p} \;\mapsto\; \sum_{s} \alpha(E_j,s)\,\ket{\psi_j}\ket{p+s},\qquad \alpha(E_j,s) = 0 \ \text{ for } |s-\tilde E_j|_{N} > \mu .
@@ -28,7 +28,7 @@
 \end{equation}
 \aitext{for some $\nu > 0$ determined by the choice of window functions (Section~\ref{section:appendix}).} \aitext{This action is illustrated in Fig.~\ref{fig:Gshift}.} \aitext{This protocol is implementable and can fulfil the same role as the impossible protocol \eqref{eq:bsi_shift_invariant_qpe}, with the modification that whenever we previously controlled off the value of the energy register we now must also control off the flag qubit.}
 
-\subsection{Boosted State-Independent Quantum Phase Estimation}
+\section{Boosted State-Independent Quantum Phase Estimation}
 \begin{figure*}
 \centering
 \begin{tikzpicture}
@@ -229,7 +229,7 @@ box {iQFT} (a,ellipsis, aend);
 \end{tikzpicture} }}}
 $\end{center}
 
-\caption{Quantum circuit implementing boosted state-independent quantum phase estimation (BSI-QPE). We highlight how the combinations of $CR_Z$ and $X$ gates operators correspond to the single qubit $R_Z$ given in Eq.~\ref{eq:euler} with $k$ being the value stored in the $\eta$ ancillas and $k' = k + \frac{N}{2} \mod N$}
+\caption{Quantum circuit implementing boosted state-independent quantum phase estimation (BSI-QPE). We highlight how the combinations of $CR_Z$ and $X$ gates operators correspond to the single qubit $R_Z$ given in Eq.~\ref{eq:euler} with $k$ being the value stored in the $\eta$ ancillas and $k' = k + \frac{N}{2} \mod N$} 
 \label{fig:circuit}
 \end{figure*}
 \begin{figure*}
@@ -341,7 +341,7 @@ where the arithmetic is modulo $N$. Figure~\ref{fig:Gshift} illustrates this act
 \aitext{Using the window functions constructed in Section~\ref{section:appendix}, both branches have exponentially suppressed tails.} Changing $q$ simply translates the output, and no specially prepared initial state of the energy register or flag qubit is required. The energy eigenstate $\ket{\psi_j}$ is unchanged. 
 \end{minipage}%
 }\medskip
-\subsection{\aitext{Complementary Window functions}}
+\section{\aitext{Complementary Window functions}}
 \label{section:appendix}
 \aitext{BSI-QPE places unusual demands upon its window functions.} \aitext{Rather than a single window function with a rapidly decaying Fourier transform, BSI-QPE requires a pair of window functions $\alpha(x), \beta(x)$ which must satisfy the following characteristics for all $x \in \mathbb{R}$:}
 \begin{enumerate}
@@ -415,7 +415,7 @@ where the contributions from the vertical sides cancel as $\alpha$ and $\beta$ a
     \qquad \nu = \frac{1}{2b}, \qquad M=2.
 \end{equation}
 Consequently, for $\mu\ll N$ the second term is negligible and characteristic 3 is satisfied with $\epsilon_{\Delta}=O(e^{-\nu\mu})$.
-\subsubsection{Non-integer energies}
+\subsection{Non-integer energies}
 If $\frac{N}{2\pi}E_it$ is not an integer, then the discrete Fourier transform is sampled off-grid. This can be reinterpreted as the on-grid Fourier transform of a modified function:
 \begin{align}
     \hat \beta(k -\frac{N}{2\pi}E_it) &= \frac{1}{N} \sum_{x=-\frac{N}{2}}^{\frac{N}{2}-1} \beta(x) e^{-iE_it x}e^{\frac{2\pi i}{N} kx}\\
@@ -518,7 +518,7 @@ By summing \eqref{eq:noninteger1}-\eqref{eq:noninteger3} we have:
 \epsilon_\Delta=O\!\left(\frac{M}{\nu}e^{-\nu\mu}+NM e^{-\nu N/2}+\epsilon_b[1+\log(N/\mu)]\right)
 \end{equation}
 with $M = 2$ given by Lemma~\ref{lemma:appendixc}. The window parameters $r$, $b$ are chosen jointly with the bandwidth $\mu$ so that the off-grid boundary contribution satisfies \(\epsilon_b[1+\log(N/\mu)]\le (M/\nu)e^{-\nu\mu}\), while maintaining the bandwidth conditions of Theorem~\ref{theorem:main}. In this regime, the residual algebraic tail is dominated by the exponential contribution. One example of a conservative choice for these parameters would be $r=b=\mu^{\frac{2}{3}}$, as then $\nu = \Theta(\mu^{-\frac{2}{3}})$, $\epsilon_b = O(e^{-\mu^{\frac{2}{3}}})$ and $\frac{M}{\nu}e^{-\nu \mu} = O(\mu^{\frac{2}{3}}e^{-\frac{\mu^{\frac{1}{3}}}{2}})$.
-% \subsection{Approximately real}
+% \section{Approximately real}
 % \label{section:approxiamtely_real}
 % \label{app:reality}
 % It is crucial that $\hat \alpha$ and $\hat \beta$ are approximately real both for integer and non-integer samples. This can be easily seen to follow from characteristic 2:
@@ -541,7 +541,7 @@ with $M = 2$ given by Lemma~\ref{lemma:appendixc}. The window parameters $r$, $b
 %     \label{eq:imagscaling}|\operatorname{Im}\hat\alpha(x)| \leq \frac{2}{\sqrt{N}}e^{-r} \;\;\;\;\;|\operatorname{Im}\hat\beta(x)| = 0
 % \end{equation}
 % Therefore, $\epsilon_r = \frac{2}{\sqrt{N}}e^{-r}$.
-\subsubsection{Numerics}
+\subsection{Numerics}
 We can verify the behavior of $\hat \alpha$ and $\hat \beta$ numerically. In Fig.~\ref{fig:plotwindows} we plot both transforms on-grid and off-grid. Their tails decay exponentially for both integer and non-integer samples. For off-grid samples, the exponential decay is eventually overtaken by an algebraic tail. Figure~\ref{fig:scaling} shows that increasing $r$ exponentially suppresses the coefficient of this tail until it falls below numerical precision. Figures~\ref{fig:plotwindows} and~\ref{fig:scaling} also show that large $r$ requires large $b$ to retain exponential convergence, while Fig.~\ref{fig:exponent} confirms that the exponential rate decreases with increasing $b$. Figure~\ref{fig:scaling}(c) shows the predicted linear relationship between tail weight and $\eta$. Figure~\ref{fig:scalingmu} supports the prediction that the necessary bandwidth $\mu$ to achieve a given tail weight $\epsilon$ does not scale with $\eta$ for large $r$ and $b$. 
 % Finally, Fig.~\ref{fig:imag} agrees with the imaginary-part bound in Eq.~\eqref{eq:imagscaling}.
 
@@ -580,7 +580,7 @@ We can verify the behavior of $\hat \alpha$ and $\hat \beta$ numerically. In Fig
 %     \caption{Scaling of the maximum imaginary part of the Fourier spectra of the window functions $\hat \alpha(x)$ and $\hat\beta(x)$, sampled on-grid and with a half-grid shift. (a) Scaling with $r$ for fixed $b=6$ and $\eta=10$; (b) scaling with $\eta$ for fixed $b=6$ and $r=8$.}
 %     \label{fig:imag}
 % \end{figure}
-\subsection{Conclusion}
+\section{Conclusion}
 \aitext{We have presented a Boosted State-Independent Quantum Phase Estimation (BSI-QPE) protocol which coherently boosts QPE without requiring a specially prepared input ancilla state.} \aitext{By introducing the window functions via a controlled $R_Y$ rotation on a flag qubit rather than via the input ancilla state, starting from any register value simply translates the output, while the estimation tails remain exponentially suppressed.} \aitext{In doing so we navigate around the no-go theorem of \cite{chen2023quantumthermalstatepreparation}: rather than adding the energy estimate to the register, BSI-QPE shifts the register by approximately the magnitude of the energy, with the sign of this shift recorded in the flag qubit.} \aitext{The only cost of this modification is that any subsequent operation which controls off the value of the energy register must now also control off the flag qubit.}
 
 \aitext{Our construction places unusual demands upon its window functions, requiring a complementary pair satisfying $\alpha(x)^2 + \beta(x)^2 = 1$ with both Fourier transforms decaying exponentially.} \aitext{None of the standard window functions satisfy these requirements, and so we designed a novel pair, $\alpha(x) = \text{sech}( r\cos^{2b} \frac{\pi x}{N})$ and $\beta(x) = \text{tanh}(r \cos^{2b} \frac{\pi x}{N})$.} \aitext{We proved analytically, and confirmed numerically, that their tail weight decays exponentially with the bandwidth $\mu$ for both integer and non-integer energies.} \aitext{This demonstrates that on a quantum computer the best window function is not simply the one with the most concentrated Fourier transform, but the one which also satisfies the constraints imposed by the rest of the quantum algorithm.}

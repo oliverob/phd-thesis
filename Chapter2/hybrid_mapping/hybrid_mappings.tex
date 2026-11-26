@@ -3,7 +3,7 @@
 %****************************** Second Chapter *********************************
 %*******************************************************************************
 
-\chapter{\aitext{Fermion-to-Qubit Mappings}}
+\part{\aitext{Fermion-to-Qubit Mappings}}
 
 \ifpdf
     \graphicspath{{Chapter2/Figs/Raster/}{Chapter2/Figs/PDF/}{Chapter2/Figs/}{Chapter2/hybrid_mapping/}}
@@ -12,7 +12,7 @@
 \fi
 
 
-\label{chapter:fermion_mappings}
+\label{part:fermion_mappings}
 
 \aitext{One of the oldest transformations in quantum physics is the Jordan-Wigner transformation \cite{jordan1993paulische} (Section~\ref{section:jordan-wigner}), introduced in 1928 to represent fermions using spins (i.e. qubits).} \aitext{Despite pre-dating the concept of quantum computing \cite{feynman2018simulating} by over 50 years, it has also become a key tool in quantum simulation, as it allows quantum computers to simulate fermionic systems.} \aitext{This is one of the most promising applications of quantum computing~\cite{feynman2018simulating,lloyd1996universal,ortiz2002simulating}, with problems ranging from quantum chemistry~\cite{mcardle2020quantum,reiher2017elucidating}, to the Hubbard model in condensed matter physics~\cite{abrams1997simulation}, to Lattice Gauge Theories \cite{banuls2020simulating,chakraborty2022classically} and beyond.} Classical methods applied to these problems do not scale favourably with the system size, whereas quantum techniques (e.g. VQE~\cite{mcclean2016theory}, Trotterization~\cite{tranter2019ordering} and others \cite{bravyi2002fermionic,friesner2005ab,ortiz2001quantum}) open up efficient avenues for studying static and dynamic properties of fermionic systems. \aitext{Each of these techniques must first represent the fermionic system using qubits, and the Jordan-Wigner transformation remains the most widely used way of doing so, underpinning many of the experimental simulations of small fermionic systems on quantum computers to date~\cite{barends2015digital,kokail2019self}.}
 
@@ -22,17 +22,17 @@
 
 There is currently no known fermion-to-qubit mapping that preserves perfect locality and consumes no auxiliary resources (in the form of qubits or the extra gate overhead) for an arbitrary interaction graph. A summary of select mappings (including the most efficient ones) can be found in Table~\ref{tab:performance}. These mappings fall into two main categories: non-local mappings which require no additional resources but produce gate counts dependant on the total number of fermionic modes; local mappings which use additional resources (ancilla qubits) to produce constant gate counts independent of the number of fermionic modes. These local mappings can be physically interpreted as lattice gauge theories \cite{Chen_2018}. The best-known “explicitly constructed” local mapping is due to Chen and Xu~\cite{chen2022equivalence}. \aitext{It requires only 1.25 qubits per fermionic mode, while mapping every hopping term to a Pauli string of weight at most 6.} \aitext{There do exist general constructions with lower ratios that only require $1+ \frac{1}{k}$ qubits per fermion, however, they have the trade-off of a Pauli weight which grows as $O(k)$.}
 
-The modern point of view is that the fermion to qubit mapping is a duality transformation obtained by gauging the global $Z_2$ parity symmetry of the fermions \cite{Chen_2018}; in such a mapping, the fermion matter can then be disentangled by a local fermionic quantum circuit \cite{Zohar_2018}. \aitext{Hence, every fermion-to-qubit mapping is a transformation between two equivalent descriptions of the same physics, and the challenge is to choose the description in which simulating that physics is cheapest.} \aitext{In this chapter we harness this freedom to design improved fermion-to-qubit mappings.} \aitext{We present two such contributions, each based upon a separate paper:}
+The modern point of view is that the fermion to qubit mapping is a duality transformation obtained by gauging the global $Z_2$ parity symmetry of the fermions \cite{Chen_2018}; in such a mapping, the fermion matter can then be disentangled by a local fermionic quantum circuit \cite{Zohar_2018}. \aitext{Hence, every fermion-to-qubit mapping is a transformation between two equivalent descriptions of the same physics, and the challenge is to choose the description in which simulating that physics is cheapest.} \aitext{In this part we harness this freedom to design improved fermion-to-qubit mappings.} \aitext{We present two such contributions, each based upon a separate paper:}
 \begin{enumerate}
-    \item \aitext{\textbf{Combining mappings on different scales} (Section~\ref{section:hybrid_mappings}): The key insight of this work is that it is possible to apply seemly incompatible mappings on different scales such that their relative strengths complement each other.} We combine the efficiency of the Bravyi-Kitaev mapping with the low connectivity restraints of the Jordan-Wigner mapping to produce a far superior Hybrid mapping. On a small scale (within each cell) we use the Bravyi-Kitaev mapping (in few fermion regime when it's connectivity restraints are not too large), but when we zoom out to a larger scale we use the Jordan-Wigner mapping between the cells. By varying the scale at which each mapping is dominant we are able to find an optimal mapping for a given quantum computer. \aitext{The resulting Hybrid mapping gives 98\% shorter Pauli strings than the Jordan-Wigner mapping on a $64\times 64$ lattice, and the Hybrid\+ mapping requires only 1.016 qubits per fermion compared to 1.25 for the best existing local mapping \cite{chen2022equivalence}.}
-    \item \aitext{\textbf{Fermion-to-qubit mappings as dualities on the torus} (Section~\ref{section:local_jw_torus}): We construct the fermion-to-qubit mapping on an arbitrary graph as a graded projected entangled pair operator (PEPO) which explicitly encodes the gauge transformations.} \aitext{This duality viewpoint allows us to resolve how the mapping must be modified for odd charge sectors and for periodic and twisted boundary conditions on a torus, as dualities switch boundary conditions with charge sectors.} \aitext{On a 1D ring our construction is equivalent to the Jordan-Wigner transformation composed with the Kramers-Wannier duality.}
+    \item \aitext{\textbf{Combining mappings on different scales} (Chapter~\ref{section:hybrid_mappings}): The key insight of this work is that it is possible to apply seemly incompatible mappings on different scales such that their relative strengths complement each other.} We combine the efficiency of the Bravyi-Kitaev mapping with the low connectivity restraints of the Jordan-Wigner mapping to produce a far superior Hybrid mapping. On a small scale (within each cell) we use the Bravyi-Kitaev mapping (in few fermion regime when it's connectivity restraints are not too large), but when we zoom out to a larger scale we use the Jordan-Wigner mapping between the cells. By varying the scale at which each mapping is dominant we are able to find an optimal mapping for a given quantum computer. \aitext{The resulting Hybrid mapping gives 98\% shorter Pauli strings than the Jordan-Wigner mapping on a $64\times 64$ lattice, and the Hybrid\+ mapping requires only 1.016 qubits per fermion compared to 1.25 for the best existing local mapping \cite{chen2022equivalence}.}
+    \item \aitext{\textbf{Fermion-to-qubit mappings as dualities on the torus} (Chapter~\ref{section:local_jw_torus}): We construct the fermion-to-qubit mapping on an arbitrary graph as a graded projected entangled pair operator (PEPO) which explicitly encodes the gauge transformations.} \aitext{This duality viewpoint allows us to resolve how the mapping must be modified for odd charge sectors and for periodic and twisted boundary conditions on a torus, as dualities switch boundary conditions with charge sectors.} \aitext{On a 1D ring our construction is equivalent to the Jordan-Wigner transformation composed with the Kramers-Wannier duality.}
 \end{enumerate}
 
-\section{Preliminaries}
+\chapter{\aitext{Background}}
 \label{section:fermion_preliminaries}
-\aitext{In this section, we recall the mappings this chapter builds upon: the Jordan-Wigner Mapping (Section~\ref{section:jordan-wigner}), the Bravyi-Kitaev Mapping (Section~\ref{section:bravyi-kitaev}), and the Auxiliary Qubit Mapping (Section~\ref{section:auxillaryMappings}).} \aitext{Our Hybrid schemes (Section~\ref{section:hybrid_mappings}) extend all three, while Section~\ref{section:local_jw_torus} constructs local fermion-to-qubit mappings on arbitrary graphs as duality transformations, which on a 1D ring are equivalent to the Jordan-Wigner Mapping composed with the Kramers-Wannier duality.}
+\aitext{In this chapter, we recall the mappings this part builds upon: the Jordan-Wigner Mapping (Section~\ref{section:jordan-wigner}), the Bravyi-Kitaev Mapping (Section~\ref{section:bravyi-kitaev}), and the Auxiliary Qubit Mapping (Section~\ref{section:auxillaryMappings}).} \aitext{Our Hybrid schemes (Chapter~\ref{section:hybrid_mappings}) extend all three, while Chapter~\ref{section:local_jw_torus} constructs local fermion-to-qubit mappings on arbitrary graphs as duality transformations, which on a 1D ring are equivalent to the Jordan-Wigner Mapping composed with the Kramers-Wannier duality.}
 
-\subsection{Jordan-Wigner Mapping}
+\section{Jordan-Wigner Mapping}
 \label{section:jordan-wigner}
 \aitext{The Jordan-Wigner transform \cite{jordan1993paulische} stores the occupation number of the $i$-th fermionic mode in the $i$-th qubit.} Therefore, all the non-local behaviour (the parity information) has to be encoded in the operators \cite{chiew2021optimal}:
 \begin{align}
@@ -55,7 +55,7 @@ The $\bigotimes_{k=1}^{i-1} Z_k$ term is necessary to apply the parity phase shi
     a_p^{\dagger} \ket{f_0,\cdots, f_i, \cdots, f_{M-1}} = \delta_{f_p, 0} (-1)^{\sum_{i=0}^{p-1} f_i}
     \ket{f_0,\cdots, f_p \oplus 1, \cdots, f_{M-1}}
     \end{equation}
-\subsection{Bravyi-Kitaev Mapping}
+\section{Bravyi-Kitaev Mapping}
 \label{section:bravyi-kitaev}
 \aitext{The Bravyi-Kitaev mapping \cite{Bravyi_2002} stores the parity of fermionic modes in a non-local Fenwick tree data structure \cite{havlivcek2017operator}.} A Fenwick tree \cite{fenwick1994new} is a partial ordering of binary representations where every node is a copy of its parent with one of the $1$s changed to a $0$ as shown in Figure~\ref{fenwick_trees}. \aitext{Below we outline how the Bravyi-Kitaev mapping encodes $m$ fermionic modes:}
 
@@ -168,7 +168,7 @@ Examples of these sets are given in Figure~\ref{fenwick_trees}. \aitext{We prese
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Auxiliary Qubit Mapping}
+\section{Auxiliary Qubit Mapping}
 \label{section:auxillaryMappings}
 Though originally pioneered by \cite{Verstraete_2005}, here we recall the formalization of the auxiliary mappings from~\cite{steudtner2019quantum}. The principle behind auxiliary mapping schemes is to create stabilisers which are similar to non-local interaction terms in the Hamiltonian, so they can be used to cancel each other out. For example, consider an $n$-qubit Hamiltonian consisting of $m$ Pauli-strings $h_i$ some of which contain a non-local Pauli-string $p$:
 \begin{equation}
@@ -205,10 +205,10 @@ Though originally pioneered by \cite{Verstraete_2005}, here we recall the formal
 \end{itemize}
 To perform this procedure to remove multiple non-local strings $p_i$, we can simply repeat the process with additional ancillas. However as the stabilisers $p_i \otimes \sigma_i$ must share common stabiliser states, it is only possible to simultaneously remove commuting strings.
 
-\section[Hybrid Mappings]{\aitext{Hybrid Fermion-to-Qubit Mappings}}
+\chapter[Hybrid Mappings]{\aitext{Hybrid Fermion-to-Qubit Mappings}}
 \label{section:hybrid_mappings}
-\subsection{Introduction}
-\aitext{In this section, we introduce a family of parametrized Hybrid mappings (Section~\ref{section:Hybridmapping}) that combine the relaxed connectivity constraints of the Jordan-Wigner mapping and the increased locality of the Bravyi-Kitaev mapping to produce drastically reduced gate counts~\cite{tranter2018comparison}.} In the context of limited qubit connectivity (Section~\ref{section:connectivity}) the Hybrid mapping produces gate counts that scale with $\frac{N}{2n}$ compared to $\frac{N}{2}$ for the Jordan-Wigner and Bravyi-Kitaev mappings on an $N\times N$ lattice (where $n \ll N$). In the regime of all-to-all connectivity the Hybrid mapping gate count scales with $\frac{N}{2n^2}$ (Section~\ref{section:hybridanalysis}) even further outperforming the unaffected Jordan-Wigner mapping. However, in the absence of connectivity constraints the Bravyi-Kitaev mapping gate count scales with $O(\log N)$. Despite this our numerical analysis in Section~\ref{section:numerical} shows the Hybrid mapping still results in lower gate counts than the Bravyi-Kitaev mapping for small lattices (e.g. lattices smaller than $164 \times 164$ for $n=4$).
+\section{Introduction}
+\aitext{In this chapter, we introduce a family of parametrized Hybrid mappings (Section~\ref{section:Hybridmapping}) that combine the relaxed connectivity constraints of the Jordan-Wigner mapping and the increased locality of the Bravyi-Kitaev mapping to produce drastically reduced gate counts~\cite{tranter2018comparison}.} In the context of limited qubit connectivity (Section~\ref{section:connectivity}) the Hybrid mapping produces gate counts that scale with $\frac{N}{2n}$ compared to $\frac{N}{2}$ for the Jordan-Wigner and Bravyi-Kitaev mappings on an $N\times N$ lattice (where $n \ll N$). In the regime of all-to-all connectivity the Hybrid mapping gate count scales with $\frac{N}{2n^2}$ (Section~\ref{section:hybridanalysis}) even further outperforming the unaffected Jordan-Wigner mapping. However, in the absence of connectivity constraints the Bravyi-Kitaev mapping gate count scales with $O(\log N)$. Despite this our numerical analysis in Section~\ref{section:numerical} shows the Hybrid mapping still results in lower gate counts than the Bravyi-Kitaev mapping for small lattices (e.g. lattices smaller than $164 \times 164$ for $n=4$).
 
 We also construct a Hybrid\+ family of parametrized local mappings (Section~\ref{section:auxHybridmapping}) which only require $1+\frac{1}{n^2}$ qubits per fermionic mode. Our construction interpolates between the Auxillary Qubit mapping~\cite{Verstraete_2005, steudtner2019quantum} and the Bravyi-Kitaev mapping by setting $n=1$ for the former and $n=N$ for the latter. For all the intermediate $n$, our construction results in novel highly efficient mappings that produce a dramatic reduction in the number of auxiliary qubits required, while simultaneously generating local Pauli strings. We illustrate examples for $n=4$ and $n=8$ which demonstrate 1.0625 and 1.0156 qubit-to-fermion ratios compared to the best existing local mapping \cite{chen2022equivalence} which achieves a 1.25 qubit-to-fermion ratio.
 
@@ -234,7 +234,7 @@ We also construct a Hybrid\+ family of parametrized local mappings (Section~\ref
 
 \aitext{Below we outline the construction of both mappings in detail, and then in Section~\ref{section:algorithmanalysis} we will analyse their performance.} 
 Both these mappings have been designed for a square-lattice fermionic interaction graph. For the sake of clarity, they are both described with $n \times n$ cells, however, it is trivial to extend them to rectangular $l \times h$ cells. It is also possible to perform these mappings with irregular varying cell sizes. We note that it is possible to extend this mapping to any connectivity or fermionic interaction graph, one must simply make an appropriate choice of cells to split the graph into and then pick an order in which to connect them via Jordan-Wigner.
-\subsection{Hybrid mapping algorithm}
+\section{Hybrid mapping algorithm}
 \label{section:Hybridmapping}
 \noindent
 \textbf{Input:} \textit{$N\times N$ Fermion Square-Lattice Interaction Graph, Cell Shape $n \times n$}, $1\le n\le N$ and $n$ is a factor of $N$\\
@@ -580,7 +580,7 @@ Both these mappings have been designed for a square-lattice fermionic interactio
 \caption{\label{fig:fenwick_tree_cells_example_4} Hybrid mapping with $2\times 2$ cells showing the qubit operator representation of $\frac{i}{2}(a_{6}-a^{\dagger}_{6})$. Orange = target, Red = Parity set, Green = Update set}
 \end{figure}
 It is important to note that while we have presented the Hybrid mapping in terms of the even fermionic operators (keeping inline with the Hybrid\+ mapping which can only represent even fermionic operators), it can also admit a representation of the whole fermionic space. \Cref{fig:fenwick_tree_cells,fig:fenwick_tree_cells_example_1,fig:fenwick_tree_cells_example_2,fig:fenwick_tree_cells_example_3,fig:fenwick_tree_cells_example_4} illustrate in detail how the odd fermionic operators are mapped, and it is clear how to construct the even fermionic operators by multiplying these together.
-\subsection{Hybrid\+ mapping algorithm}
+\section{Hybrid\+ mapping algorithm}
 \label{section:auxHybridmapping}
 \noindent
 \textbf{Input:} \textit{$N\times N$ Fermion Square-Lattice Interaction Graph, Cell Shape $n \times n$}, $n \times n = 2^k$ for some integer $k$, $n$ is a factor of $N$\\
@@ -632,11 +632,11 @@ It is important to note that while we have presented the Hybrid mapping in terms
     \end{figure}
     \end{enumerate}
 \end{enumerate}
-\subsection{Algorithm analysis}
+\section{Algorithm analysis}
 \label{section:algorithmanalysis}
 % Graphs showing performance of our two algorithms
 % Theoretical explanation of speed up offered by Hybrid
-\subsubsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid on an $N\times N$ lattice}
+\subsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid on an $N\times N$ lattice}
 \label{section:hybridanalysis}
 There are two primary contributions to the Pauli-weight of a fermionic operation in the Hybrid scheme:
 \begin{enumerate}
@@ -672,7 +672,7 @@ and so for large lattices:
 \end{equation}
 When $N\gg n$, the Hybrid mapping produces $n^2$ times smaller Pauli-strings than the Jordan-Wigner mapping.
 % Theoretical constant performance of Hybrid\+ mapping
-\subsubsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid\+ on an $N\times N$ lattice}
+\subsection{Theoretical Average Pauli-weight of $n\times n$ Hybrid\+ on an $N\times N$ lattice}
 Similarly to the Hybrid mapping, there are two primary contributions to the Pauli-weight of a fermionic operation:
 \begin{enumerate}
     \item Local (Bravyi-Kitaev type) gates acting on qubits within the target cells
@@ -680,7 +680,7 @@ Similarly to the Hybrid mapping, there are two primary contributions to the Paul
 \end{enumerate}
 The first contribution scales with $O(\log(n^2))$, whereas the second contribution scales with $O(\frac{1}{n})$ (as the ratio of inter-cell/intra-cell interactions decreases as $n$ increases). Therefore, as $N$ (and therefore the number of fermionic modes) increases the average Pauli-weight will remain constant.
 
-\subsubsection{Varying impact of connectivity}
+\subsection{Varying impact of connectivity}
 \label{section:connectivity}
 The limitations of the underlying qubit architecture has a large impact on the performance of various mappings. In this section, we demonstrate the advantages our mappings give over existing schemes when used on a quantum computer with the common square-lattice connectivity. The connectivity constraints impact mappings by requiring SWAP gates to perform entangled operations between physically non-local qubits. In our analysis, we compare the number of qubits acted upon by a Pauli or SWAP gate during a fermionic operation (the \textit{range}). Below we consider the varying impact of connectivity upon different mappings.
 
@@ -743,7 +743,7 @@ The Hybrid\+ mapping retains a constant average Pauli-weight when considering th
     \caption{The average range of each fermionic operation on an $128\times 128$ lattice when using an $n\times n$ Hybrid/Hybrid\+  mapping against $n$ in the context of a square-lattice qubit connectivity for $n=\{1,2,4,8,16,32,64,128\}$. These results include qubits solely acted on by SWAP gates. The crosses denote the qubit-to-fermion ratio of the $n\times n$ Hybrid\+ mapping for each choice of $n$.}
     \label{fig:vary_cell_sizes_128}
 \end{figure}
-\subsubsection{Numerical Analysis}
+\subsection{Numerical Analysis}
 \label{section:numerical}
 We have considered the locality of each algorithm by computing the average range on a $N \times N$ square lattice. When investigating the case of a $4 \times 4$ cell, we found that the theoretical predictions held; the average interaction qubit count scaled with $\frac{N}{32}$ for the Hybrid algorithm and asymptotically approached a constant for the Hybrid\+ algorithm (as illustrated in Figure~\ref{fig:compare_mappings_ex_SWAP}).
 
@@ -757,7 +757,7 @@ We have investigated which cell sizes give optimal performance. The behaviour sh
 
 For the Hybrid\+ mapping, there is no $O(\frac{1}{2n^2})$ regime as there are no non-local gates acting on the roots. Therefore, the behaviour is dominated by the Bravyi-Kitaev mapping within the cell. This is reflected in the $O(\log n)$ growth of average range. However, the optimal cell size is not simply the smallest (equivalent to AQM \cite{steudtner2019quantum}). The main benefit of this mapping is in offering a direct trade-off between number of ancillas and range. As the current minimum qubit-to-fermion ratio achieved by a local mapping is 1.25 \cite{chen2022equivalence}, we have analysed the next possible cell size of $4 \times 4$ which achieves a qubit-to-fermion ratio of 1.0625. However, using larger cell sizes requires far fewer ancilla qubits. For example, an $8 \times 8$ Hybrid\+ mapping requires 94\% fewer ancillas than the super-compact mapping scheme \cite{chen2022equivalence}.
 
-\subsection{Discussion}
+\section{Discussion}
 We have presented two novel mappings: the Hybrid mapping achieves the shortest circuits of all known mappings without ancillas. The margin of improvement is significant. As demonstrated in our simulations of a real-world qubit architecture, it generates $75\%$ lower range interactions than the Jordan-Wigner and Bravyi-Kitaev mappings. Additionally, as the lattice sizes increases the optimum cell size grows and the performance of the Hybrid mapping further improves.
 
 For calculations on current or near-term quantum computers the Hybrid mapping demonstrates an improvement over the Bravyi-Kitaev and Jordan-Wigner mappings even with all-to-all connectivity. This holds for lattices up to $164 \times 164$ (Figure~\ref{fig:compare_mappings_ex_SWAP}). Lattices larger than this would require more than 27000 qubits to simulate, which is much larger than the current largest quantum computer (433 qubits~\cite{gambetta2020ibm}). Therefore, the Hybrid mapping will likely outperform the Bravyi-Kitaev and Jordan-Wigner mappings on real devices for the foreseeable future.

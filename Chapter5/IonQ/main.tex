@@ -6,37 +6,37 @@
 \else
     \graphicspath{{Chapter5/Figs/Vector/}{Chapter5/Figs/}{Chapter5/IonQ/}}
 \fi
-\chapter{\aitext{Experiments on Trapped-Ion Quantum Computers}}
-\label{chapter:trapped_ion}
+\part{\aitext{Experiments on Trapped-Ion Quantum Computers}}
+\label{part:trapped_ion}
 
-\aitext{So far in this thesis the transformations we have constructed and harnessed have been analysed theoretically, with their costs measured in Pauli weights, qubit counts and Toffoli gates on future fault-tolerant hardware.} \aitext{In this chapter we instead harness transformations on present-day trapped-ion quantum computers.} \aitext{Current devices are noisy and hence every gate counts: a transformation is only useful on present-day hardware if it can be implemented with a shallow circuit, and if it leaves the information we wish to extract in a basis which we can measure.} \aitext{Trapped-ion quantum computers, with their all-to-all connectivity and high gate fidelities, are an ideal testbed for such experiments.}
+\aitext{So far in this thesis the transformations we have constructed and harnessed have been analysed theoretically, with their costs measured in Pauli weights, qubit counts and Toffoli gates on future fault-tolerant hardware.} \aitext{In this part we instead harness transformations on present-day trapped-ion quantum computers.} \aitext{Current devices are noisy and hence every gate counts: a transformation is only useful on present-day hardware if it can be implemented with a shallow circuit, and if it leaves the information we wish to extract in a basis which we can measure.} \aitext{Trapped-ion quantum computers, with their all-to-all connectivity and high gate fidelities, are an ideal testbed for such experiments.}
 
-\aitext{The transformations at play in this chapter are drawn from the same two families which have appeared throughout this thesis.} \aitext{The first is the Fourier transform.} \aitext{In Chapter~\ref{chapter:boosting_qpe} the QFT mapped a phase imprinted on the ancilla register into a basis in which it could be read out.} \aitext{More generally, the QFT over a finite group $G$ maps the elements of $G$ onto its irreducible representations (irreps), and this is the key step in the quantum algorithm for the hidden subgroup problem (HSP).} \aitext{When $G$ is abelian every irrep is one-dimensional, and so the QFT alone determines the measurement basis.} \aitext{However, when $G$ is non-abelian the irreps are matrices, and the QFT only tells us which irrep we are in.} \aitext{We must still choose a basis within each irrep in which to measure, and this choice decides whether the hidden subgroup can be recovered at all.}
+\aitext{The transformations at play in this part are drawn from the same two families which have appeared throughout this thesis.} \aitext{The first is the Fourier transform.} \aitext{In Part~\ref{part:boosting_qpe} the QFT mapped a phase imprinted on the ancilla register into a basis in which it could be read out.} \aitext{More generally, the QFT over a finite group $G$ maps the elements of $G$ onto its irreducible representations (irreps), and this is the key step in the quantum algorithm for the hidden subgroup problem (HSP).} \aitext{When $G$ is abelian every irrep is one-dimensional, and so the QFT alone determines the measurement basis.} \aitext{However, when $G$ is non-abelian the irreps are matrices, and the QFT only tells us which irrep we are in.} \aitext{We must still choose a basis within each irrep in which to measure, and this choice decides whether the hidden subgroup can be recovered at all.}
 
-\aitext{The second family is dualities, which map between two equivalent descriptions of the same physics.} \aitext{In Section~\ref{section:local_jw_torus} we saw that on a ring the Jordan-Wigner transformation composed with the Kramers-Wannier duality is a single duality between fermions and spins.} \aitext{The Kramers-Wannier duality maps the paramagnetic phase of the transverse-field Ising model onto its ferromagnetic phase, and in doing so maps a local spin flip onto a domain wall at the end of a non-local string.} \aitext{A duality defect joins two such dual descriptions within a single system, and hence an excitation which crosses the defect changes its representation.} \aitext{Dualities are usually used as a bookkeeping device to simplify a Hamiltonian or relate two phases of matter.} \aitext{Instead, we use the duality defect as a physical tool: preparing a superposition of non-local strings directly is expensive, however, we can prepare a local excitation and let the duality defect transform it into a non-local one.}
+\aitext{The second family is dualities, which map between two equivalent descriptions of the same physics.} \aitext{In Chapter~\ref{section:local_jw_torus} we saw that on a ring the Jordan-Wigner transformation composed with the Kramers-Wannier duality is a single duality between fermions and spins.} \aitext{The Kramers-Wannier duality maps the paramagnetic phase of the transverse-field Ising model onto its ferromagnetic phase, and in doing so maps a local spin flip onto a domain wall at the end of a non-local string.} \aitext{A duality defect joins two such dual descriptions within a single system, and hence an excitation which crosses the defect changes its representation.} \aitext{Dualities are usually used as a bookkeeping device to simplify a Hamiltonian or relate two phases of matter.} \aitext{Instead, we use the duality defect as a physical tool: preparing a superposition of non-local strings directly is expensive, however, we can prepare a local excitation and let the duality defect transform it into a non-local one.}
 
 \aitext{We present two such contributions, each based upon a separate paper:}
 \begin{enumerate}
-    \item \aitext{\textbf{Solving a non-abelian hidden subgroup problem} (Section~\ref{section:nonabelian_hsp}): We present the first experimental implementation of solving a non-abelian HSP on a quantum device, using the IonQ Forte trapped-ion quantum computer.} \aitext{We consider the $q$-hedral groups, which interpolate between the dihedral and affine groups, and implement strong Fourier sampling in an adapted basis, strong Fourier sampling of adjacent pairs and forgetful abelian sampling.} \aitext{Our results confirm that the choice of basis within each irrep is crucial in practice as well as asymptotically, with a single gate making the difference between the hidden subgroup being recoverable or not.} \aitext{Furthermore, at low query counts the noisy hardware achieves a higher success probability than an optimised classical algorithm with access to a perfect oracle.}
-    \item \aitext{\textbf{Scattering through duality defects} (Section~\ref{section:duality_scattering}): Using Quantinuum's H2 trapped-ion quantum computer, we prepare a local wavepacket and scatter it through Kramers-Wannier and Kennedy-Tasaki duality defects.} \aitext{The wavepacket is perfectly transmitted, but emerges as a domain wall or as a string excitation which is invisible to local observables yet visible in non-local string order.} \aitext{This realises a lattice analogue of the resolution of the monopole scattering paradox.} \aitext{Our wavepacket preparation protocol itself harnesses the Fourier transform: we load a Gaussian window function onto an ancilla register, apply a localised excitation controlled upon each ancilla basis state and then apply the QFT to the ancilla register.} \aitext{Hence, each measured ancilla outcome labels the momentum of the prepared wavepacket, and every valid shot is retained without post-selection or feed-forward.}
+    \item \aitext{\textbf{Solving a non-abelian hidden subgroup problem} (Chapter~\ref{section:nonabelian_hsp}): We present the first experimental implementation of solving a non-abelian HSP on a quantum device, using the IonQ Forte trapped-ion quantum computer.} \aitext{We consider the $q$-hedral groups, which interpolate between the dihedral and affine groups, and implement strong Fourier sampling in an adapted basis, strong Fourier sampling of adjacent pairs and forgetful abelian sampling.} \aitext{Our results confirm that the choice of basis within each irrep is crucial in practice as well as asymptotically, with a single gate making the difference between the hidden subgroup being recoverable or not.} \aitext{Furthermore, at low query counts the noisy hardware achieves a higher success probability than an optimised classical algorithm with access to a perfect oracle.}
+    \item \aitext{\textbf{Scattering through duality defects} (Chapter~\ref{section:duality_scattering}): Using Quantinuum's H2 trapped-ion quantum computer, we prepare a local wavepacket and scatter it through Kramers-Wannier and Kennedy-Tasaki duality defects.} \aitext{The wavepacket is perfectly transmitted, but emerges as a domain wall or as a string excitation which is invisible to local observables yet visible in non-local string order.} \aitext{This realises a lattice analogue of the resolution of the monopole scattering paradox.} \aitext{Our wavepacket preparation protocol itself harnesses the Fourier transform: we load a Gaussian window function onto an ancilla register, apply a localised excitation controlled upon each ancilla basis state and then apply the QFT to the ancilla register.} \aitext{Hence, each measured ancilla outcome labels the momentum of the prepared wavepacket, and every valid shot is retained without post-selection or feed-forward.}
 \end{enumerate}
 \aitext{In both experiments the transformation moves the information we are interested in into a new basis, and so we must choose measurements suited to that basis.} \aitext{In the HSP this is the basis within each irrep, and in the scattering experiment it is the non-local string observables which follow the excitation through the defect.}
 
-\section{Solving a non-abelian hidden subgroup problem on a trapped-ion\\ quantum computer}
+\chapter[Solving a non-abelian hidden subgroup problem on a trapped-ion quantum computer]{Solving a non-abelian hidden subgroup problem on a trapped-ion\\ quantum computer}
 \label{section:nonabelian_hsp}
 
-\subsection{Introduction}
+\section{Introduction}
 Possibly the most famous future application of quantum computers is efficiently factoring numbers using Shor's Algorithm \cite{shor1999polynomial}, which could in principle break the RSA cryptography \cite{rivest1978method} that secures much of the world’s internet traffic. Factoring can be classically reduced to period finding \cite{shor1999polynomial}, and while no polynomial-time classical algorithm for factoring is known, a quantum computer can find periods efficiently using the quantum Fourier transform. Period finding is one instance of the abelian Hidden Subgroup Problem (HSP) \cite{kitaev1995quantum}, which can be solved efficiently on a quantum computer for any finite abelian group, whereas classical algorithms typically require exponentially many queries.
 
 Many interesting problems can similarly be reduced to the non-abelian HSP, including graph isomorphism (symmetric group) \cite{beals1997quantum, hallgren2010limitations} and the unique shortest vector problem (dihedral group) \cite{regev2004quantum}, which is closely related to the problems underpinning lattice-based post-quantum cryptography. However, unlike the abelian case, no general efficient quantum algorithm is known for the non-abelian HSP. Despite this, some instances are efficiently solvable using carefully tailored quantum algorithms \cite{hallgren2000normal, bacon2005optimal, moore2007power, grigni2001quantum, ivanyos2001efficient, friedl2014hidden, morales2026hidden, Inui_2007}.
 
-\aitext{In this section we demonstrate the first experimental implementation of solving a non-abelian HSP on a quantum device.} We explore the particularly interesting q-hedral family of non-abelian groups which delineate a boundary of efficiently solvable problems and those only solvable in an information theoretical sense. This family was first studied in this context by Moore, Rockmore, Russell and Schulman (MRRS) \cite{moore2002hidden, moore2007power}, and our work can be viewed as an experimental demonstration that their theoretical results survive on a noisy quantum device.
+\aitext{In this chapter we demonstrate the first experimental implementation of solving a non-abelian HSP on a quantum device.} We explore the particularly interesting q-hedral family of non-abelian groups which delineate a boundary of efficiently solvable problems and those only solvable in an information theoretical sense. This family was first studied in this context by Moore, Rockmore, Russell and Schulman (MRRS) \cite{moore2002hidden, moore2007power}, and our work can be viewed as an experimental demonstration that their theoretical results survive on a noisy quantum device.
 
-MRRS distinguish between \emph{fully reconstructible} HSP over group $G$, which can be solved using quantum circuits of size polynomial in $\log|G|$ followed by polynomial-time classical post-processing, and \emph{information-theoretically reconstructible} problems that are solvable with polynomial sized quantum circuits but the classical post-processing may be arbitrary. HSP over the dihedral group ($D_p$) is information-theoretically reconstructible as $O(\log p)$ quantum queries provide enough information to determine the hidden subgroup, but the best known classical decoding algorithm takes time exponential in $\log p$ \cite{ettinger1999quantum}\footnote{Kuperberg’s quantum algorithm also solves the dihedral HSP in subexponential time $2^{O(\sqrt{\log p})}$ \cite{kuperberg2005subexponential}.}. \aitext{In this section we evaluate how carefully choosing the measurement basis is crucial to ensuring both full and information-theoretic reconstructibility.}
+MRRS distinguish between \emph{fully reconstructible} HSP over group $G$, which can be solved using quantum circuits of size polynomial in $\log|G|$ followed by polynomial-time classical post-processing, and \emph{information-theoretically reconstructible} problems that are solvable with polynomial sized quantum circuits but the classical post-processing may be arbitrary. HSP over the dihedral group ($D_p$) is information-theoretically reconstructible as $O(\log p)$ quantum queries provide enough information to determine the hidden subgroup, but the best known classical decoding algorithm takes time exponential in $\log p$ \cite{ettinger1999quantum}\footnote{Kuperberg’s quantum algorithm also solves the dihedral HSP in subexponential time $2^{O(\sqrt{\log p})}$ \cite{kuperberg2005subexponential}.}. \aitext{In this chapter we evaluate how carefully choosing the measurement basis is crucial to ensuring both full and information-theoretic reconstructibility.}
 
 The $q$-hedral groups interpolate between the dihedral group ($q=2$) and the affine group ($q=p-1$) for each prime $p$. The main results of MRRS are that the $q$-hedral HSP is fully reconstructible when $q = p/\operatorname{polylog} p$, using strong Fourier sampling in an adapted basis, and information-theoretically reconstructible for all $q$, using strong Fourier sampling of adjacent pairs. They also show that forgetful abelian sampling~\cite{ettinger1999quantum}, which discards the non-abelian structure of the group, does not suffice.
 
-\aitext{In this section we implement each of these measurement strategies end-to-end on the IonQ Forte trapped-ion quantum computer for $p \in \{3,5,7\}$ and a range of $q$ spanning the dihedral and affine extremes.} Our contributions are as follows.
+\aitext{In this chapter we implement each of these measurement strategies end-to-end on the IonQ Forte trapped-ion quantum computer for $p \in \{3,5,7\}$ and a range of $q$ spanning the dihedral and affine extremes.} Our contributions are as follows.
 \begin{enumerate}
     \item We introduce a small modification to the adjacent-pairs measurement, replacing $H$ with $HT$, which removes an ambiguity between $b$ and $-b$ present in the original scheme.
     \item We construct hardware-efficient circuits for each component: numerically synthesised $QFT_p$ circuits, an oracle implemented by Fourier conjugation, and a Walsh-series synthesis of the diagonal gates required by the exponent encoding, each using substantially fewer two-qubit gates than standard compiler synthesis.
@@ -46,9 +46,9 @@ The $q$-hedral groups interpolate between the dihedral group ($q=2$) and the aff
 
 At these sizes, the comparison concerns query complexity rather than computational speed-up. As in previous demonstrations of the abelian HSP~\cite{singkanipa2025demonstration}, a third party must act as ``compiler'', since the secret $b$ is compiled into the oracle circuit; knowledge of $b$ is used only to construct the oracle, never in decoding, and the oracle is treated as a black box when counting queries. \aitext{In addition,  circuit elements acting only on registers that are discarded (the final $QFT_p^\dagger$ and permutation in the oracle, and the controlled uncomputation in the non-abelian QFT) are omitted, as detailed in Section~\ref{section:circuits}.} To our knowledge, this is nonetheless the first experimental demonstration of strong Fourier sampling and of an end-to-end non-abelian hidden subgroup algorithm.
 
-\aitext{The remainder of this section is organised as follows.} Section~\ref{section:theory} reviews the $q$-hedral HSP and derives the measurement statistics of each sampling method. \aitext{Section~\ref{section:circuits} describes our circuit constructions and error mitigation.} Section~\ref{section:hsp_results} presents the experimental results, and Section~\ref{section:hsp_discussion} discusses their implications. 
+\aitext{The remainder of this chapter is organised as follows.} Section~\ref{section:theory} reviews the $q$-hedral HSP and derives the measurement statistics of each sampling method. \aitext{Section~\ref{section:circuits} describes our circuit constructions and error mitigation.} Section~\ref{section:hsp_results} presents the experimental results, and Section~\ref{section:hsp_discussion} discusses their implications. 
 
-\subsection{q-Hedral Hidden Subgroup Problem}
+\section{q-Hedral Hidden Subgroup Problem}
 \label{section:theory}
 When solving the Hidden Subgroup Problem we first prepare a register with a uniform superposition over all of the elements of the group $G$. In our case we are considering the $q$-hedral group $G= \mathbb{Z}_q \ltimes \mathbb{Z}_p$ for a given prime $p$ and divisor $q$ of $p-1$. The group is composed of elements $(x,\alpha^t)$ with $x \in \mathbb{Z}_p$, $t \in \mathbb{Z}_q$, $\operatorname{ord}\alpha = q$ and the group action is given by $(x,\alpha^t)(x',\alpha^{t'}) = (x+\alpha^tx', \alpha^{t+t'})$. Therefore, we begin by preparing the initial state:
 \begin{equation}
@@ -110,7 +110,7 @@ After applying the Quantum Fourier Transform the next step of the standard Hidde
 
 The optimal choice of measurement basis for ``strong fourier sampling" is not easily derived for a general non-abelian group. However, for the q-hedral group we consider there has been extensive research into different methods for performing ``strong fourier sampling". \aitext{In this section we demonstrate practical implementations of a range of sampling methods and compare their performance on an existing quantum device.} To our knowledge this is the first experimental implementation of ``strong fourier sampling" and the first experimental demonstration of end-to-end non-abelian HSP. Below we will discuss each of the sampling techniques we will demonstrate.
 
-\subsubsection{Strong sampling in adapted basis}
+\subsection{Strong sampling in adapted basis}
 After measuring the irrep label $k \neq 0$ (with probability $1-\frac{1}{p}$) we have the following post-measurement state:
 \begin{equation}
     \sqrt{\frac{1}{q}}\sum_{t=0}^{q-1} \omega_p^{k (\pi^{-1}(c) - \alpha^tb)}\ket{\alpha^t}
@@ -125,7 +125,7 @@ We then measure the register which gives $l$ with probability:
 \end{equation}
 Therefore, the outcome $l=kb \mod p$ occurs with probability $\frac{q}{p}$. Hence, as we know $k$ we are able to solve the Hidden Subgroup Problem by finding $b$ with probability $(1-\frac{1}{p})\frac{q}{p}$. Therefore, in the regime where $q = p/\text{polylog}(p)$ the Hidden Subgroup Problem on $\mathbb{Z}_q \ltimes \mathbb{Z}_p$ is fully reconstructible (solvable with $O(\text{polylog} (p))$ quantum samples by a quantum circuit of size $O(\text{polylog} (p))$).  However, in the regime of small $q$ this approach breaks down. For example, for constant $q$ we would require $\Omega(p)$ samples to determine $b$ using a mode based decoder which is less efficient than the $O(\sqrt{p})$ classical collision approach. Therefore, in this regime we use a different method of strong sampling described below.
 
-\subsubsection{Strong sampling of adjacent pairs}
+\subsection{Strong sampling of adjacent pairs}
 \label{section:pairs}
 
 To implement this sampling technique on existing quantum devices we use a different encoding of the group to the previous method. Instead of storing $\alpha^t$ in the second register, we will simply store the exponent $t$. The only impact of this is upon the quantum circuit for applying the oracle and the state preparation technique. In this encoding the post-measurement state we obtain with probability $1-\frac{1}{p}$ is:
@@ -156,7 +156,7 @@ The total-variation bound of \cite{moore2007power} therefore holds only for pair
 
 We can however decode the signal in $O(p \log p)$ time using FFT and hence demonstrate an oracle query advantage over a purely classical approach.
 
-\subsubsection{Forgetful Abelian Method}
+\subsection{Forgetful Abelian Method}
 \label{section:forgetful}
 As discussed in MRRS it is sometimes possible to solve HSP for a non-abelian group by erasing its non-abelian structure and performing an abelian Fourier transform instead. In our case this would correspond to treating the group instead as the direct product $\mathbb{Z}_q \times \mathbb{Z}_p$ with the corresponding abelian fourier transform given by $QFT_p \otimes QFT_q$. We can view this in within our existing framework as a choice of basis for strong fourier sampling with the exponent encoding described in the previous section.
 
@@ -180,7 +180,7 @@ Taking $b'=\alpha^m b$ for $m \in \mathbb{Z}_q$ gives:
      &= P_b(k,l)
 \end{align}
 Therefore, this forgetful abelian sampling method cannot distinguish $b$ from $q-1$ other $b$ for $b\neq 0$. A decoder can therefore only identify the orbit of $b$, as the average number of elements in a orbit is $\frac{pq}{p+q-1}$ the success probability is capped at $\frac{p+q-1}{pq}$ regardless of the number of samples collected. This is evidence that not only is the choice of strong fourier sampling basis important for efficient decoding, but also effects the information theoretic reconstruction of the subgroup.
-\subsection{Quantum Circuit}
+\section{Quantum Circuit}
 
 \label{section:circuits}
 \begin{figure*}[t]
@@ -188,12 +188,12 @@ Therefore, this forgetful abelian sampling method cannot distinguish $b$ from $q
 \caption{Adapted-basis circuit for $p=7$ in the field encoding. Controlled phases $\theta_m=2\pi2^m/p$ from $x$ and $b\theta_m$ from $a$ act on the computation register $y$. $QFT_p$ on $x$ gives $k$ and $QFT_p$ on $a$ gives $l$; shots with $k=0$ are discarded. We omit the $y$ register's final $QFT_p^\dagger$ and $\pi$ as $y$ is discarded.}
 \label{fig:circuit-adapted}
 \end{figure*}
-\subsubsection{Initial State}
+\subsection{Initial State}
 In order to prepare the uniform superposition over $p$ computation basis states required by \eqref{eq:initialstate} we use the Shukla-Vedula algorithm \cite{shukla2024efficient} which uses $O(\log_2(p))$ qubits and $O(\log_2 (p))$ gates and we denote with $U_p$.
 
 To prepare the state  $\frac{1}{\sqrt{q}}\sum_{t=0}^{q-1}\ket{\alpha^t}$ we employ the Gleinig-Hoefler algorithm \cite{10.1109/DAC18074.2021.9586240} via the open source PyEncode library \cite{suresh2026pyencode}. However, for large $q$ the state stops being sparse and this algorithm produces more 2 qubit gates than Qiskit's in-built dense state preparation technique \cite{iten2016quantum}, so we synthesise both and use whichever is cheaper. We denote this preparation technique with $V_q$.
 
-\subsubsection{Oracle}
+\subsection{Oracle}
 To implement the action of the oracle we use fourier conjugation. First, we prepare the computation register $y$ into a uniform superposition over $p$ basis states using the Shukla-Vedula algorithm ($U_p$):
 \begin{equation}
    \ket{x}\ket{\alpha^t}\ket{0}\rightarrow\ket{x}\ket{\alpha^t}\ket{+_p}
@@ -225,7 +225,7 @@ As we never use the outcome of the measurement on the computation register in ou
 \end{equation}
 Under this assumption we are free to apply any unitary we wish to the discarded register before we discard it, and hence we do not actually need to implement the $QFT_p$ or permtuation $\pi$ as physical circuits provided we discard the measurement outcome obtained from the computation register.
 
-\subsubsection{Non-Abelian QFT}
+\subsection{Non-Abelian QFT}
 Once we have applied the oracle we must perform $QFT$ over the non-abelian q-hedral group. By inspecting \eqref{eq:finalqftstate} it is clear how to perform the non-abelian QFT as a quantum circuit. First, one must apply the abelian $QFT_p$ on the first register ($QFT_p \otimes \mathbb{I}_q$) giving state:
 \begin{equation}
     \frac{1}{\sqrt{pq}} \sum_{k=0}^{p-1}\sum_{t = 0}^{q-1} \omega_p^{k (\pi^{-1}(c) - \alpha^tb)}\ket{k}\ket{\alpha^t}
@@ -242,7 +242,7 @@ This uncomputation is simply the inverse of the state preparation circuit ($V_q^
 
 The full adapted-basis circuit, combining the state preparation, oracle and QFT described above, is shown in Fig.~\ref{fig:circuit-adapted}.
 
-\subsubsection{Quantum Fourier Transform}
+\subsection{Quantum Fourier Transform}
 
 The quantum Fourier transform over $\mathbb{Z}_p$
 is a unitary on $\mathrm{span}\{\ket{j}\}_{j<p}$ acting as
@@ -279,7 +279,7 @@ $\mathrm{QFT}_7$ & 3 & 10 & 19 \\
 \label{tab:fourier}
 \end{table}
 
-\subsubsection{Exponent encoding}
+\subsection{Exponent encoding}
 
 \begin{figure}[t]
 \centering
@@ -344,7 +344,7 @@ $q$ & Qubits ($t$+$y$) & Ours & Qiskit \\
 
 \label{fig:oracle-diagonal}
 \end{figure}
-\subsubsection{Zero-noise extrapolation}
+\subsection{Zero-noise extrapolation}
 Zero-noise extrapolation (ZNE) \cite{li2017efficient, temme2017error} runs a circuit at several deliberately amplified noise levels and extrapolates the measured quantities back to zero noise. We perform digital zero-noise extrapolation through unitary folding \cite{giurgica2020digital} and exponential extrapolation \cite{endo2018practical}. We deliberately increase the noise in our circuit by replacing every $R_{zz}(\theta)$ gate by $R_{zz}(\theta)R_{zz}(\theta)^{-1}R_{zz}(\theta)$ as shown in Fig.~\ref{fig:circuit-fold}. We chose to just scale the noise due to our 2-qubit gates as they are the dominant contribution to error in our circuits. We assign the folded circuit a noise scale of $\lambda=3$ and the original circuit $\lambda = 1$. Assuming the noise drives the state towards the maximally mixed state, so that the signal decays exponentially with $\lambda$, we model the expectation values as
 \begin{equation}
     \braket{O_{\lambda}} - \frac{\operatorname{Tr}[O]}{d} = g^{\lambda}\left(\braket{O_0} - \frac{\operatorname{Tr}[O]}{d}\right)
@@ -364,7 +364,7 @@ To derive error bars for our ZNE values we perform bootstrap resampling from the
 
 \label{fig:circuit-fold}
 \end{figure}
-\subsection{Results}
+\section{Results}
 \label{section:hsp_results}
 
 
@@ -438,13 +438,13 @@ Fig.~\ref{fig:learning} provides a useful comparison between the relative perfor
 
 Fig.~\ref{fig:learning} also highlights the relative performance of our chosen decoders. For the adjacent-pairs method, FFT decoding performs similarly to maximum likelihood decoding for both $q=2$ and $q=6$. For the adapted-basis method, the mode decoder matches the maximum likelihood decoder at $q=6$, but significantly underperforms at $q=2$. This suggests that, for small $q$, the mode decoder does not exploit all the information available in the adapted-basis measurement outcomes.
 
-\subsection{Discussion}
+\section{Discussion}
 \label{section:hsp_discussion}
 Importantly we have shown that the choice of measurement basis matters practically as well as asymptotically. Fig.~\ref{fig:learning} demonstrates that even at only $p=7$ choosing the weak Fourier or forgetful abelian methods prevents the success probability reaching $1$ irregardless of the number of samples taken. Even more starkly Fig.~\ref{fig:pairsfft} shows that a single gate can make the difference between being information-theoretic reconstructible and not. This highlights that choosing the correct measurement basis is crucial to ensure the problem is information-theoretic reconstructible as predicted by \cite{moore2007power}.
 
 Figure~\ref{fig:learning} demonstrates that a system known to be fully reconstructible can outperform an optimized classical algorithm in recovery probability for low query counts despite the presence of hardware noise. This is despite the classical baseline having access to a perfect oracle, whereas every quantum query is subject to hardware noise. In noiseless simulation the separation extends further, with the quantum algorithm exceeding $90\%$ success at fewer queries than the classical algorithm.
 
-\aitext{In this section we have restricted ourselves to considering the q-hedral group, however, there are many other non-abelian groups which present interesting targets for near term quantum experiments.} For many of these groups single-register measurements are provably insufficient, and the optimal measurement is entangled across several coset states~\cite{ettinger2004quantum,bacon2005optimal,hallgren2010limitations}, therefore a two-copy entangled measurement, or a single combination step of Kuperberg's sieve~\cite{kuperberg2005subexponential}, would be a natural next experiment. \aitext{Whilst the dihedral group is included within the q-hedral groups we solve in this section, it has more efficent solutions than the more general methods we have presented here.} One recent algorithm \cite{lee2025learning} shows particularly strong promise for NISQ devices due to its constant circuit depth.
+\aitext{In this chapter we have restricted ourselves to considering the q-hedral group, however, there are many other non-abelian groups which present interesting targets for near term quantum experiments.} For many of these groups single-register measurements are provably insufficient, and the optimal measurement is entangled across several coset states~\cite{ettinger2004quantum,bacon2005optimal,hallgren2010limitations}, therefore a two-copy entangled measurement, or a single combination step of Kuperberg's sieve~\cite{kuperberg2005subexponential}, would be a natural next experiment. \aitext{Whilst the dihedral group is included within the q-hedral groups we solve in this chapter, it has more efficent solutions than the more general methods we have presented here.} One recent algorithm \cite{lee2025learning} shows particularly strong promise for NISQ devices due to its constant circuit depth.
 
-\paragraph*{Data and code availability} \aitext{The experimental count histograms, quantum circuits, and analysis code supporting this section are available at \cite{o_brien_2026_23951178}.} The repository includes the circuit-generation and compilation code, classical-baseline enumeration, decoding and uncertainty-analysis routines, and scripts used to generate the figures.
+\paragraph*{Data and code availability} \aitext{The experimental count histograms, quantum circuits, and analysis code supporting this chapter are available at \cite{o_brien_2026_23951178}.} The repository includes the circuit-generation and compilation code, classical-baseline enumeration, decoding and uncertainty-analysis routines, and scripts used to generate the figures.
 

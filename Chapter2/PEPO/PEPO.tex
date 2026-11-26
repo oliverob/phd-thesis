@@ -8,14 +8,14 @@
     \graphicspath{{Chapter2/Figs/Vector/}{Chapter2/Figs/}{Chapter2/}{Chapter2/PEPO/}}
 \fi
 
-\section{Local Jordan-Wigner transformations and topological sectors on the torus} 
+\chapter{Local Jordan-Wigner transformations and topological sectors on the torus} 
 \label{section:local_jw_torus}
-\aitext{Fermion-to-qubit mappings can be understood as duality transformations obtained by gauging the global $Z_2$ parity symmetry of the fermions \cite{Chen_2018}.} \aitext{However, this viewpoint leaves many questions open: it is not clear how to modify the mappings when dealing with odd charge sectors, especially when dealing with periodic and twisted boundary conditions on a torus.} \aitext{In this section, we show how those problems can be solved by making use of the formalism of graded tensor networks \cite{Bultinck_2017,Cirac_2021} and more specifically of projected entangled pair operators which explicitly encode the  gauge transformations \cite{Haegeman_2015,Shukla_2020}.}
+\aitext{Fermion-to-qubit mappings can be understood as duality transformations obtained by gauging the global $Z_2$ parity symmetry of the fermions \cite{Chen_2018}.} \aitext{However, this viewpoint leaves many questions open: it is not clear how to modify the mappings when dealing with odd charge sectors, especially when dealing with periodic and twisted boundary conditions on a torus.} \aitext{In this chapter, we show how those problems can be solved by making use of the formalism of graded tensor networks \cite{Bultinck_2017,Cirac_2021} and more specifically of projected entangled pair operators which explicitly encode the  gauge transformations \cite{Haegeman_2015,Shukla_2020}.}
 
 
-\aitext{This section is organized as follows.} We start by defining the graded projected entangled  pair operator (PEPO) for the fermion to qubit mapping on arbitrary graphs. Subsequently, we revisit the 1-D Jordan-Wigner transformation for a (anti-)periodic ring of fermions in the even and odd charge sectors in terms of matrix product operators (MPOs). Next, we show how this mapping can readily be extended to the 2-dimensional torus, and pay special attention to the intriguing interplay between charge sectors and boundary conditions. Controlling the possible boundary conditions turns out to be important for state of the art simulations of e.g. the Hubbard model \cite{xu2023coexistence}. Hence our results can be utilised to improve fermionic quantum simulation by reducing the finite size effect through the introduction of (anti-)periodic boundary conditions. 
+\aitext{This chapter is organized as follows.} We start by defining the graded projected entangled  pair operator (PEPO) for the fermion to qubit mapping on arbitrary graphs. Subsequently, we revisit the 1-D Jordan-Wigner transformation for a (anti-)periodic ring of fermions in the even and odd charge sectors in terms of matrix product operators (MPOs). Next, we show how this mapping can readily be extended to the 2-dimensional torus, and pay special attention to the intriguing interplay between charge sectors and boundary conditions. Controlling the possible boundary conditions turns out to be important for state of the art simulations of e.g. the Hubbard model \cite{xu2023coexistence}. Hence our results can be utilised to improve fermionic quantum simulation by reducing the finite size effect through the introduction of (anti-)periodic boundary conditions. 
 
-\subsection{Construction}
+\section{Construction}
 Given an arbitrary graph $G = (V,E)$, we construct our PEPO by placing  fermionic $Z_2$ graded  $(d+1)$-degree vertex tensors  \cite{Bultinck_2017} at every $d$-degree vertex of $G$ and a graded GHZ tensor on every edge of $G$.
 
 The GHZ tensor is defined as:
@@ -71,7 +71,7 @@ A single fermionic creation/annihilation operator will be mapped to a string of 
 
 It can be seen from the symmetries of our tensors that our construction on a general graph without a defect is an explicit PEPO representation of the BKSF mapping \cite{bravyi_fermionic_2002}.  Therefore, due to the equivalence of 2D fermionic encodings shown by \cite{chen_equivalence_2023} it is possible to reconstruct any existing 2D fermion-to-qubit mapping through a particular choice of $G$, internal orderings, single qubit gates and majorana repairing. Further the inclusion of the $\invbreve X$ defect allows for the representation of tree-based mappings such as the Bravyi-Kitaev Fast Mapping \cite{bravyi_fermionic_2002}. 
 
-\subsection{1D Construction}
+\section{1D Construction}
 On a 1D cycle graph, our construction turns out to be equivalent to the Jordan-Wigner mapping composed with the Kramers–Wannier duality. We will use this as an example to illustrate our formalism. Further insight into how 1D boundary conditions map charge sectors can be found in Appendix D of \cite{Shukla_2020}.
 
 The 1D PEPO is an MPO formed of interleaved GHZ tensors and 3-degree vertex tensors. The mappings of fermionic $\invbreve{Z}$ and $\invbreve{X}\invbreve{X}$ operations can be inferred from the invariance of the MPO under the following operations:
@@ -129,7 +129,7 @@ Hence, the $\invbreve Z$ and $\invbreve Z\invbreve X$ boundary conditions map bo
 
 We note that using our formalism the boundary conditions are sensitive to their placement in the MPO. For example, in 1D the $\invbreve{Y}$ boundary condition to the right of a 3-degree vertex tensor is similar to a $\invbreve{X}$ boundary condition to the left of a 3-degree vertex tensor. For consistency we always refer to the boundary condition as acting to the left of the 3-degree vertex tensor.
 
-\subsection{2D Construction}
+\section{2D Construction}
 For any planar graph $G$ on an orientable manifold, there will be a natural choice for the orientations of the vertex tensors. In this section we exemplify our mapping using the square lattice. In the bulk, our PEPO is similar to the one constructed in \cite{Shukla_2020} and consists out of two simple tensors, a GHZ tensor and a 5-degree vertex tensor, arranged on the edges and vertices of a square lattice. On every plaquette, the symmetries impose a gauge condition upon the spin system:
 \begin{equation}
     \includegraphics[valign=c,page=22]{IPE_figs.pdf} = \includegraphics[valign=c,page=43]{IPE_figs.pdf}.
@@ -173,7 +173,7 @@ Below is an example of a PEPO with a $\invbreve Z_H$ boundary condition and an $
 \end{table}
 We have made the choice of a square lattice to illustrate the mapping of topological sectors. This choice is not necessary to reproduce the results of Table \ref{tab:torus_mapping}, and suitable definitions of boundary conditions/charge sectors/twists on other 2D lattices (e.g. Kagome or honeycomb) will produce identical results.
 
-\subsection{Unitarity}
+\section{Unitarity}
 In this section we discuss how our mappings are made unitary by treating the defect boundary condition as an additional degree of freedom.
 
 The 1D MPO is unitary as the Fock basis is mapped one-to-one onto a spin basis. We can represent the fermionic state $|f_0f_1\ldots f_n)$ in the stabiliser formalism:
@@ -201,7 +201,7 @@ where there are $p$ plaquettes and $n$ fermionic modes (vertices). The $(-1)^{\s
 
 In the above discussion it is crucial that we were able to chose our boundary condition $d$ dependant on the state we were mapping, or else half of the Fock space would have been mapped to nothing. Therefore, it is essential to include this boundary condition as a degree of freedom on the spin side of the mapping in order to achieve unitarity. 
 
-\subsection{Conclusion}
+\section{Conclusion}
 We have shown how boundary conditions on a torus relate to various topological charge sectors. By treating those boundary degrees of freedom as extra quantum degrees of freedom, this allows us to construct a unitary operator (as opposed to an isometry) 
 implementing the duality transform, demonstrating that the higher dimensional JW transformation completely preserves the spectrum of this bigger theory. This is completely in line with the results in \cite{lootens2023lowdepth, Lootens_2023, Lootens:2022avn} for all possible dualities defined in terms of categorical symmetries. 
 
